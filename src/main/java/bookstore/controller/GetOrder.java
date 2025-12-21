@@ -3,6 +3,9 @@ package bookstore.controller;
 import java.io.IOException;
 import java.util.List;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,17 +15,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import bookstore.bean.OrderItem;
 import bookstore.bean.Orders;
 import bookstore.dao.impl.OrderService;
+import bookstore.util.HibernateUtil;
 
 @WebServlet("/GetOrder")
 public class GetOrder extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private OrderService orderService;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        orderService = new OrderService();
-    }
+   
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -34,13 +32,19 @@ public class GetOrder extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
         
+        SessionFactory factory = HibernateUtil.getSessionFactory();
+        Session session = factory.getCurrentSession();
+        OrderService orderService = new OrderService(session);
+    
+        
+        
         String orderIdStr = null; 
 
         try {
-            // 1. 【修正點】嘗試從 URL 參數 ('id') 獲取 (用於 GetOrder?id=X 或 Redirect)
+            // 1. 從URL參數('id')獲取 (用於 GetOrder?id=X 或 Redirect)
             orderIdStr = request.getParameter("id"); 
 
-            // 2. 【修正點】如果 URL 參數為空，嘗試從 Request 屬性獲取 (用於 InsertOrderItems 的 FORWARD)
+            // 2. 如果URL參數為空，嘗試從 Request 屬性獲取 (用於 InsertOrderItems 的 FORWARD)
             if (orderIdStr == null) {
                 Integer orderIdAttr = (Integer) request.getAttribute("orderId");
                 if (orderIdAttr != null) {

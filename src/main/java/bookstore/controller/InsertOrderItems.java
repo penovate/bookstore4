@@ -5,25 +5,21 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+
+import bookstore.bean.OrderItem;
+import bookstore.dao.impl.OrderService;
+import bookstore.util.HibernateUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import bookstore.bean.OrderItem;
-import bookstore.dao.impl.OrderService;
-
 @WebServlet("/InsertOrderItems")
 public class InsertOrderItems extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private OrderService orderService;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        orderService = new OrderService();
-    }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -38,10 +34,14 @@ public class InsertOrderItems extends HttpServlet {
         // 取得訂單ID
         String orderIdStr = request.getParameter("orderId");
         Integer orderId = null;
-        
+
         try {
-        	// 確認有沒有取得訂單Id        	
-        	if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
+            SessionFactory factory = HibernateUtil.getSessionFactory();
+            Session session = factory.getCurrentSession();
+            OrderService orderService = new OrderService(session);
+
+            // 確認有沒有取得訂單Id
+            if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
                 throw new IllegalArgumentException("未提供有效的訂單編號 (orderId)。");
             }
             // 將orderId轉換為Integer
@@ -70,9 +70,9 @@ public class InsertOrderItems extends HttpServlet {
 
             orderService.addItemsToOrder(orderId, items);
 
-            // 等等跳轉到查詢單筆訂單的servlet需要訂單ID            
+            // 等等跳轉到查詢單筆訂單的servlet需要訂單ID
             request.setAttribute("orderId", orderId);
-            
+
             request.getRequestDispatcher("/GetOrder").forward(request, response);
 
         } catch (Exception e) {

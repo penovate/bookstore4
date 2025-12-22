@@ -108,7 +108,7 @@ public class OrderService {
 		ordersDao.updateOrder(order);
 	}
 
-	// 刪除整筆訂單 (包含該訂單的所有明細)
+	// 刪除整筆訂單 (包含該訂單的所有明細)(硬刪除，大概不會用，建著以備不時之需)
 	public void deleteOrder(Integer orderId) {
 		// 先刪除所有訂單明細(防止FK問題)
 		// 雖然 Hibernate 有 cascade，但這邊手動刪除確保邏輯一致
@@ -117,6 +117,36 @@ public class OrderService {
 		// 再刪除訂單主檔
 		ordersDao.deleteOrderById(orderId);
 	}
+	
+	// 取消訂單(軟刪除)(將訂單從ActiveOrders轉變成取消中的訂單)
+		public void processCancelOrder(Integer orderId) {
+		    Orders order = ordersDao.findOrderById(orderId);
+		    if (order != null) {
+		       // 更新訂單狀態
+		    	order.setOrderStatus("已取消");
+		        ordersDao.updateOrder(order);
+		    } else {
+		        throw new RuntimeException("找不到編號為 " + orderId + " 的訂單，無法取消。");
+		    }
+		}
+		
+	// 還原訂單 (從取消清單轉回活動訂單)
+		public void processRestoreOrder(Integer orderId) {
+		    Orders order = ordersDao.findOrderById(orderId);
+		    
+		    if (order != null) {
+		        // 安全檢查：只有「已取消」的訂單才能被還原 (防止誤動已退款訂單)
+		        if ("已取消".equals(order.getOrderStatus())) {
+		            // 更新狀態回活動訂單的起始狀態，例如 "待處理"
+		            order.setOrderStatus("待處理");
+		            ordersDao.updateOrder(order);
+		        } else {
+		            throw new RuntimeException("訂單編號 " + orderId + " 狀態非「已取消」，無法還原。");
+		        }
+		    } else {
+		        throw new RuntimeException("找不到編號為 " + orderId + " 的訂單，無法還原。");
+		    }
+		}
 
 	// 刪除單一訂單明細，並自動重新計算訂單總金額
 	public void deleteOrderItem(Integer orderItemId) {
@@ -163,6 +193,16 @@ public class OrderService {
 		return ordersDao.findAllOrders();
 	}
 
+	// 查詢未被取消與退款的訂單
+	public List<Orders> getAllActiveOrders() {
+	    return ordersDao.findActiveOrders();
+	}
+
+	// 查詢已被取消與退款的訂單
+	public List<Orders> getAllCancelOrders() {
+	    return ordersDao.findCancelAndRefundedOrders();
+	}
+	
 	// 查詢使用者的訂單
 	public List<Orders> getOrdersByUserId(Integer userId) {
 		return ordersDao.findOrdersByUserId(userId);

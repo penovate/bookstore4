@@ -43,6 +43,26 @@ public class OrdersDao {
 		Query<Orders> query = session.createQuery("from Orders", Orders.class);
 		return query.list();
 	}
+	
+	// 查詢未被取消的訂單(未包含已取消、退款)
+	public List<Orders> findActiveOrders() {
+	    // 使用 NOT IN 過濾掉不需要的狀態，並包含 NULL 的防禦判斷
+	    String hql = "from Orders o where o.orderStatus not in (:s1, :s2) or o.orderStatus is null";
+	    return session.createQuery(hql, Orders.class)
+	                  .setParameter("s1", "已取消")
+	                  .setParameter("s2", "已退款")
+	                  .list();
+	}
+
+	// 僅查詢已取消、已退款的訂單(軟刪除)
+	public List<Orders> findCancelAndRefundedOrders() {
+	    // 使用 IN 撈取特定狀態
+	    String hql = "from Orders o where o.orderStatus in (:s1, :s2)";
+	    return session.createQuery(hql, Orders.class)
+	                  .setParameter("s1", "已取消")
+	                  .setParameter("s2", "已退款")
+	                  .list();
+	}
 
 	// 依訂單ID查詢訂單
 	public Orders findOrderById(Integer orderId) {

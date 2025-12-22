@@ -15,8 +15,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet("/GetAllOrders")
-public class GetAllOrders extends HttpServlet {
+@WebServlet("/GetAllCancelOrders")
+public class GetAllCancelOrders extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -33,9 +33,9 @@ public class GetAllOrders extends HttpServlet {
         Session session = factory.getCurrentSession();
         OrderService orderService = new OrderService(session);
 
-        // 查詢活動中的訂單(未被取消、退款的訂單)
-        List<Orders> orders = orderService.getAllActiveOrders(); 
+        // 查詢已取消與已退款訂單
+        List<Orders> orders = orderService.getAllCancelOrders(); 
         request.setAttribute("orders", orders);
-        request.getRequestDispatcher("/order/GetAllOrders.jsp").forward(request, response);
+        request.getRequestDispatcher("/order/GetAllCancelOrders.jsp").forward(request, response);
     }
 }

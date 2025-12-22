@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8" import="java.util.*,bookstore.bean.ReviewBean" %>
+    pageEncoding="UTF-8" import="java.util.*,bookstore.bean.ReviewBean,java.time.format.DateTimeFormatter" %>
 <!DOCTYPE html>
 <%!@SuppressWarnings("unchecked")%>
 <html>
@@ -210,6 +210,7 @@
 <th class="status-cell">評價編號<th class="status-cell">會員編號<th class="status-cell">會員名稱<th class="status-cell">書本編號<th>書本名稱<th class="status-cell">評分<th>評價<th>創建日期<th>修改資料<th>刪除資料
 <%
 List<ReviewBean> reviews = (List<ReviewBean>)request.getAttribute("reviews");
+DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 %>
 	<%
 	for(ReviewBean review: reviews) {
@@ -223,13 +224,13 @@ List<ReviewBean> reviews = (List<ReviewBean>)request.getAttribute("reviews");
 <%--<td><%= review.getBookId() %><a href="GetBook?bookId=<%= book.getBookId()%>"><%= book.getBookId() %></a> --%>	
 	<td><%= review.getRating() %></td>
 	<td><%= review.getComment() %></td>
-	<td><%= review.getCreatedAt() %></td>
+	<td><%= (review.getCreatedAt() == null ? "" : review.getCreatedAt().format(fmt)) %></td>
 	<td><a href="<%= request.getContextPath() %>/UpdateReview?review_id=<%= review.getReviewId() %>">
 	    <button class="update-button">修改</button>
 	</a>
 	</td>
 	<td><a href="<%= request.getContextPath() %>/DeleteReview?review_id=<%= review.getReviewId() %>" 
-           onclick="return confirm('確定要刪除會員 [<%= review.getUserId() %>] 的資料嗎？');">
+           onclick="return confirm('確定要刪除會員 [<%= review.getUserId() %>] 的評價嗎？');">
             <button class="delete-button">刪除</button>
         </a>
     </td>

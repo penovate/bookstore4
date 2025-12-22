@@ -15,8 +15,8 @@ public class DBUtil {
             config.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver"); 
             
             config.setJdbcUrl("jdbc:sqlserver://localhost:1433;databaseName=bookstore;trustServerCertificate=true");
-            config.setUsername("pen"); 
-            config.setPassword("1234"); 
+            config.setUsername("owner"); 
+            config.setPassword("12345"); 
             
             config.setMaximumPoolSize(10);
             config.setMinimumIdle(5);

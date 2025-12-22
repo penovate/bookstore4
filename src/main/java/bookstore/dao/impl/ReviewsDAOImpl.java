@@ -20,24 +20,23 @@ public class ReviewsDAOImpl implements ReviewDAO {
 		try {
 			conn = DBUtil.getConnection();
 			String sql =
-				    "SELECT r.review_id, r.user_id, u.user_name, r.book_id, b.book_name, " +
-				    "r.rating, r.comment, FORMAT(r.created_at, 'yyyy-MM-dd HH:mm:ss') AS created_at " +
-				    "FROM reviews r " +
-				    "JOIN users u ON r.user_id = u.user_id " +
-				    "JOIN books b ON r.book_id = b.book_id";
+				    "SELECT r.review_id, r.user_id, u.user_name, r.book_id, b.book_name, r.rating, r.comment, r.created_at "
+				    + "FROM reviews r \r\n"
+				    + "JOIN users u ON r.user_id = u.user_id \r\n"
+				    + "JOIN books b ON r.book_id = b.book_id";
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			ResultSet rs = stmt.executeQuery();
 			
 			while (rs.next()) {
 				ReviewBean review = new ReviewBean();
-				review.setReviewId(rs.getString("review_id"));
-				review.setUserId(rs.getString("user_id"));
+				review.setReviewId(rs.getInt("review_id"));
+				review.setUserId(rs.getInt("user_id"));
 				review.setUserName(rs.getString("user_name"));
-				review.setBookId(rs.getString("book_id"));
+				review.setBookId(rs.getInt("book_id"));
 				review.setBookName(rs.getString("book_name"));
-				review.setRating(rs.getString("rating"));
+				review.setRating(rs.getInt("rating"));
 				review.setComment(rs.getString("comment"));
-				review.setCreatedAt(rs.getString("created_at"));
+				review.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 reviews.add(review);
 			}
 			stmt.close();
@@ -57,7 +56,7 @@ public class ReviewsDAOImpl implements ReviewDAO {
 
 //  透過評價id查詢評價
 	@Override
-	public ReviewBean selectReviewById(String reviewId) {
+	public ReviewBean selectReviewById(Integer reviewId) {
 		ReviewBean review = null;
 		Connection conn = null;
 		
@@ -65,28 +64,28 @@ public class ReviewsDAOImpl implements ReviewDAO {
 			conn = DBUtil.getConnection();
 			
 	        String sql =
-	                "SELECT r.review_id, r.user_id, u.user_name, r.book_id, b.book_name, " +
-	                "r.rating, r.comment, FORMAT(r.created_at, 'yyyy-MM-dd HH:mm:ss') AS created_at " +
-	                "FROM reviews r " +
-	                "JOIN users u ON r.user_id = u.user_id " +
-	                "JOIN books b ON r.book_id = b.book_id " +
-	                "WHERE r.review_id = ?";
+	                "SELECT r.review_id, r.user_id, u.user_name, r.book_id, b.book_name,  r.rating, r.comment, r.created_at " 
+	                + "FROM reviews r " 
+	                + "JOIN users u ON r.user_id = u.user_id "
+	                + "JOIN books b ON r.book_id = b.book_id "
+	                + "WHERE r.review_id = ?";
 			PreparedStatement stmt = conn.prepareStatement(sql);
-			stmt.setString(1, reviewId);
+			stmt.setInt(1, reviewId);
 			ResultSet rs = stmt.executeQuery();
 			
 			if (rs.next()) {
 				review = new ReviewBean();
-				review.setReviewId(rs.getString("review_id"));
-				review.setUserId(rs.getString("user_id"));
+				review.setReviewId(rs.getInt("review_id"));
+				review.setUserId(rs.getInt("user_id"));
 				review.setUserName(rs.getString("user_name"));
-				review.setBookId(rs.getString("book_id"));
+				review.setBookId(rs.getInt("book_id"));
 				review.setBookName(rs.getString("book_name"));
-				review.setRating(rs.getString("rating"));
+				review.setRating(rs.getInt("rating"));
 				review.setComment(rs.getString("comment"));
-				review.setCreatedAt(rs.getString("created_at"));
+				review.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
 			}
 			stmt.close();
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -108,9 +107,9 @@ public class ReviewsDAOImpl implements ReviewDAO {
 		try {
 			conn = DBUtil.getConnection();
 			PreparedStatement stmt = conn.prepareStatement(sql);
-			stmt.setString(1, review.getUserId());
-			stmt.setString(2, review.getBookId());
-	        stmt.setString(3, review.getRating());
+			stmt.setInt(1, review.getUserId());
+			stmt.setInt(2, review.getBookId());
+	        stmt.setInt(3, review.getRating());
 	        stmt.setString(4, review.getComment());
 	        
 	        count = stmt.executeUpdate();
@@ -140,11 +139,11 @@ public class ReviewsDAOImpl implements ReviewDAO {
 			conn = DBUtil.getConnection();
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			
-			stmt.setString(1, review.getUserId());
-			stmt.setString(2, review.getBookId());
-	        stmt.setString(3, review.getRating());
+			stmt.setInt(1, review.getUserId());
+			stmt.setInt(2, review.getBookId());
+	        stmt.setInt(3, review.getRating());
 	        stmt.setString(4, review.getComment());
-	        stmt.setString(5, review.getReviewId());
+	        stmt.setInt(5, review.getReviewId());
             count = stmt.executeUpdate();
             stmt.close();
 		} catch (SQLException e) {
@@ -162,7 +161,7 @@ public class ReviewsDAOImpl implements ReviewDAO {
 	}
 //  刪除評價
 	@Override
-	public int deleteReview(String reviewId) {
+	public int deleteReview(Integer reviewId) {
 		int count = 0;
 		Connection conn = null;
 		
@@ -170,7 +169,7 @@ public class ReviewsDAOImpl implements ReviewDAO {
 		try {
 			conn = DBUtil.getConnection();
 			PreparedStatement stmt = conn.prepareStatement(sql);
-			stmt.setString(1, reviewId);
+			stmt.setInt(1, reviewId);
 			count = stmt.executeUpdate();
 			stmt.close();
 		} catch (SQLException e) {

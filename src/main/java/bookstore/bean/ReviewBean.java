@@ -1,66 +1,91 @@
 package bookstore.bean;
 
-public class ReviewBean implements java.io.Serializable {
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+public class ReviewBean implements Serializable {
+
 	private static final long serialVersionUID = 1L;
-	private String reviewId;
-	private String userId;
-	private String bookId;
-    private String rating; 
-    private String comment;
-    private String createdAt;
-    
-	public String getReviewId() {
-		return reviewId;
-	}
-	public void setReviewId(String reviewId) {
-		this.reviewId = reviewId;
-	}
-	public String getUserId() {
-		return userId;
-	}
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
-	public String getBookId() {
-		return bookId;
-	}
-	public void setBookId(String bookId) {
-		this.bookId = bookId;
-	}
-	public String getRating() {
-		return rating;
-	}
-	public void setRating(String rating) {
-		this.rating = rating;
-	}
-	public String getComment() {
-		return comment;
-	}
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
-	public String getCreatedAt() {
-		return createdAt;
-	}
-	public void setCreatedAt(String createdAt) {
-		this.createdAt = createdAt;
-	}
-	
-	// join部分
+
+	private Integer reviewId;
+	private Integer userId;
+	private Integer bookId;
+	private Integer rating;
+	private String comment;
+	private LocalDateTime createdAt;
+
+	// join 顯示用
 	private String userName;
 	private String bookName;
 
-	public String getUserName() { return userName; }
-	public void setUserName(String userName) { this.userName = userName; }
+	// ===== getter / setter =====
+	public Integer getReviewId() {
+		return reviewId;
+	}
 
-	public String getBookName() { return bookName; }
-	public void setBookName(String bookName) { this.bookName = bookName; }
-	
+	public void setReviewId(Integer reviewId) {
+		this.reviewId = reviewId;
+	}
+
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+
+	public Integer getBookId() {
+		return bookId;
+	}
+
+	public void setBookId(Integer bookId) {
+		this.bookId = bookId;
+	}
+
+	public Integer getRating() {
+		return rating;
+	}
+
+	public void setRating(Integer rating) {
+		this.rating = rating;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getBookName() {
+		return bookName;
+	}
+
+	public void setBookName(String bookName) {
+		this.bookName = bookName;
+	}
+
 	@Override
 	public String toString() {
-		return "Bean [reviewId=" + reviewId + ", userId=" + userId + ", bookId=" + bookId + ", rating=" + rating
-				+ ", comment=" + comment + ", createdAt=" + createdAt + "]";
+		return "ReviewBean{" + "reviewId=" + reviewId + ", userId=" + userId + ", bookId=" + bookId + ", rating="
+				+ rating + ", comment='" + comment + '\'' + ", createdAt=" + createdAt + '}';
 	}
 }
-    
-	

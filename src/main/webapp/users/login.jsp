@@ -145,5 +145,16 @@
     </form>
     <hr class="divider">
 </div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.has('logout')) {
+        alert("您已成功登出系統！");
+        
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+</script>
+
 </body>
 </html>

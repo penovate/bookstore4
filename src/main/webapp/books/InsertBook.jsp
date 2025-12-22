@@ -161,6 +161,7 @@ td input:focus, td select:focus {
 						name="genre" id="genre" required>
 							<option value="" disabled selected>-- 請選擇書籍類型 --</option>
 							<%
+							
 							if (genreList != null && !genreList.isEmpty()) {
 								for (GenreBean genre : genreList) {
 							%>

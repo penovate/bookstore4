@@ -331,7 +331,7 @@ table button {
 					<td style="text-align: center;"><%=book.getAuthor()%></td>
 					<td style="text-align: center;"><%=(book.getTranslator() == null) ? "" : book.getTranslator()%></td>
 					<td style="text-align: center;"><%=book.getPress()%></td>
-					<td style="text-align: center;"><%=book.getGenreName()%></td>
+					<td style="text-align: center;"><%=book.getGenreBean().getGenreName()%></td>
 					<td style="text-align: center;">$<%=book.getPrice().intValue()%></td>
 					<td style="text-align: center;"><%=book.getIsbn()%></td>
 					<td style="text-align: center;"><%=book.getStock()%></td>

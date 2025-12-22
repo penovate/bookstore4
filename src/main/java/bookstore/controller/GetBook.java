@@ -20,8 +20,7 @@ public class GetBook extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		String bookIdStr = request.getParameter("bookId");
-		System.out.println("這是Getbook的doget的BookIdStr=" + bookIdStr);
+		Integer bookIdStr = Integer.parseInt(request.getParameter("bookId"));
 		bookService bookService = new bookService();
 		BooksBean book = new BooksBean();
 		book = bookService.selectBookByIdS(bookIdStr);

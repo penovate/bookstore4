@@ -152,14 +152,7 @@ input[type="submit"]:active {
 			</tr>
 			<tr>
 				<td>類型:</td>
-				<td><c:set var="currentGenreName" value="未知類型" /> <c:forEach
-						var="genre" items="${genreList}">
-						<c:if test="${genre.genreId == bookInsert.genre}">
-							<c:set var="currentGenreName" value="${genre.genreName}" />
-
-
-						</c:if>
-					</c:forEach> <input type="text" disabled value="${currentGenreName}"></td>
+				<td><input type="text" disabled value="${bookInsert.genreBean.genreName}"></td>
 			</tr>
 			<tr>
 				<td>出版社:</td>

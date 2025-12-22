@@ -3,42 +3,74 @@ package bookstore.bean;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "books")
 public class BooksBean {
 
-	
-	private Integer bookId; //序號
-	private String bookName; //書名
-	private String author; //作者
-	private String translator; //譯者
-	private Integer genre; //書本類型編號
-	private BigDecimal price; //價錢
-	private String isbn; //書本身分證
-	private Integer stock; //庫存量
-	private String shortDesc; //簡述
-	private LocalDateTime createdAt; //建立時間
-	private String press; //出版社
-	private boolean onShelf; //上下架狀態
-	private String genreName; //類型名稱
-	
-	
-	
-	
-	
-	//-------Constructor--------
+	@Id
+	@Column(name = "book_id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer bookId; // 序號
+
+	@Column(name = "book_name")
+	private String bookName; // 書名
+
+	@Column(name = "author")
+	private String author; // 作者
+
+	@Column(name = "translator")
+	private String translator; // 譯者
+
+	@Column(name = "price")
+	private BigDecimal price; // 價錢
+
+	@Column(name = "isbn")
+	private String isbn; // 書本身分證
+
+	@Column(name = "stock")
+	private Integer stock; // 庫存量
+
+	@Column(name = "short_desc")
+	private String shortDesc; // 簡述
+
+	@Column(name = "created_at")
+	private LocalDateTime createdAt; // 建立時間
+
+	@Column(name = "press")
+	private String press; // 出版社
+
+	@Column(name = "on_shelf")
+	private boolean onShelf; // 上下架狀態
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "genre_id")
+	private GenreBean genreBean;
+
+	// -------Constructor--------
 	public BooksBean() {
 		super();
-		
-	
-		
+
 	}
-	public BooksBean(Integer bookId, String bookName, String author, String translator, Integer genre, BigDecimal price,
-			Integer stock, String shortDesc, LocalDateTime createdAt, String press, String isbn,boolean onShelf,String genreName) {
+
+	public BooksBean(Integer bookId, String bookName, String author, String translator, BigDecimal price, Integer stock,
+			String shortDesc, LocalDateTime createdAt, String press, String isbn, boolean onShelf) {
 		super();
 		this.bookId = bookId;
 		this.bookName = bookName;
 		this.author = author;
 		this.translator = translator;
-		this.genre = genre;
 		this.price = price;
 		this.stock = stock;
 		this.shortDesc = shortDesc;
@@ -46,97 +78,110 @@ public class BooksBean {
 		this.press = press;
 		this.isbn = isbn;
 		this.onShelf = onShelf;
-		this.genreName = genreName;
 	}
-	//--------getter/setter-------
+
+	// --------getter/setter-------
 	public int getBookId() {
 		return bookId;
 	}
+
 	public void setBookId(Integer bookId) {
 		this.bookId = bookId;
 	}
+
 	public String getBookName() {
 		return bookName;
 	}
+
 	public void setBookName(String bookName) {
 		this.bookName = bookName;
 	}
+
 	public String getAuthor() {
 		return author;
 	}
+
 	public void setAuthor(String author) {
 		this.author = author;
 	}
+
 	public String getTranslator() {
 		return translator;
 	}
+
 	public void setTranslator(String translator) {
 		this.translator = translator;
 	}
-	public Integer getGenre() {
-		return genre;
-	}
-	public void setGenre(Integer genres) {
-		this.genre = genres;
-	}
+
 	public BigDecimal getPrice() {
 		return price;
 	}
+
 	public void setPrice(BigDecimal price) {
 		this.price = price;
 	}
+
 	public int getStock() {
 		return stock;
 	}
+
 	public void setStock(Integer stock) {
 		this.stock = stock;
 	}
+
 	public String getShortDesc() {
 		return shortDesc;
 	}
+
 	public void setShortDesc(String shortDesc) {
 		this.shortDesc = shortDesc;
 	}
+
 	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
+
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
+
 	public String getPress() {
 		return press;
 	}
+
 	public void setPress(String press) {
 		this.press = press;
 	}
+
 	public String getIsbn() {
 		return isbn;
 	}
+
 	public void setIsbn(String isbn) {
 		this.isbn = isbn;
 	}
-	
-	
+
 	public boolean getOnShelf() {
 		return onShelf;
 	}
+
 	public void setOnShelf(boolean onShelf) {
 		this.onShelf = onShelf;
 	}
-	
-	public String getGenreName() {
-		return genreName;
+
+	public GenreBean getGenreBean() {
+		return genreBean;
 	}
-	public void setGenresName(String genreName) {
-		this.genreName = genreName;
+
+	public void setGenreBean(GenreBean genreBean) {
+		this.genreBean = genreBean;
 	}
+
 	@Override
 	public String toString() {
 		return "BooksBean [bookId=" + bookId + ", bookName=" + bookName + ", author=" + author + ", translator="
-				+ translator + ", genres=" + genre + ", price=" + price + ", isbn=" + isbn + ", stock=" + stock
-				+ ", shortDesc=" + shortDesc + ", createdAt=" + createdAt + ", press=" + press + ", onShelf=" + onShelf
-				+ "]";
+				+ translator + ", price=" + price + ", isbn=" + isbn + ", stock=" + stock + ", shortDesc=" + shortDesc
+				+ ", createdAt=" + createdAt + ", press=" + press + ", onShelf=" + onShelf + "]";
 	}
-	
-	
+
 }

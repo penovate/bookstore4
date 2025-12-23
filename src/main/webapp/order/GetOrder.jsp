@@ -323,14 +323,14 @@ button {
 				<td>
 					<button class="btn-edit btn-update-item"
 						data-itemid="<%= item.getOrderItemId() %>"
-						data-orderid="<%= item.getOrderId() %>"
+						data-orderid="<%= item.getOrders().getOrderId() %>"
 						data-bookid="<%= item.getBookId() %>"
 						data-price="<%= item.getPrice() %>"
 						data-quantity="<%= item.getQuantity() %>">修改</button>
 
 					<button class="btn-del btn-delete-item"
 						data-itemid="<%= item.getOrderItemId() %>"
-						data-orderid="<%= item.getOrderId() %>">刪除</button>
+						data-orderid="<%= item.getOrders().getOrderId() %>">刪除</button>
 				</td>
 			</tr>
 			<% } } %>

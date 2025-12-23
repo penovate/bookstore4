@@ -1,16 +1,14 @@
-<%@page import="bookstore.bean.UserBean"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8" import="java.util.*, bookstore.bean.Orders"%>
-<%!java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");
-	@SuppressWarnings("unchecked")%>
+<%!java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm");%>
+<%!@SuppressWarnings("unchecked")%>
 <!DOCTYPE html>
 <html>
-
 <head>
 <meta charset="UTF-8">
-<title>所有訂單</title>
+<title>已取消/退貨訂單紀錄</title>
 <style>
-/* ------------------ 基礎與表格樣式 ------------------ */
+/* ------------------ 基礎與表格樣式 (完全同步主畫面) ------------------ */
 body {
 	font-family: '微軟正黑體', 'Arial', sans-serif;
 	background-color: #fcf8f0;
@@ -45,7 +43,7 @@ table {
 	width: 100%;
 	border-collapse: collapse;
 	margin: 20px 0;
-	font-size: 14px;
+	font-size: 13px; /* 欄位多，稍微調小字體 */
 }
 
 th, td {
@@ -72,14 +70,13 @@ tbody tr:hover {
 	transition: background-color 0.3s;
 }
 
-/* ------------------ 頂部按鈕群組樣式 ------------------ */
+/* ------------------ 按鈕樣式 ------------------ */
 .top-action-group {
 	display: flex;
 	gap: 10px;
 	margin-bottom: 20px;
 }
 
-/* 通用按鈕基礎樣式 (適用於頂部) */
 .btn {
 	padding: 10px 18px;
 	border: none;
@@ -87,55 +84,49 @@ tbody tr:hover {
 	cursor: pointer;
 	font-size: 15px;
 	font-weight: 500;
-	transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+	transition: all 0.2s;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 返回/查詢按鈕 (輔助色) */
-#btnBack, #btnGetAllOrderItems {
+#btnBack {
 	background-color: #e8e4dc;
 	color: #4a4a4a;
 }
 
-#btnBack:hover, #btnGetAllOrderItems:hover {
+#btnBack:hover {
 	background-color: #dcd5c7;
 	transform: translateY(-1px);
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-#btnBack:active, #btnGetAllOrderItems:active {
+#btnBack:active {
 	background-color: #dcd5c7;
 	transform: translateY(0);
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 新增訂單、查看取消訂單按鈕 (主要色 - 需自帶動態陰影) */
-#btnAddOrder, #btnCancelOrder {
+#btnBackActive {
 	background-color: #a07d58;
 	color: white;
 	font-weight: bold;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-#btnAddOrder:hover, #btnCancelOrder:hover {
+#btnBackActive:hover {
 	background-color: #926f4e;
 	transform: translateY(-2px);
 	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
 }
 
-#btnAddOrder:active, #btnCancelOrder:active {
+#btnBackActive:active {
 	background-color: #926f4e;
 	transform: translateY(0);
 	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
-/* ------------------ 表格內按鈕樣式 ------------------ */
-
-/* 查詢明細按鈕 (輔助色 - 青綠色) */
 .btn-detail {
 	background-color: #9fb89e;
 	color: #4a4a4a;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 	width: 100px;
 }
 
@@ -145,12 +136,6 @@ tbody tr:hover {
 	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
-.btn-detail:active {
-	transform: translateY(0);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* 修改訂單按鈕 (次要操作色 - 皮革棕色) */
 .btn-edit {
 	background-color: #a07d58;
 	color: white;
@@ -165,26 +150,6 @@ tbody tr:hover {
 }
 
 .btn-edit:active {
-	transform: translateY(0);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* 取消訂單按鈕 (警告色 - 土紅色) */
-.btn-cancel-ui {
-	background-color: #d89696;
-	color: white;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-	width: 100px;
-}
-
-.btn-cancel-ui:hover {
-	background-color: #c48383;
-	transform: translateY(-1px);
-	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-}
-
-.btn-cancel-ui:active {
-	background-color: #c48383;
 	transform: translateY(0);
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -238,23 +203,21 @@ tbody tr:hover {
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* 狀態標籤 */
 .status-cell {
-	white-space: nowrap; /* 強制文字在儲存格內保持在單行 */
-	min-width: 80px; /* 給予足夠的最小寬度，避免空間不足時仍換行 */
+	white-space: nowrap;
 }
 </style>
 </head>
-
 <body>
 	<div align="center">
-		<h2>活動訂單紀錄</h2>
+		<h2>已取消/退款訂單紀錄</h2>
 
 		<div class="top-action-group">
-			<button id="btnBack" class="btn">回到上一頁</button>
-			<button id="btnAddOrder" class="btn">新增訂單</button>
-			<button id="btnGetAllOrderItems" class="btn">查詢所有訂單明細</button>
-			<button id="btnCancelOrder" class="btn">查詢取消/退款訂單</button>
+			<button id="btnBack" class="btn">回到訂單系統</button>
+			<button id="btnBackActive" class="btn">查詢活動訂單</button>
 		</div>
+
 		<table>
 			<thead>
 				<tr>
@@ -271,25 +234,21 @@ tbody tr:hover {
 					<th>到貨時間</th>
 					<th>取貨時間</th>
 					<th>付款時間</th>
-					<th>訂單<br>建立時間
-					</th>
-					<th>訂單<br>完成時間
-					</th>
-					<th>訂單<br>修改時間
-					</th>
+					<th>訂單建立時間</th>
+					<th>最後修改時間</th>
 					<th>操作</th>
 				</tr>
 			</thead>
 			<tbody>
 				<%
 				List<Orders> orders = (List<Orders>) request.getAttribute("orders");
-				if (orders != null) {
+				if (orders != null && !orders.isEmpty()) {
 					for (Orders order : orders) {
 				%>
 				<tr>
 					<td><%=order.getOrderId()%></td>
 					<td><%=order.getUserBean().getUserId()%></td>
-					<td class="status-cell"><%=order.getTotalAmount()%></td>
+					<td class="status-cell">$<%=order.getTotalAmount()%></td>
 					<td class="status-cell"><%=order.getPaymentMethod()%></td>
 					<td class="status-cell"><%=order.getPaymentStatus()%></td>
 					<td class="status-cell"><%=order.getOrderStatus()%></td>
@@ -299,73 +258,55 @@ tbody tr:hover {
 					<td>
 						<%-- 寄件時間 --%> <%
  if (order.getShippedAt() != null) {
- %> <%=sdf.format(order.getShippedAt())%>
-						<%
-						}
-						%>
+ %> <%=sdf.format(order.getShippedAt())%> <%
+ }
+ %>
 					</td>
 					<td>
 						<%-- 到貨時間 --%> <%
  if (order.getDeliveredAt() != null) {
- %> <%=sdf.format(order.getDeliveredAt())%>
-						<%
-						}
-						%>
+ %> <%=sdf.format(order.getDeliveredAt())%> <%
+ }
+ %>
 					</td>
 					<td>
 						<%-- 取貨時間 --%> <%
  if (order.getReceivedAt() != null) {
- %> <%=sdf.format(order.getReceivedAt())%>
-						<%
-						}
-						%>
+ %> <%=sdf.format(order.getReceivedAt())%> <%
+ }
+ %>
 					</td>
 					<td>
 						<%-- 付款時間 --%> <%
  if (order.getPaidAt() != null) {
- %> <%=sdf.format(order.getPaidAt())%>
-						<%
-						}
-						%>
+ %> <%=sdf.format(order.getPaidAt())%> <%
+ }
+ %>
 					</td>
 					<td>
 						<%-- 訂單建立時間 --%> <%
  if (order.getCreatedAt() != null) {
- %> <%=sdf.format(order.getCreatedAt())%>
-						<%
-						}
-						%>
-					</td>
-					<td>
-						<%-- 訂單完成時間 --%> <%
- if (order.getCompletedAt() != null) {
- %> <%=sdf.format(order.getCompletedAt())%>
-						<%
-						}
-						%>
+ %> <%=sdf.format(order.getCreatedAt())%> <%
+ }
+ %>
 					</td>
 					<td>
 						<%-- 訂單修改時間 --%> <%
  if (order.getUpdatedAt() != null) {
- %> <%=sdf.format(order.getUpdatedAt())%>
-						<%
-						}
-						%>
+ %> <%=sdf.format(order.getUpdatedAt())%> <%
+ }
+ %>
 					</td>
 					<td>
 						<button class="btn btn-detail" data-id="<%=order.getOrderId()%>">查詢明細</button>
-						<br>
-						<button class="btn btn-edit btn-update"
-							data-id="<%=order.getOrderId()%>"
-							data-recipient="<%=order.getRecipientAt()%>"
-							data-address="<%=order.getAddress()%>"
-							data-phone="<%=order.getPhone()%>"
-							data-payment="<%=order.getPaymentMethod()%>"
-							data-status="<%=order.getOrderStatus()%>"
-							data-total="<%=order.getTotalAmount()%>">修改訂單</button>
-						<br>
-						<button class="btn btn-cancel-ui btn-cancel"
-							data-id="<%=order.getOrderId()%>">取消訂單</button>
+
+						<%-- 只有狀態是「已取消」才顯示還原按鈕 --%> <%
+ if ("已取消".equals(order.getOrderStatus())) {
+ %>
+						<button class="btn btn-edit btn-restore"
+							data-id="<%=order.getOrderId()%>">還原訂單</button> <%
+ }
+ %>
 					</td>
 				</tr>
 				<%
@@ -373,27 +314,25 @@ tbody tr:hover {
 				} else {
 				%>
 				<tr>
-					<td colspan="17" style="text-align: center;">目前沒有訂單。</td>
+					<td colspan="16" style="text-align: center; padding: 30px;">目前沒有任何歷史紀錄。</td>
 				</tr>
 				<%
 				}
 				%>
 			</tbody>
 		</table>
-
-		<div id="custom-modal" class="modal">
-			<div class="modal-content">
-				<div id="modal-content-icon" class="modal-icon"></div>
-				<p id="modal-content-text" class="modal-text"></p>
-				<div id="modal-buttons"></div>
-			</div>
+	</div>
+	<div id="custom-modal" class="modal">
+		<div class="modal-content">
+			<div id="modal-content-icon" class="modal-icon"></div>
+			<p id="modal-content-text" class="modal-text"></p>
+			<div id="modal-buttons"></div>
 		</div>
 	</div>
 
-
 	<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 	<script>
-		// 顯示客製化確認彈窗的函式
+		// 1. 確認是否還原
 		function showConfirmModal(message, confirmCallback) {
 			// 設定內容
 			$("#modal-content-icon").html('⚠'); // 警告圖標
@@ -402,78 +341,53 @@ tbody tr:hover {
 			// 設定按鈕
 			$("#modal-buttons")
 					.html(
-							'<button id="modal-btn-confirm" class="btn btn-cancel" style="margin-right: 10px;">確定</button>'
+							'<button id="modal-btn-confirm" class="btn" style="background-color: #a07d58; color: white; margin-right: 10px;">確定</button>'
 									+ '<button id="modal-btn-cancel" class="btn modal-btn-cancel">取消</button>');
 
 			// 顯示彈窗
 			$("#custom-modal").fadeIn();
 
-			// 绑定事件
+			// 綁定事件
 			$("#modal-btn-confirm").off('click').on('click', function() {
 				$("#custom-modal").fadeOut();
-				confirmCallback(true); // 執行確認回呼
+				confirmCallback(true);
 			});
 
 			$("#modal-btn-cancel").off('click').on('click', function() {
 				$("#custom-modal").fadeOut();
-				confirmCallback(false); // 執行取消回呼
+				confirmCallback(false);
 			});
 		}
 
 		$(function() {
+			// 回到上一頁 (CartAndOrder.jsp)
 			$("#btnBack").click(function() {
 				window.location.href = "order/CartAndOrder.jsp";
 			});
 
-			$("#btnAddOrder").click(function() {
-				window.location.href = "order/InsertOrder.jsp";
+			// 查詢活動訂單 (GetAllOrders)
+			$("#btnBackActive").click(function() {
+				window.location.href = "GetAllOrders";
 			});
 
-			$("#btnGetAllOrderItems").click(function() {
-				window.location.href = "GetAllOrderItems";
-			});
-		
-			$("#btnCancelOrder").click(function() {
-				window.location.href = "GetAllCancelOrders";
-			});
-
+			// 查詢取消訂單明細
 			$(".btn-detail").click(function() {
 				let id = $(this).data("id");
-				window.location.href = "GetOrder?id=" + id;
+				window.location.href = "GetCancelOrder?id=" + id;
 			});
 
-			$(".btn-update").click(
-					function() {
-						let id = $(this).data("id");
-						let recipient = $(this).data("recipient");
-						let address = $(this).data("address");
-						let phone = $(this).data("phone");
-						let payment = $(this).data("payment");
-						let status = $(this).data("status");
-						let total = $(this).data("total");
-
-						let url = "order/UpdateOrder.jsp?orderId=" + id
-								+ "&recipient=" + encodeURIComponent(recipient)
-								+ "&address=" + encodeURIComponent(address)
-								+ "&phone=" + encodeURIComponent(phone)
-								+ "&paymentMethod="
-								+ encodeURIComponent(payment) + "&orderStatus="
-								+ encodeURIComponent(status) + "&totalAmount="
-								+ total;
-						window.location.href = url;
-					});
-
-			$(".btn-cancel")
+			// 還原訂單
+			$(".btn-restore")
 					.click(
 							function() {
 								let id = $(this).data("id");
 
-								// 彈窗確認是否取消訂單
 								showConfirmModal(
-										'確定要取消這筆訂單嗎？',
+										'確定要將此訂單還原為活動訂單嗎？',
 										function(confirmed) {
 											if (confirmed) {
-												let form = $('<form action="CancelOrder" method="post">'
+												// 建立動態表單發送 POST 請求至 RestoreOrder Servlet
+												let form = $('<form action="RestoreOrder" method="post">'
 														+ '<input type="hidden" name="id" value="' + id + '">'
 														+ '</form>');
 												$('body').append(form);
@@ -483,7 +397,5 @@ tbody tr:hover {
 							});
 		});
 	</script>
-
 </body>
-
 </html>

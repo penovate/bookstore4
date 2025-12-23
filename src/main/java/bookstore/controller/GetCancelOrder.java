@@ -17,8 +17,8 @@ import bookstore.bean.Orders;
 import bookstore.dao.impl.OrderService;
 import bookstore.util.HibernateUtil;
 
-@WebServlet("/GetOrder")
-public class GetOrder extends HttpServlet {
+@WebServlet("/GetCancelOrder")
+public class GetCancelOrder extends HttpServlet {
     private static final long serialVersionUID = 1L;
    
 
@@ -54,7 +54,7 @@ public class GetOrder extends HttpServlet {
             
             // 3. 如果還是沒有 ID，則導向所有訂單列表
             if (orderIdStr == null || orderIdStr.isEmpty()) {
-                response.sendRedirect("GetAllOrders");
+                response.sendRedirect("GetAllCancelOrders");
                 return;
             }
 
@@ -64,7 +64,7 @@ public class GetOrder extends HttpServlet {
             
             if (order == null) {
                  // 找不到訂單，導向列表
-                 response.sendRedirect("GetAllOrders?error=OrderNotFound");
+                 response.sendRedirect("GetAllCancelOrders?error=OrderNotFound");
                  return;
             }
             
@@ -72,14 +72,14 @@ public class GetOrder extends HttpServlet {
 
             request.setAttribute("order", order);
             request.setAttribute("items", items);
-            request.getRequestDispatcher("/order/GetOrder.jsp").forward(request, response);
+            request.getRequestDispatcher("/order/GetCancelOrder.jsp").forward(request, response);
             
         } catch (NumberFormatException e) {
             // ID 格式錯誤
-            response.sendRedirect("GetAllOrders?error=InvalidIdFormat");
+            response.sendRedirect("GetAllCancelOrders?error=InvalidIdFormat");
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("GetAllOrders?error=ServerError");
+            response.sendRedirect("GetAllCancelOrders?error=ServerError");
         }
     }
 

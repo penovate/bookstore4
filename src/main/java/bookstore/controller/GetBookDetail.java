@@ -2,8 +2,9 @@ package bookstore.controller;
 
 import java.io.IOException;
 import bookstore.bean.BooksBean;
+import bookstore.dao.impl.OrderService;
 import bookstore.dao.impl.bookService;
-
+import bookstore.util.HibernateUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,11 +14,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+
 @WebServlet("/GetBookDetail")
 public class GetBookDetail extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private final bookService bookService = new bookService();
+	private final bookService bookService= new bookService();
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -45,6 +49,9 @@ public class GetBookDetail extends HttpServlet {
 			String bookId = bookIdStr.trim();
 
 			// *** 呼叫 Service 層，Service 內部會執行 Integer.valueOf()，可能拋出 NumberFormatException ***
+			SessionFactory factory = HibernateUtil.getSessionFactory();
+	        Session session = factory.getCurrentSession();
+	        
 			BooksBean book = bookService.selectBookByIdS(bookId);
 
 			if (book != null) {

@@ -28,13 +28,13 @@ public class ReviewBean implements Serializable {
 	// ===== FK → ManyToOne（關鍵）=====
 
 	// ✅ ManyToOne：同一個欄位做關聯，但設為「只讀」，避免重複 mapping
-//	@ManyToOne(fetch = FetchType.LAZY)
-//	@JoinColumn(name = "user_id", insertable = false, updatable = false)
-//	private UserBean user;
-////
-//	@ManyToOne(fetch = FetchType.LAZY)
-////	@JoinColumn(name = "book_id", insertable = false, updatable = false)
-//	private BooksBean book;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", insertable = false, updatable = false)
+	private UserBean user;
+//
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "book_id", insertable = false, updatable = false)
+	private BooksBean book;
 
 	@Column(name = "user_id", nullable = false)
 	private Integer userId;

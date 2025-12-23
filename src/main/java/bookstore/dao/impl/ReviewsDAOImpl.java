@@ -24,7 +24,8 @@ public class ReviewsDAOImpl implements ReviewDAO {
 
             session.beginTransaction();
 
-            reviews = session.createQuery("from ReviewBean", ReviewBean.class).getResultList();
+            String hql = "SELECT r FROM ReviewBean r JOIN FETCH r.user JOIN FETCH r.book";
+            reviews = session.createQuery(hql, ReviewBean.class).getResultList();
 
             session.getTransaction().commit();
 
@@ -50,8 +51,14 @@ public class ReviewsDAOImpl implements ReviewDAO {
             Session session = HibernateUtil.getSessionFactory().getCurrentSession();
 
             session.beginTransaction();
-
-            review = session.get(ReviewBean.class, reviewId);
+            
+            String hql = "SELECT r FROM ReviewBean r " +
+                    "JOIN FETCH r.user " +
+                    "JOIN FETCH r.book " +
+                    "WHERE r.reviewId = :id";
+            review = session.createQuery(hql, ReviewBean.class)
+                    .setParameter("id", reviewId)
+                    .uniqueResult();
 
             session.getTransaction().commit();
 

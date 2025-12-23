@@ -252,7 +252,7 @@
 			<tr>
 				<td><%=item.getOrderItemId()%></td>
 				<td><%=item.getOrders().getOrderId()%></td>
-				<td><%=item.getBookId()%></td>
+				<td><%=item.getBooksBean().getBookId()%></td>
 				<td><%=item.getPrice()%></td>
 				<td><%=item.getQuantity()%></td>
 				<td><%=item.getSubtotal()%></td>
@@ -260,7 +260,7 @@
 					<button class="btn btn-edit btn-update-item"
 						data-itemid="<%=item.getOrderItemId()%>"
 						data-orderid="<%=item.getOrders().getOrderId()%>"
-						data-bookid="<%=item.getBookId()%>"
+						data-bookid="<%=item.getBooksBean().getBookId()%>"
 						data-price="<%=item.getPrice()%>"
 						data-quantity="<%=item.getQuantity()%>">修改</button>
 

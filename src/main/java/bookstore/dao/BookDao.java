@@ -63,7 +63,7 @@ public class BookDao {
 
 //select by onShelf-----
 	public List<BooksBean> selectBooksByOnShelf(Boolean onShelf) {
-		
+
 		return null;
 	}
 
@@ -127,57 +127,33 @@ public class BookDao {
 	}
 
 	public BooksBean selectBookByName(String bookName) {
-		
+
 		return null;
 	}
 
 //insert books---------------------------
 	public BooksBean insertBooks(BooksBean booksBean) {
 		Session session = sessionFactory.getCurrentSession();
-	BooksBean bookInsert =booksBean;	
-	session.persist(booksBean);
-		
-		return bookInsert ;
+		BooksBean bookInsert = booksBean;
+		session.persist(booksBean);
+
+		return bookInsert;
 	}
 
 	// delete book by Id-----
-	public void deleteBooks(Integer bookId) {
-		String sql = "delete from books where book_id = ?";
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			preparedStatement.setInt(1, bookId);
-			preparedStatement.execute();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
+	public BooksBean deleteBooks(Integer bookId) {
+		BooksBean book = selectBooksById(bookId);
+		Session session = sessionFactory.getCurrentSession();
+		BooksBean bookdelete = selectBooksById(bookId);
+		session.remove(bookdelete);
+		return book;
 	}
 
 	// Update Book--------------
-	public BooksBean upDateBook(Integer bookid, String bookName, String author, String translator, Integer genre,
-			BigDecimal price, String isbn, Integer stock, String shortDesc, String press, Boolean onShelf) {
-		String sql = "update books set book_name=?,author=?,translator=?"
-				+ ",press=?,genre_id=?,price=?,isbn=?,stock=?,short_desc=?,on_shelf=? where book_id=?";
-		BooksBean bookupDate = new BooksBean();
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			preparedStatement.setString(1, bookName);
-			preparedStatement.setString(2, author);
-			preparedStatement.setString(3, translator);
-			preparedStatement.setString(4, press);
-			preparedStatement.setInt(5, genre);
-			preparedStatement.setBigDecimal(6, price);
-			preparedStatement.setString(7, isbn);
-			preparedStatement.setInt(8, stock);
-			preparedStatement.setString(9, shortDesc);
-			preparedStatement.setBoolean(10, onShelf);
-			preparedStatement.setInt(11, bookid);
-			preparedStatement.execute();
-			bookupDate = selectBookByName(bookName);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return bookupDate;
+	public BooksBean upDateBook(BooksBean booksBean) {
+		Session session = sessionFactory.getCurrentSession();
+		BooksBean bookUpdate = (BooksBean) session.merge(booksBean);
+		return bookUpdate;
 	}
 
 }

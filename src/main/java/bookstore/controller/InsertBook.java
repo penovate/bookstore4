@@ -32,39 +32,32 @@ public class InsertBook extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		GenreBean genreBean = new GenreBean();
-
-		String genreIdStr = request.getParameter("genre");
-		if (genreIdStr != null && !genreIdStr.isEmpty()) {
-			Integer genreId = Integer.parseInt(genreIdStr);
-			genreBean.setGenreId(genreId);
-		}
-
-
-		request.setCharacterEncoding("UTF-8");
 		BooksBean book = new BooksBean();
+		GenreBean genreBean = new GenreBean();
 		genreService genreService = new genreService();
-		List<GenreBean> genreList = genreService.getAllGenres();
+		Integer genreId = Integer.parseInt(request.getParameter("genre"));
+		genreBean.setGenreId(genreId);
+		String priceStr = request.getParameter("price");
+		BigDecimal price = new BigDecimal(priceStr);
+
 		book.setBookName(request.getParameter("bookName"));
 		book.setAuthor(request.getParameter("author"));
 		book.setTranslator(request.getParameter("translator"));
 		book.setGenreBean(genreBean);
-
-		String priceStr = request.getParameter("price");
-		if (priceStr != null && !priceStr.isEmpty()) {
-			BigDecimal price = new BigDecimal(priceStr);
+		book.setPress(request.getParameter("press"));
 		book.setPrice(price);
-		}
 		book.setIsbn(request.getParameter("isbn"));
 		book.setStock(Integer.parseInt(request.getParameter("stock")));
 		book.setShortDesc(request.getParameter("short_desc"));
-		book.setPress(request.getParameter("press"));
+		request.setCharacterEncoding("UTF-8");
+		List<GenreBean> genreList = genreService.getAllGenres();
 
 		bookService bookService = new bookService();
 		bookService.inserttBook(book);
 		request.setAttribute("bookInsert", book);
 		request.setAttribute("genreList", genreList);
 		request.getRequestDispatcher("/books/InsertSuccess.jsp").forward(request, response);
+
 	}
 
 }

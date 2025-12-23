@@ -80,6 +80,36 @@ public class BooksBean {
 		this.onShelf = onShelf;
 	}
 
+	public BooksBean(String bookName, String author, String translator, BigDecimal price, String isbn, Integer stock,
+			String shortDesc, String press, boolean onShelf, GenreBean genreBean) {
+		super();
+		this.bookName = bookName;
+		this.author = author;
+		this.translator = translator;
+		this.price = price;
+		this.isbn = isbn;
+		this.stock = stock;
+		this.shortDesc = shortDesc;
+		this.press = press;
+		this.onShelf = onShelf;
+		this.genreBean = genreBean;
+	}
+
+	public BooksBean(Integer bookId, String bookName, String author, String translator, BigDecimal price, String isbn,
+			Integer stock, String shortDesc, String press, GenreBean genreBean) {
+		super();
+		this.bookId = bookId;
+		this.bookName = bookName;
+		this.author = author;
+		this.translator = translator;
+		this.price = price;
+		this.isbn = isbn;
+		this.stock = stock;
+		this.shortDesc = shortDesc;
+		this.press = press;
+		this.genreBean = genreBean;
+	}
+
 	// --------getter/setter-------
 	public int getBookId() {
 		return bookId;

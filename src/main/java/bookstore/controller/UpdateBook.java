@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 import bookstore.bean.BooksBean;
@@ -23,7 +24,7 @@ public class UpdateBook extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		String bookid = request.getParameter("bookId");
+		Integer bookid = Integer.parseInt(request.getParameter("bookId"));
 		bookService bookService = new bookService();
 		genreService genreService = new genreService();
 		BooksBean book = bookService.selectBookByIdS(bookid);
@@ -35,24 +36,26 @@ public class UpdateBook extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		GenreBean genreBean = new GenreBean();
+		BooksBean book = new BooksBean();
 		genreService genreService = new genreService();
+		BigDecimal price = new BigDecimal(request.getParameter("price"));
+		Integer stock = Integer.parseInt(request.getParameter("stock"));
+		Integer genreId = Integer.parseInt(request.getParameter("genre"));
+		genreBean.setGenreId(genreId);
+
 		List<GenreBean> genresList = genreService.getAllGenres();
-		bookService bookService = new bookService();
-		String BookIdStr = request.getParameter("bookId");
-		String BookNameStr = request.getParameter("bookName");
-		String authorStr = request.getParameter("author");
-		String translatorStr = request.getParameter("translator");
-		String genreStr = request.getParameter("genre");
-		String pressStr = request.getParameter("press");
-		String priceStr = request.getParameter("price");
-		String isbnStr = request.getParameter("isbn");
-		String stockStr = request.getParameter("stock");
-		String shortDescStr = request.getParameter("short_desc");
-		String onShelfStr = request.getParameter("on_shelf");
-		BooksBean bookUpdate = new BooksBean();
-		bookUpdate = bookService.upDateBook(BookIdStr, BookNameStr, authorStr, translatorStr, genreStr, pressStr,
-				priceStr, isbnStr, stockStr, shortDescStr, onShelfStr);
-		request.setAttribute("bookUpdate", bookUpdate);
+		book.setBookName(request.getParameter("bookName"));
+		book.setAuthor(request.getParameter("author"));
+		book.setTranslator(request.getParameter("translator"));
+		book.setPrice(price);
+		book.setGenreBean(genreBean);
+		book.setIsbn(request.getParameter("isbn"));
+		book.setStock(stock);
+		book.setShortDesc(request.getParameter("short_desc"));
+		Boolean isBoolean = Boolean.parseBoolean(request.getParameter("on_shelf"));
+		book.setOnShelf(isBoolean);
+		request.setAttribute("bookUpdate", book);
 		request.setAttribute("genresList", genresList);
 		request.getRequestDispatcher("/books/UpdateSuccess.jsp").forward(request, response);
 	}

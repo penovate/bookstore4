@@ -5,7 +5,7 @@
 	pageEncoding="UTF-8"%>
 <%
 BooksBean book = (BooksBean) request.getAttribute("book");
-List<GenreBean> genresList = (List<GenreBean>) request.getAttribute("genresList");
+List<GenreBean> genreList = (List<GenreBean>) request.getAttribute("genresList");
 
 if (book == null) {
 	response.sendRedirect("BookList"); // 或者其他錯誤處理
@@ -21,39 +21,39 @@ if (book == null) {
 <style>
 /* ------------------ 基礎與頁面佈局 ------------------ */
 body {
-    font-family: '微軟正黑體', 'Arial', sans-serif;
-    background-color: #fcf8f0; 
-    color: #4a4a4a; 
-    margin: 0;
-    padding: 40px 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; 
-    min-height: 100vh;
+	font-family: '微軟正黑體', 'Arial', sans-serif;
+	background-color: #fcf8f0;
+	color: #4a4a4a;
+	margin: 0;
+	padding: 40px 0;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	min-height: 100vh;
 }
 
 /* 中央白色卡片 */
 .card {
-    width: 90%;
-    max-width: 850px; /* 擴大卡片寬度以容納表格 */
-    padding: 35px 45px;
-    box-sizing: border-box;
-    border: 1px solid #dcd5c7;
-    border-radius: 6px;
-    background-color: #ffffff;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    text-align: center;
+	width: 90%;
+	max-width: 850px; /* 擴大卡片寬度以容納表格 */
+	padding: 35px 45px;
+	box-sizing: border-box;
+	border: 1px solid #dcd5c7;
+	border-radius: 6px;
+	background-color: #ffffff;
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+	text-align: center;
 }
 
 /* 標題 */
 h2 {
-    color: #7b5e47; 
-    font-size: 26px;
-    margin-top: 0;
-    margin-bottom: 30px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #e0d9c9;
-    font-weight: bold;
+	color: #7b5e47;
+	font-size: 26px;
+	margin-top: 0;
+	margin-bottom: 30px;
+	padding-bottom: 15px;
+	border-bottom: 1px solid #e0d9c9;
+	font-weight: bold;
 }
 
 /* ------------------ 表格與欄位樣式 ------------------ */
@@ -61,7 +61,7 @@ table {
 	width: 100%;
 	border-collapse: collapse;
 	font-size: 15px;
-    margin-bottom: 20px;
+	margin-bottom: 20px;
 }
 
 td {
@@ -73,18 +73,17 @@ td {
 
 /* 讓輸入欄位靠左對齊 */
 td:nth-child(2) {
-    text-align: left;
+	text-align: left;
 }
-
 
 /* 輸入框與下拉式選單共用樣式 */
 td input, td select {
 	width: 100%;
 	padding: 10px 12px;
 	font-size: 15px;
-	border: 1px solid #d0c8b9; 
+	border: 1px solid #d0c8b9;
 	border-radius: 4px;
-	background: #fefcf9; 
+	background: #fefcf9;
 	transition: 0.15s;
 	box-sizing: border-box;
 	height: 40px;
@@ -146,22 +145,22 @@ td input:focus, td select:focus {
 
 /* 這裡可以加上一個取消按鈕，使用輔助色 (若不需要，請忽略) */
 .btn-back {
-    background-color: #e8e4dc; 
-    color: #4a4a4a;
-    font-weight: normal;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+	background-color: #e8e4dc;
+	color: #4a4a4a;
+	font-weight: normal;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-back:hover {
-    background-color: #dcd5c7;
-    transform: translateY(-1px); 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+	background-color: #dcd5c7;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .btn-back:active {
-    background-color: #dcd5c7;
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	background-color: #dcd5c7;
+	transform: translateY(0);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 </style>
 
@@ -169,7 +168,8 @@ td input:focus, td select:focus {
 <body>
 
 	<div class="card">
-		<h2>修改書籍資料：<%=book.getBookName()%></h2>
+		<h2>
+			修改書籍資料：<%=book.getBookName()%></h2>
 		<form method="post" action="UpdateBook">
 			<table>
 
@@ -177,59 +177,69 @@ td input:focus, td select:focus {
 
 				<tr>
 					<td>書籍編號 (ID):</td>
-					<td><input type="text" value="<%=book.getBookId()%>" disabled class="read-only"></td>
+					<td><input type="text" value="<%=book.getBookId()%>" disabled
+						class="read-only"></td>
 				</tr>
 
 				<tr>
 					<td>書籍名稱:</td>
-					<td><input type="text" name="bookName"value="<%=book.getBookName()%>" required></td>
+					<td><input type="text" name="bookName"
+						value="<%=book.getBookName()%>" required></td>
 				</tr>
 				<tr>
 					<td>作者:</td>
-					<td><input type="text" name="author" value="<%=book.getAuthor()%>" required></td>
+					<td><input type="text" name="author"
+						value="<%=book.getAuthor()%>" required></td>
 				</tr>
 				<tr>
 					<td>譯者:</td>
-					<td><input type="text" name="translator" value="<%=book.getTranslator() == null ? "" : book.getTranslator()%>"></td>
+					<td><input type="text" name="translator"
+						value="<%=book.getTranslator() == null ? "" : book.getTranslator()%>"></td>
 				</tr>
 				<tr>
 					<td>類型:</td>
 					<td><select name="genre" required>
 							<option value="" disabled>-- 請選擇書籍類型 --</option>
 							<%
-							if (genresList != null) {
-								for (GenreBean genre : genresList) {
-									// 取得當前書籍的類型 ID
-									Integer currentGenreId = book.getGenre();
-									// 判斷是否為當前書籍的類型，若是則設定 selected 屬性
-									String selected = (genre.getGenreId().equals(currentGenreId)) ? "selected" : "";
+							if (genreList != null && !genreList.isEmpty()) {
+								for (GenreBean genre : genreList) {
 							%>
-							<option value="<%=genre.getGenreId()%>" <%=selected%>><%=genre.getGenreName()%></option>
+							<option value="<%=genre.getGenreId()%>"><%=genre.getGenreName()%></option>
 							<%
 							}
+							} else {
+							%>
+							<option value="" disabled>無可用類型資料</option>
+							<%
 							}
 							%>
 					</select></td>
 				</tr>
 				<tr>
 					<td>出版社:</td>
-					<td><input type="text" name="press"	value="<%=book.getPress()%>" required></td>
+					<td><input type="text" name="press"
+						value="<%=book.getPress()%>" required></td>
 				</tr>
 				<tr>
 					<td>價錢:</td>
-					<td><input type="text" name="price"	value="<%=book.getPrice()%>" required pattern="[0-9]+(\.[0-9]{1,2})?"></td>
+					<td><input type="text" name="price"
+						value="<%=book.getPrice()%>" required
+						pattern="[0-9]+(\.[0-9]{1,2})?"></td>
 				</tr>
 				<tr>
 					<td>ISBN:</td>
-					<td><input type="text" name="isbn" value="<%=book.getIsbn()%>" required></td>
+					<td><input type="text" name="isbn" value="<%=book.getIsbn()%>"
+						required></td>
 				</tr>
 				<tr>
 					<td>庫存:</td>
-					<td><input type="text" name="stock" value="<%=book.getStock()%>" required pattern="[0-9]+"></td>
+					<td><input type="text" name="stock"
+						value="<%=book.getStock()%>" required pattern="[0-9]+"></td>
 				</tr>
 				<tr>
 					<td>簡述:</td>
-					<td><input type="text" name="short_desc" value="<%=book.getShortDesc() == null ? "" : book.getShortDesc()%>"></td>
+					<td><input type="text" name="short_desc"
+						value="<%=book.getShortDesc() == null ? "" : book.getShortDesc()%>"></td>
 				</tr>
 				<tr>
 					<td>上下架狀態:</td>
@@ -244,7 +254,8 @@ td input:focus, td select:focus {
 
 			<div class="btn-container">
 				<input type="submit" class="btn btn-submit" value="確認修改">
-				<button type="button" class="btn btn-back" onclick="window.location.href='GetAllBooks'">取消並返回列表</button>
+				<button type="button" class="btn btn-back"
+					onclick="window.location.href='GetAllBooks'">取消並返回列表</button>
 			</div>
 		</form>
 	</div>

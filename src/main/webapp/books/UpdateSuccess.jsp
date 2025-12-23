@@ -222,7 +222,7 @@ input[type="submit"]:active {
                 <td class="field-label">類型：</td>
                 <td class="field-value">
                     <input type="text" class="readonly-input" disabled 
-                           value="<%=bookUpdate.getGenreName()%>">
+                           value="${bookUpdate.genreBean.genreName}">
                 </td>
             </tr>
             <tr>

@@ -27,10 +27,12 @@ public class DeleteBook extends HttpServlet {
 		if (checked != null && checked.length > 0) {
 			bookService bookService = new bookService();
 			for (String bookIdStr : checked) {
-				bookService.deleteBook(bookIdStr);
+				Integer bookdelete = Integer.parseInt(bookIdStr);
+				bookService.deleteBook(bookdelete); 
 			}
 		} else {
-			String bookId = request.getParameter("bookId");
+			Integer bookId = Integer.parseInt(request.getParameter("bookId"));
+			System.out.println("這裡接到的bookId是:"+bookId);
 			bookService bookService = new bookService();
 			bookService.deleteBook(bookId);
 		}

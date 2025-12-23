@@ -146,7 +146,7 @@ select[disabled] {
             </tr>
             <tr>
                 <td><label for="bookid">書本編號:</label></td>
-                <td><input type="text" id="bookid" name="book_id" value="<%= review.getBookId() %>" disabled></td>
+                <td><input type="text" id="bookid" name="book_id" value="<%= (review.getBook() != null) ? review.getBook().getBookId() : review.getBookId() %>" disabled></td>
             </tr>
             
             <tr>

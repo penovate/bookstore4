@@ -132,7 +132,7 @@ DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 <tr><td>會員名稱:
 	<td><input type="text" disabled value="<%= review.getUserName() %>">
 <tr><td>書本編號:
-	<td><input type="text" disabled value="<%= review.getBookId() %>">
+	<td><input type="text" disabled value="<%= (review.getBook() != null) ? review.getBook().getBookId() : review.getBookId() %>">
 <tr><td>書本名稱:
 	<td><input type="text" disabled value="<%= review.getBookName() %>">
 <tr><td>評分:

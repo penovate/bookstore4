@@ -24,7 +24,7 @@ public class ReviewBean implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "review_id")
-	private Integer reviewId;
+	private Integer reviewId; 
 
 	// ===== FK → ManyToOne（關鍵）=====
 
@@ -34,14 +34,14 @@ public class ReviewBean implements Serializable {
 	private UserBean user;
 //
 	@ManyToOne(fetch = FetchType.LAZY )
-	@JoinColumn(name = "book_id",nullable = false)
+	@JoinColumn(name = "book_id", nullable = false)
 	private BooksBean book;
 
 	@Column(name = "user_id", nullable = false)
 	private Integer userId;
 
-//	@Column(name = "book_id", nullable = false)
-//	private Integer bookId;
+	@Column(name = "book_id", insertable = false, updatable = false)
+	private Integer bookId;
 
 	// ===== 其他欄位 =====
 
@@ -78,13 +78,16 @@ public class ReviewBean implements Serializable {
 		this.userId = userId;
 	}
 
-//	public Integer getBookId() {
-//		return bookId;
-//	}
-//
-//	public void setBookId(Integer bookId) {
-//		this.bookId = bookId;
-//	}
+	public Integer getBookId() {
+		return bookId;
+	}
+
+	public void setBookId(Integer bookId) {
+		if (this.book == null) {
+			this.book = new BooksBean();
+		}
+		this.book.setBookId(bookId);
+	}
 
 	public UserBean getUser() {
 		return user;

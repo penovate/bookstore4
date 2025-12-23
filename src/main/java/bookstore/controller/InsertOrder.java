@@ -8,6 +8,7 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
+import bookstore.bean.BooksBean;
 import bookstore.bean.OrderItem;
 import bookstore.bean.Orders;
 import bookstore.dao.impl.OrderService;
@@ -77,12 +78,20 @@ public class InsertOrder extends HttpServlet {
 
             if (bookIds != null) {
                 for (int i = 0; i < bookIds.length; i++) {
+                    
                     if (bookIds[i] != null && !bookIds[i].isEmpty()) {
                         OrderItem item = new OrderItem();
-                        item.setBookId(Integer.parseInt(bookIds[i]));
+
+                        BooksBean book = new BooksBean();
+                        book.setBookId(Integer.parseInt(bookIds[i]));
+                    
+                        item.setBooksBean(book); 
+
                         item.setQuantity(Integer.parseInt(quantities[i]));
                         item.setPrice(new BigDecimal(prices[i]));
+                       
                         item.setSubtotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
+                        
                         items.add(item);
                     }
                 }

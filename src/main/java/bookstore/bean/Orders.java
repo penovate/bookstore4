@@ -63,7 +63,7 @@ public class Orders implements Serializable {
 	private Timestamp receivedAt;
 
 	@Column(name = "CREATED_AT")
-	private Timestamp createdAt;
+	private Timestamp createdAt = new Timestamp(System.currentTimeMillis());;
 
 	@Column(name = "PAID_AT")
 	private Timestamp paidAt;
@@ -72,7 +72,7 @@ public class Orders implements Serializable {
 	private Timestamp completedAt;
 
 	@Column(name = "UPDATED_AT")
-	private Timestamp updatedAt;
+	private Timestamp updatedAt = new Timestamp(System.currentTimeMillis());;
 
 	@OneToMany(mappedBy = "orders", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<OrderItem> items = new LinkedList<OrderItem>();

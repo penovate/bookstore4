@@ -15,6 +15,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 
 import bookstore.bean.BooksBean;
+import bookstore.bean.GenreBean;
 import bookstore.bean.OrderItem;
 import bookstore.bean.ReviewBean;
 import bookstore.util.DBUtil;
@@ -46,6 +47,18 @@ public class BookDao {
 			BooksBean book = session.find(BooksBean.class, bookId);
 			return book;
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+//select genre by Id--------------------
+	public GenreBean selectGenreById(Integer genreId) {
+		Session session = sessionFactory.getCurrentSession();
+		try {
+			GenreBean genre = session.find(GenreBean.class, genreId);
+			return genre;
+		} catch (Exception e) {
+
 			e.printStackTrace();
 		}
 		return null;

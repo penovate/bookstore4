@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import bookstore.bean.BooksBean;
+import bookstore.bean.GenreBean;
 import bookstore.dao.BookDao;
 
 public class bookService {
@@ -38,7 +39,7 @@ public class bookService {
 
 	// ------insertBook-----------
 	public BooksBean inserttBook(BooksBean booksBean) {
-		BooksBean bookInsert = booksBean;
+		BooksBean bookInsert = 
 		bookDao.insertBooks(booksBean);
 
 		/*
@@ -60,14 +61,19 @@ public class bookService {
 
 	// UpDate Book-----------------
 	public BooksBean upDateBook(BooksBean booksBean) {
-		BooksBean beanUpdate = booksBean;
-		bookDao.upDateBook(booksBean);
+		BooksBean beanUpdate = bookDao.upDateBook(booksBean);
 		return beanUpdate;
 	}
 
 	// delete book-----------------
 	public void deleteBook(Integer bookIdStr) {
 
+	}
+
+	// select genre
+	public GenreBean selectGenreById(Integer genreId) {
+		GenreBean genreBean = bookDao.selectGenreById(genreId);
+		return genreBean;
 	}
 
 	public boolean isbnCheck(String isbnStr) {

@@ -38,13 +38,15 @@ public class UpdateBook extends HttpServlet {
 			throws ServletException, IOException {
 		GenreBean genreBean = new GenreBean();
 		BooksBean book = new BooksBean();
+		bookService bookService = new bookService();
 		genreService genreService = new genreService();
+		Integer bookId = Integer.parseInt(request.getParameter("bookId"));
 		BigDecimal price = new BigDecimal(request.getParameter("price"));
 		Integer stock = Integer.parseInt(request.getParameter("stock"));
 		Integer genreId = Integer.parseInt(request.getParameter("genre"));
-		genreBean.setGenreId(genreId);
-
+		genreBean = genreService.selectGenreById(genreId);
 		List<GenreBean> genresList = genreService.getAllGenres();
+		book.setBookId(bookId);
 		book.setBookName(request.getParameter("bookName"));
 		book.setAuthor(request.getParameter("author"));
 		book.setTranslator(request.getParameter("translator"));
@@ -53,9 +55,11 @@ public class UpdateBook extends HttpServlet {
 		book.setIsbn(request.getParameter("isbn"));
 		book.setStock(stock);
 		book.setShortDesc(request.getParameter("short_desc"));
+		book.setPress(request.getParameter("press"));
 		Boolean isBoolean = Boolean.parseBoolean(request.getParameter("on_shelf"));
 		book.setOnShelf(isBoolean);
-		request.setAttribute("bookUpdate", book);
+		BooksBean booksBean = bookService.upDateBook(book);
+		request.setAttribute("bookUpdate", booksBean);
 		request.setAttribute("genresList", genresList);
 		request.getRequestDispatcher("/books/UpdateSuccess.jsp").forward(request, response);
 	}

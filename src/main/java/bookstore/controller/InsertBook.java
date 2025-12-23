@@ -35,8 +35,10 @@ public class InsertBook extends HttpServlet {
 		BooksBean book = new BooksBean();
 		GenreBean genreBean = new GenreBean();
 		genreService genreService = new genreService();
+
 		Integer genreId = Integer.parseInt(request.getParameter("genre"));
-		genreBean.setGenreId(genreId);
+		genreBean = genreService.selectGenreById(genreId);
+
 		String priceStr = request.getParameter("price");
 		BigDecimal price = new BigDecimal(priceStr);
 

@@ -139,7 +139,7 @@ button {
 
 	<br>
 	<br>
-	<a href="../users/home.html"><button class="back-button">返回首頁</button></a>
+	<a href="../users/home.jsp"><button class="back-button">返回首頁</button></a>
 	</div>
 </body>
 

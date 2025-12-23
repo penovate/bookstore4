@@ -39,8 +39,7 @@ public class BookDao {
 		return null;
 	}
 
-//select books by Id--------------------
-
+	// select books by Id--------------------
 	public BooksBean selectBooksById(Integer bookId) {
 		Session session = sessionFactory.getCurrentSession();
 		try {
@@ -51,7 +50,8 @@ public class BookDao {
 		}
 		return null;
 	}
-//select genre by Id--------------------
+
+	// select genre by Id--------------------
 	public GenreBean selectGenreById(Integer genreId) {
 		Session session = sessionFactory.getCurrentSession();
 		try {
@@ -64,23 +64,21 @@ public class BookDao {
 		return null;
 	}
 
-//select books by genres
+	// select books by genres
 	public List<BooksBean> selectBooksByGenres(Integer genres) {
 		return null;
 	}
 
-//select by isbn------
+	// select by isbn------
 	public BooksBean selectBooksByIsbn(String isbn) {
 		return null;
 	}
 
-//select by onShelf-----
+	// select by onShelf-----
 	public List<BooksBean> selectBooksByOnShelf(Boolean onShelf) {
 
 		return null;
 	}
-
-// select by BookName--------------------
 
 	// delete驗證，若評價有該書內容不可將書籍刪除
 	public Boolean selectReviewByBookId(String bookId) {
@@ -144,7 +142,7 @@ public class BookDao {
 		return null;
 	}
 
-//insert books---------------------------
+	// insert books---------------------------
 	public BooksBean insertBooks(BooksBean booksBean) {
 		Session session = sessionFactory.getCurrentSession();
 		BooksBean bookInsert = booksBean;

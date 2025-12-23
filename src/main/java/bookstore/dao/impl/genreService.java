@@ -26,4 +26,5 @@ public class genreService {
 		GenreBean genreBean = bookDao.selectGenreById(genreId);
 		return genreBean;
 	}
+	
 }

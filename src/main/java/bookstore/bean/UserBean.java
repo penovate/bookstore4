@@ -59,8 +59,8 @@ public class UserBean implements java.io.Serializable {
 	@Column(name = "updated_at", insertable = false, updatable = false)
 	private Date updatedAt;
 
-//	@OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//	private List<ReviewBean> reviews = new ArrayList<>();
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<ReviewBean> reviews = new ArrayList<>();
 //
 	@OneToMany(mappedBy = "userBean", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Orders> orders = new ArrayList<>();
@@ -135,13 +135,13 @@ public class UserBean implements java.io.Serializable {
 		return updatedAt;
 	}
 
-//	public List<ReviewBean> getReviews() {
-//		return reviews;
-//	}
-//
-//	public List<Orders> getOrders() {
-//		return orders;
-//	}
+	public List<ReviewBean> getReviews() {
+		return reviews;
+	}
+
+	public List<Orders> getOrders() {
+		return orders;
+	}
 //
 //	public List<Cart> getCarts() {
 //		return carts;
@@ -211,13 +211,13 @@ public class UserBean implements java.io.Serializable {
 		this.updatedAt = updatedAt;
 	}
 
-//	public void setReviews(List<ReviewBean> reviews) {
-//		this.reviews = reviews;
-//	}
-//
-//	public void setOrders(List<Orders> orders) {
-//		this.orders = orders;
-//	}
+	public void setReviews(List<ReviewBean> reviews) {
+		this.reviews = reviews;
+	}
+
+	public void setOrders(List<Orders> orders) {
+		this.orders = orders;
+	}
 //
 //	public void setCarts(List<Cart> carts) {
 //		this.carts = carts;

@@ -204,11 +204,11 @@ a button:active {
                 <td><label for="rating">評分:</label></td>
                 <td>
                     <select id="rating" name="rating">
-                        <option value="1" ${review.rating eq '1' ? 'selected' : ''}>1</option>
-                        <option value="2" ${review.rating eq '2' ? 'selected' : ''}>2</option>
-                        <option value="3" ${review.rating eq '3' ? 'selected' : ''}>3</option>
-                        <option value="4" ${review.rating eq '4' ? 'selected' : ''}>4</option>
-                        <option value="5" ${review.rating eq '5' ? 'selected' : ''}>5</option>
+                        <option value="1" ${review.rating == 1 ? 'selected' : ''}>1</option>
+                        <option value="2" ${review.rating == 2 ? 'selected' : ''}>2</option>
+                        <option value="3" ${review.rating == 3 ? 'selected' : ''}>3</option>
+                        <option value="4" ${review.rating == 4 ? 'selected' : ''}>4</option>
+                        <option value="5" ${review.rating == 5 ? 'selected' : ''}>5</option>
                     </select>
                 </td>
             </tr>

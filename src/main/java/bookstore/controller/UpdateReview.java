@@ -15,15 +15,16 @@ import bookstore.dao.impl.ReviewsDAOImpl;
 @WebServlet("/UpdateReview")
 public class UpdateReview extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+	// 顯示更新頁面   
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		request.setCharacterEncoding("UTF-8");
-		String reviewId = request.getParameter("review_id");
-		if (reviewId == null || reviewId.isEmpty()) {
+		String reviewIdStr = request.getParameter("review_id");
+		if (reviewIdStr == null || reviewIdStr.isEmpty()) {
 			response.sendRedirect(request.getContextPath() + "/GetAllReviews?error=缺少評價ID");
 			return;
 		}
 
+		Integer reviewId = Integer.valueOf(reviewIdStr);
 		ReviewsDAOImpl dao = new ReviewsDAOImpl();
 		ReviewBean review = dao.selectReviewById(reviewId);
 		if (review != null) {
@@ -35,17 +36,18 @@ public class UpdateReview extends HttpServlet {
 		
 	}
 
+	 // 處理更新
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		request.setCharacterEncoding("UTF-8");
         String message = "";
         
-        String reviewId = request.getParameter("review_id");
-        String userId = request.getParameter("user_id"); 
-        String bookId = request.getParameter("book_id");
-        String rating = request.getParameter("rating");
+        String reviewIdStr = request.getParameter("review_id");
+        String userIdStr = request.getParameter("user_id"); 
+        String bookIdStr = request.getParameter("book_id");
+        String ratingStr = request.getParameter("rating");
         String comment = request.getParameter("comment");
         
-        if (reviewId == null || reviewId.isEmpty()) {
+        if (reviewIdStr == null || reviewIdStr.isEmpty()) {
             message = "更新失敗！缺少評價ID！";
             response.sendRedirect(request.getContextPath() + "/GetAllReviews?msg=" + URLEncoder.encode(message, "UTF-8"));
             return;
@@ -54,38 +56,48 @@ public class UpdateReview extends HttpServlet {
         if (comment == null || comment.trim().isEmpty()) {
             message = "更新失敗！評論內容不能為空白！";
             response.sendRedirect(request.getContextPath() 
-                    + "/UpdateReview?review_id=" + reviewId 
+                    + "/UpdateReview?review_id=" + reviewIdStr 
                     + "&error=" + URLEncoder.encode(message, "UTF-8"));
             return;
         }
 
-        int rate = 0;
+     // === String → Integer（Servlet 的責任）===
+        Integer reviewId;
+        Integer userId;
+        Integer bookId;
+        Integer rating;
+        
         try {
-            rate = Integer.parseInt(rating);
-            if (rate < 1 || rate > 5) {
-                throw new Exception();
+        		reviewId = Integer.valueOf(reviewIdStr);
+            userId   = Integer.valueOf(userIdStr);
+            bookId   = Integer.valueOf(bookIdStr);
+            rating   = Integer.valueOf(ratingStr);
+
+            if (rating < 1 || rating > 5) {
+                throw new IllegalArgumentException();
             }
         } catch (Exception e) {
             message = "更新失敗！評分必須是 1~5 的數字！";
             response.sendRedirect(request.getContextPath() 
-                    + "/UpdateReview?review_id=" + reviewId
+                    + "/UpdateReview?review_id=" + reviewIdStr
                     + "&error=" + URLEncoder.encode(message, "UTF-8"));
             return;
         }
 
+        // === 組 Bean ===
         ReviewBean review = new ReviewBean();
         review.setReviewId(reviewId);
         review.setUserId(userId);
         review.setBookId(bookId);
         review.setRating(rating);
         review.setComment(comment);
+        // createdAt 不動（更新不該改建立時間）
         
         ReviewsDAOImpl dao = new ReviewsDAOImpl();
-        int result = 0;
+        int result = dao.updateReview(review);
 
         try {
-            result = dao.updateReview(review);
-            if (result > 0) {
+        	if (result > 0) {
                 message = "評價更新成功！";
             } else {
                 message = "更新失敗！找不到該評價或資料未變更！";

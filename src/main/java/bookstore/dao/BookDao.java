@@ -91,11 +91,11 @@ public class BookDao {
 			stmt.setString(1, bookId);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
-				review.setReviewId(rs.getString("review_id"));
-				review.setUserId(rs.getString("user_id"));
-				review.setRating(rs.getString("rating"));
+				review.setReviewId(rs.getInt("review_id"));
+				review.setUserId(rs.getInt("user_id"));
+				review.setRating(rs.getInt("rating"));
 				review.setComment(rs.getString("comment"));
-				review.setCreatedAt(rs.getString("created_at"));
+				review.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
 				if (review != null) {
 					reviewCheck = true;
 				} else

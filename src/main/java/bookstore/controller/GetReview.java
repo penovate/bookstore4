@@ -16,7 +16,8 @@ public class GetReview extends HttpServlet {
        
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String reviewId = request.getParameter("reviewId");
+		String reviewIdStr = request.getParameter("reviewId");
+		Integer reviewId = Integer.valueOf(reviewIdStr);
 		ReviewsDAOImpl dao = new ReviewsDAOImpl();
 		ReviewBean review = dao.selectReviewById(reviewId);
 		request.setAttribute("review", review);

@@ -109,33 +109,33 @@ public class BookDao {
 	}
 
 	// delete驗證，若訂單有該書，不可將書籍刪除
-	public Boolean selectOrderItemByBookId(String bookId) {
-		Integer bookId1 = Integer.valueOf(bookId);
-		Boolean orderItemCheck = false;
-		String sql = "select * from order_item where book_id = ?";
-		OrderItem orderItem = new OrderItem();
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			preparedStatement.setInt(1, bookId1);
-			ResultSet resultSet = preparedStatement.executeQuery();
-			if (resultSet.next()) {
-				orderItem.setOrderItemId(resultSet.getInt("order_item_id"));
-				orderItem.setOrderId(resultSet.getInt("order_id"));
-				orderItem.setQuantity(resultSet.getInt("quantity"));
-				orderItem.setPrice(resultSet.getBigDecimal("price"));
-				orderItem.setSubtotal(resultSet.getBigDecimal("subtotal"));
-				orderItem.setBookId(resultSet.getInt("book_id"));
-				if (orderItem != null) {
-					orderItemCheck = true;
-				} else {
-					orderItemCheck = false;
-				}
-			}
-		} catch (SQLException e) {
-		}
-		System.out.println(orderItem);
-		return orderItemCheck;
-	}
+//	public Boolean selectOrderItemByBookId(String bookId) {
+//		Integer bookId1 = Integer.valueOf(bookId);
+//		Boolean orderItemCheck = false;
+//		String sql = "select * from order_item where book_id = ?";
+//		OrderItem orderItem = new OrderItem();
+//		try (Connection connection = DBUtil.getConnection();
+//				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+//			preparedStatement.setInt(1, bookId1);
+//			ResultSet resultSet = preparedStatement.executeQuery();
+//			if (resultSet.next()) {
+//				orderItem.setOrderItemId(resultSet.getInt("order_item_id"));
+//				orderItem.setOrderId(resultSet.getInt("order_id"));
+//				orderItem.setQuantity(resultSet.getInt("quantity"));
+//				orderItem.setPrice(resultSet.getBigDecimal("price"));
+//				orderItem.setSubtotal(resultSet.getBigDecimal("subtotal"));
+//				orderItem.setBookId(resultSet.getInt("book_id"));
+//				if (orderItem != null) {
+//					orderItemCheck = true;
+//				} else {
+//					orderItemCheck = false;
+//				}
+//			}
+//		} catch (SQLException e) {
+//		}
+//		System.out.println(orderItem);
+//		return orderItemCheck;
+//	}
 
 	public BooksBean selectBookByName(String bookName) {
 

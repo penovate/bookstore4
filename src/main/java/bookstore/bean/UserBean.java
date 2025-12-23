@@ -1,20 +1,20 @@
 package bookstore.bean;
 
-//import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.Date;
-//import java.util.List;
+import java.util.List;
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-//import jakarta.persistence.CascadeType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-//import jakarta.persistence.FetchType;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-//import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -62,9 +62,9 @@ public class UserBean implements java.io.Serializable {
 //	@OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 //	private List<ReviewBean> reviews = new ArrayList<>();
 //
-//	@OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//	private List<Orders> orders = new ArrayList<>();
-//
+	@OneToMany(mappedBy = "userBean", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<Orders> orders = new ArrayList<>();
+
 //	@OneToMany(mappedBy = "userId", cascade = CascadeType.ALL)
 //	private List<Cart> carts = new ArrayList<>();
 

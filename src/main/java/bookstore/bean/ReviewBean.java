@@ -3,6 +3,7 @@ package bookstore.bean;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,15 +33,15 @@ public class ReviewBean implements Serializable {
 	@JoinColumn(name = "user_id", insertable = false, updatable = false)
 	private UserBean user;
 //
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "book_id", insertable = false, updatable = false)
+	@ManyToOne(fetch = FetchType.LAZY )
+	@JoinColumn(name = "book_id",nullable = false)
 	private BooksBean book;
 
 	@Column(name = "user_id", nullable = false)
 	private Integer userId;
 
-	@Column(name = "book_id", nullable = false)
-	private Integer bookId;
+//	@Column(name = "book_id", nullable = false)
+//	private Integer bookId;
 
 	// ===== 其他欄位 =====
 
@@ -77,13 +78,13 @@ public class ReviewBean implements Serializable {
 		this.userId = userId;
 	}
 
-	public Integer getBookId() {
-		return bookId;
-	}
-
-	public void setBookId(Integer bookId) {
-		this.bookId = bookId;
-	}
+//	public Integer getBookId() {
+//		return bookId;
+//	}
+//
+//	public void setBookId(Integer bookId) {
+//		this.bookId = bookId;
+//	}
 
 	public UserBean getUser() {
 		return user;
@@ -146,7 +147,9 @@ public class ReviewBean implements Serializable {
 
 	@Override
 	public String toString() {
-		return "ReviewBean{" + "reviewId=" + reviewId + ", userId=" + userId + ", bookId=" + bookId + ", rating="
-				+ rating + ", comment='" + comment + '\'' + ", createdAt=" + createdAt + '}';
+		return "ReviewBean [reviewId=" + reviewId + ", user=" + user + ", book=" + book + ", userId=" + userId
+				+ ", rating=" + rating + ", comment=" + comment + ", createdAt=" + createdAt + ", userName=" + userName
+				+ ", bookName=" + bookName + "]";
 	}
+
 }

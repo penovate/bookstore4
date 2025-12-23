@@ -2,21 +2,27 @@ package bookstore.bean;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "books")
+@DynamicInsert
+@DynamicUpdate
 public class BooksBean {
 
 	@Id
@@ -58,9 +64,11 @@ public class BooksBean {
 	@JoinColumn(name = "genre_id")
 	private GenreBean genreBean;
 
+	@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<ReviewBean> reviews;
+	
 	// -------Constructor--------
 	public BooksBean() {
-		super();
 
 	}
 
@@ -205,6 +213,14 @@ public class BooksBean {
 
 	public void setGenreBean(GenreBean genreBean) {
 		this.genreBean = genreBean;
+	}
+	
+	public List<ReviewBean> getReviews() {
+		return reviews;
+	}
+
+	public void setReviews(List<ReviewBean> reviews) {
+		this.reviews = reviews;
 	}
 
 	@Override

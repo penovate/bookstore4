@@ -274,6 +274,64 @@ table button {
 	bottom: 0 !important;
 	z-index: 1060 !important;
 }
+/* --- 矩形 Switch 樣式 --- */
+.switch-container {
+    display: flex;
+    flex-direction: column; /* 文字放在開關下方或並排 */
+    align-items: center;
+    gap: 4px;
+}
+
+.book-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px; /* 長方形寬度 */
+    height: 24px;
+}
+
+.book-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #dcd5c7; /* 關閉時的顏色 (淺土色) */
+    transition: .3s;
+    border-radius: 4px; /* 矩形圓角，符合整體按鈕風格 */
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 2px; /* 內鈕也採矩形設計 */
+}
+
+/* 開啟狀態：皮革棕 */
+input:checked + .slider {
+    background-color: #a07d58;
+}
+
+/* 點擊移動距離 */
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+/* 狀態文字樣式 */
+.status-label {
+    font-size: 12px;
+    color: #7b5e47;
+    font-weight: bold;
+}
 </style>
 
 </head>
@@ -309,7 +367,7 @@ table button {
 					<th style="text-align: center;">庫存</th>
 					<th style="text-align: center;">上下架狀態</th>
 					<th style="text-align: center;">修改</th>
-					<th style="text-align: center;">刪除</th>
+					<th style="text-align: center;">狀態
 				</tr>
 			</thead>
 
@@ -331,8 +389,8 @@ table button {
 					<td style="text-align: center;"><%=book.getAuthor()%></td>
 					<td style="text-align: center;"><%=(book.getTranslator() == null) ? "" : book.getTranslator()%></td>
 					<td style="text-align: center;"><%=book.getPress()%></td>
-					<td style="text-align: center;"><%=book.getGenreName()%></td>
-					<td style="text-align: center;">$<%=book.getPrice().intValue()%></td>
+					<td style="text-align: center;">${book.getGenreBean().getGenreName()}</td>
+					<td style="text-align: center;"><%=book.getPrice().intValue()%></td>
 					<td style="text-align: center;"><%=book.getIsbn()%></td>
 					<td style="text-align: center;"><%=book.getStock()%></td>
 					<td style="text-align: center;"><%=(book.getOnShelf() == true) ? "上架中" : "下架中"%></td>
@@ -342,11 +400,15 @@ table button {
 							<input type="submit" value="修改" class="btn btn-edit">
 						</form>
 					</td>
-					<td>
-						<form action="DeleteBook" method="post">
-							<input type="hidden" name="bookId" value="<%=book.getBookId()%>">
-							<input type="submit" value="刪除" class="btn btn-delete">
-						</form>
+					<td style="text-align: center;">
+						<div class="switch-container">
+							<label class="book-switch"> <input type="checkbox"
+								class="on-shelf-toggle" data-bookid="<%=book.getBookId()%>"
+								<%=(book.getOnShelf()) ? "checked" : ""%>> <span
+								class="slider"></span>
+							</label> <span class="status-label"> <%=(book.getOnShelf()) ? "上架中" : "下架中"%>
+							</span>
+						</div>
 					</td>
 				</tr>
 				<%
@@ -462,9 +524,10 @@ $(document).ready(function() {
 });
 </script>
 
-<script>
+	<script>
 	
 	//單筆刪除防呆檢查
+	/*
 	$('.btn-delete').on('click',function(e){
 		e.preventDefault();
 		const btn = $(this);
@@ -521,9 +584,9 @@ $(document).ready(function() {
 		        }
 		    });
 		});
-
-	
+	*/
 //批次刪除防呆
+/*
 $('.btn-deleteAll').on('click', function(e) {
     let hasOnShelfBook = false;
     $('.checkOne:checked').each(function() {
@@ -548,9 +611,11 @@ $('.btn-deleteAll').on('click', function(e) {
         return false; 
     }
 });
+	*/
 </script>
 
 	<script>
+	/*
 //批量刪除Controller
 $('.btn-deleteAll').on('click', function(e) {
     e.preventDefault();
@@ -572,7 +637,7 @@ $('.btn-deleteAll').on('click', function(e) {
     }) 
 }) 
 
-
+*/
 //單筆刪除Controller
 /*
 $('.btn-delete').on('click',function(e){
@@ -594,6 +659,7 @@ $('.btn-delete').on('click',function(e){
 	        }
 	    }) 
 })
+
 */
 
 let deleteStatus = "<%=request.getParameter("deleteStatus")%>"

@@ -10,172 +10,75 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
+
 import bookstore.bean.BooksBean;
+import bookstore.bean.GenreBean;
 import bookstore.bean.OrderItem;
 import bookstore.bean.ReviewBean;
 import bookstore.util.DBUtil;
+import bookstore.util.HibernateUtil;
 
 public class BookDao {
 
+	SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+
 	// select all books-------
 	public List<BooksBean> selectAllBooks() {
-		ArrayList<BooksBean> bookList = new ArrayList<BooksBean>();
-		String sql = "select e.*,g.genre_name from books e join genres g on e.genre_id = g.genre_id";
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql);) {
-			ResultSet resultSet = preparedStatement.executeQuery();
-			while (resultSet.next()) {
-				Integer bookId = resultSet.getInt("book_id");
-				String bookName = resultSet.getString("book_name");
-				String author = resultSet.getString("author");
-				String translator = resultSet.getString("translator");
-				Integer genres = resultSet.getInt("genre_id");
-				BigDecimal price = resultSet.getBigDecimal("price");
-				Integer stock = resultSet.getInt("stock");
-				String shortDesc = resultSet.getString("short_desc");
-				LocalDateTime createdAt = resultSet.getObject("created_at", LocalDateTime.class);
-				String press = resultSet.getString("press");
-				String isbn = resultSet.getString("isbn");
-				Boolean onShelf = resultSet.getBoolean("on_shelf");
-				String genreName = resultSet.getString("genre_name");
-				BooksBean books = new BooksBean(bookId, bookName, author, translator, genres, price, stock, shortDesc,
-						createdAt, press, isbn, onShelf, genreName);
-				bookList.add(books);
-			}
-		} catch (SQLException e) {
+		Session session = sessionFactory.getCurrentSession();
+		try {
+			String hql = "from BooksBean b left join fetch b.genreBean";
+			Query<BooksBean> query = session.createQuery(hql, BooksBean.class);
+			List<BooksBean> bookList = query.getResultList();
+			return bookList;
+		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
 		}
-		return bookList;
+		return null;
 	}
 
-//select books by Id--------------------
-
+	// select books by Id--------------------
 	public BooksBean selectBooksById(Integer bookId) {
-		BooksBean booksBean = null;
-		String sql = "select e.*,g.genre_name from books e join genres g on e.genre_id = g.genre_id where book_id = ?";
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql);) {
-			preparedStatement.setInt(1, bookId);
-			try (ResultSet resultSet = preparedStatement.executeQuery()) {
-				if (resultSet.next()) {
-					String bookName = resultSet.getString("book_name");
-					String author = resultSet.getString("author");
-					String translator = resultSet.getString("translator");
-					Integer genre = resultSet.getInt("genre_id");
-					BigDecimal price = resultSet.getBigDecimal("price");
-					Integer stock = resultSet.getInt("stock");
-					String shortDesc = resultSet.getString("short_desc");
-					LocalDateTime createdAt = resultSet.getObject("created_at", LocalDateTime.class);
-					String press = resultSet.getString("press");
-					String isbn = resultSet.getString("isbn");
-					Boolean onShelf = resultSet.getBoolean("on_shelf");
-					String genreName = resultSet.getString("genre_name");
-					booksBean = new BooksBean(bookId, bookName, author, translator, genre, price, stock, shortDesc,
-							createdAt, press, isbn, onShelf, genreName);
-				}
-			}
-		} catch (SQLException e) {
+		Session session = sessionFactory.getCurrentSession();
+		try {
+			BooksBean book = session.find(BooksBean.class, bookId);
+			return book;
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return booksBean;
+		return null;
 	}
 
-//select books by genres
+	// select genre by Id--------------------
+	public GenreBean selectGenreById(Integer genreId) {
+		Session session = sessionFactory.getCurrentSession();
+		try {
+			GenreBean genre = session.find(GenreBean.class, genreId);
+			return genre;
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	// select books by genres
 	public List<BooksBean> selectBooksByGenres(Integer genres) {
-		ArrayList<BooksBean> bookList = new ArrayList<BooksBean>();
-		String sql = "select e.*,g.genre_name from books e join genre g on e.genre_id = g.genre_id where e.genre_id = ?";
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			preparedStatement.setInt(1, genres);
-			try (ResultSet resultSet = preparedStatement.executeQuery()) {
-				while (resultSet.next()) {
-					Integer bookId = resultSet.getInt("book_id");
-					String bookName = resultSet.getString("book_name");
-					String author = resultSet.getString("author");
-					String translator = resultSet.getString("translator");
-					BigDecimal price = resultSet.getBigDecimal("price");
-					Integer stock = resultSet.getInt("stock");
-					String shortDesc = resultSet.getString("short_desc");
-					LocalDateTime createdAt = resultSet.getObject("created_at", LocalDateTime.class);
-					String press = resultSet.getString("press");
-					String isbn = resultSet.getString("isbn");
-					Boolean onShelf = resultSet.getBoolean("on_shelf");
-					String genreName = resultSet.getString("genre_name");
-					BooksBean book = new BooksBean(bookId, bookName, author, translator, genres, price, stock,
-							shortDesc, createdAt, press, isbn, onShelf, genreName);
-					bookList.add(book);
-				}
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return bookList;
+		return null;
 	}
 
-//select by isbn------
+	// select by isbn------
 	public BooksBean selectBooksByIsbn(String isbn) {
-		BooksBean booksBean = null;
-		String sql = "select e.*,g.genre_name from books e join genres g on e.genre_id = g.genre_id where e.isbn = ?";
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			preparedStatement.setString(1, isbn);
-			ResultSet resultSet = preparedStatement.executeQuery();
-			if (resultSet.next()) {
-				Integer bookId = resultSet.getInt("book_id");
-				String bookName = resultSet.getString("book_name");
-				String author = resultSet.getString("author");
-				String translator = resultSet.getString("translator");
-				Integer genres = resultSet.getInt("genre_id");
-				BigDecimal price = resultSet.getBigDecimal("price");
-				Integer stock = resultSet.getInt("stock");
-				String shortDesc = resultSet.getString("short_desc");
-				LocalDateTime createdAt = resultSet.getObject("created_at", LocalDateTime.class);
-				String press = resultSet.getString("press");
-				Boolean onShelf = resultSet.getBoolean("on_shelf");
-				String genreName = resultSet.getString("genre_name");
-				booksBean = new BooksBean(bookId, bookName, author, translator, genres, price, stock, shortDesc,
-						createdAt, press, isbn, onShelf, genreName);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return booksBean;
+		return null;
 	}
 
-//select by onShelf-----
+	// select by onShelf-----
 	public List<BooksBean> selectBooksByOnShelf(Boolean onShelf) {
-		BooksBean booksBean = null;
-		String sql = "select e.*,g.genre_name from books e join genres g on e.genre_id = g.genre_id where e.on_shelf = ?";
-		List<BooksBean> bookList = new ArrayList<BooksBean>();
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			preparedStatement.setBoolean(1, onShelf);
-			ResultSet resultSet = preparedStatement.executeQuery();
-			while (resultSet.next()) {
-				Integer bookId = resultSet.getInt("book_id");
-				String bookName = resultSet.getString("book_name");
-				String author = resultSet.getString("author");
-				String translator = resultSet.getString("translator");
-				Integer genres = resultSet.getInt("genre_id");
-				BigDecimal price = resultSet.getBigDecimal("price");
-				Integer stock = resultSet.getInt("stock");
-				String shortDesc = resultSet.getString("short_desc");
-				LocalDateTime createdAt = resultSet.getObject("created_at", LocalDateTime.class);
-				String press = resultSet.getString("press");
-				String isbn = resultSet.getString("isbn");
-				String genreName = resultSet.getString("genre_name");
-				booksBean = new BooksBean(bookId, bookName, author, translator, genres, price, stock, shortDesc,
-						createdAt, press, isbn, onShelf, genreName);
-				bookList.add(booksBean);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return bookList;
-	}
 
-// select by BookName--------------------
+		return null;
+	}
 
 	// delete驗證，若評價有該書內容不可將書籍刪除
 	public Boolean selectReviewByBookId(String bookId) {
@@ -205,135 +108,63 @@ public class BookDao {
 		return reviewCheck;
 	}
 
-	
-	
-	
-	
 	// delete驗證，若訂單有該書，不可將書籍刪除
-	public Boolean selectOrderItemByBookId(String bookId) {
-		Integer bookId1 = Integer.valueOf(bookId);
-		Boolean orderItemCheck = false;
-		String sql = "select * from order_item where book_id = ?";
-		OrderItem orderItem = new OrderItem();
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			preparedStatement.setInt(1, bookId1);
-			ResultSet resultSet = preparedStatement.executeQuery();
-			if (resultSet.next()) {
-				orderItem.setOrderItemId(resultSet.getInt("order_item_id"));
-				orderItem.setOrderId(resultSet.getInt("order_id"));
-				orderItem.setQuantity(resultSet.getInt("quantity"));
-				orderItem.setPrice(resultSet.getBigDecimal("price"));
-				orderItem.setSubtotal(resultSet.getBigDecimal("subtotal"));
-				orderItem.setBookId(resultSet.getInt("book_id"));
-				if (orderItem != null) {
-					orderItemCheck = true;
-				} else {
-					orderItemCheck = false;
-				}
-			}
-		} catch (SQLException e) {
-		}
-		System.out.println(orderItem);
-		return orderItemCheck;
-	}
+//	public Boolean selectOrderItemByBookId(String bookId) {
+//		Integer bookId1 = Integer.valueOf(bookId);
+//		Boolean orderItemCheck = false;
+//		String sql = "select * from order_item where book_id = ?";
+//		OrderItem orderItem = new OrderItem();
+//		try (Connection connection = DBUtil.getConnection();
+//				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+//			preparedStatement.setInt(1, bookId1);
+//			ResultSet resultSet = preparedStatement.executeQuery();
+//			if (resultSet.next()) {
+//				orderItem.setOrderItemId(resultSet.getInt("order_item_id"));
+//				orderItem.setOrderId(resultSet.getInt("order_id"));
+//				orderItem.setQuantity(resultSet.getInt("quantity"));
+//				orderItem.setPrice(resultSet.getBigDecimal("price"));
+//				orderItem.setSubtotal(resultSet.getBigDecimal("subtotal"));
+//				orderItem.setBookId(resultSet.getInt("book_id"));
+//				if (orderItem != null) {
+//					orderItemCheck = true;
+//				} else {
+//					orderItemCheck = false;
+//				}
+//			}
+//		} catch (SQLException e) {
+//		}
+//		System.out.println(orderItem);
+//		return orderItemCheck;
+//	}
 
 	public BooksBean selectBookByName(String bookName) {
-		BooksBean booksBean = null;
-		String sql = "select e.*,g.genre_name from books e join genres g on e.genre_id = g.genre_id  where e.book_name = ?";
 
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			preparedStatement.setString(1, bookName);
-			ResultSet resultSet = preparedStatement.executeQuery();
-			if (resultSet.next()) {
-				Integer bookId = resultSet.getInt("book_id");
-				String author = resultSet.getString("author");
-				String translator = resultSet.getString("translator");
-				Integer genres = resultSet.getInt("genre_id");
-				BigDecimal price = resultSet.getBigDecimal("price");
-				Integer stock = resultSet.getInt("stock");
-				String shortDesc = resultSet.getString("short_desc");
-				LocalDateTime createdAt = resultSet.getObject("created_at", LocalDateTime.class);
-				String press = resultSet.getString("press");
-				String isbn = resultSet.getString("isbn");
-				String genreName = resultSet.getString("genre_name");
-				Boolean onShelf = resultSet.getBoolean("on_shelf");
-				booksBean = new BooksBean(bookId, bookName, author, translator, genres, price, stock, shortDesc,
-						createdAt, press, isbn, onShelf, genreName);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return booksBean;
+		return null;
 	}
 
-//insert books---------------------------
+	// insert books---------------------------
 	public BooksBean insertBooks(BooksBean booksBean) {
-		String sql = "insert into books"
-				+ "(book_name,author,translator,press,genre_id,price,isbn,stock,short_desc,created_at,on_shelf)values"
-				+ "(?,?,?,?,?,?,?,?,?,?,?)";
-		LocalDateTime now = LocalDateTime.now();
-		BooksBean bookInsert = new BooksBean();
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			preparedStatement.setString(1, booksBean.getBookName());
-			preparedStatement.setString(2, booksBean.getAuthor());
-			preparedStatement.setString(3, booksBean.getTranslator());
-			preparedStatement.setString(4, booksBean.getPress());
-			preparedStatement.setInt(5, booksBean.getGenre());
-			preparedStatement.setBigDecimal(6, booksBean.getPrice());
-			preparedStatement.setString(7, booksBean.getIsbn());
-			preparedStatement.setInt(8, booksBean.getStock());
-			preparedStatement.setString(9, booksBean.getShortDesc());
-			preparedStatement.setTimestamp(10, Timestamp.valueOf(now));
-			preparedStatement.setBoolean(11, booksBean.getOnShelf());
-			preparedStatement.execute();
-			bookInsert = selectBookByName(booksBean.getBookName());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		Session session = sessionFactory.getCurrentSession();
+		BooksBean bookInsert = booksBean;
+		session.persist(booksBean);
+
 		return bookInsert;
 	}
 
 	// delete book by Id-----
-	public void deleteBooks(Integer bookId) {
-		String sql = "delete from books where book_id = ?";
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			preparedStatement.setInt(1, bookId);
-			preparedStatement.execute();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
+	public BooksBean deleteBooks(Integer bookId) {
+		BooksBean book = selectBooksById(bookId);
+		Session session = sessionFactory.getCurrentSession();
+		BooksBean bookdelete = selectBooksById(bookId);
+		session.remove(bookdelete);
+		return book;
 	}
 
 	// Update Book--------------
-	public BooksBean upDateBook(Integer bookid, String bookName, String author, String translator, Integer genre,
-			BigDecimal price, String isbn, Integer stock, String shortDesc, String press, Boolean onShelf) {
-		String sql = "update books set book_name=?,author=?,translator=?"
-				+ ",press=?,genre_id=?,price=?,isbn=?,stock=?,short_desc=?,on_shelf=? where book_id=?";
-		BooksBean bookupDate = new BooksBean();
-		try (Connection connection = DBUtil.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			preparedStatement.setString(1, bookName);
-			preparedStatement.setString(2, author);
-			preparedStatement.setString(3, translator);
-			preparedStatement.setString(4, press);
-			preparedStatement.setInt(5, genre);
-			preparedStatement.setBigDecimal(6, price);
-			preparedStatement.setString(7, isbn);
-			preparedStatement.setInt(8, stock);
-			preparedStatement.setString(9, shortDesc);
-			preparedStatement.setBoolean(10, onShelf);
-			preparedStatement.setInt(11, bookid);
-			preparedStatement.execute();
-			bookupDate = selectBookByName(bookName);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return bookupDate;
+	public BooksBean upDateBook(BooksBean booksBean) {
+		Session session = sessionFactory.getCurrentSession();
+		BooksBean bookUpdate = (BooksBean) session.merge(booksBean);
+		return bookUpdate;
 	}
 
 }

@@ -110,7 +110,7 @@ button {
 <a href="<%= request.getContextPath() %>/GetAllReviews" class="menu-link">
     <button class="primary-action-button">查詢全部評價</button>
 </a>
-<a href="../users/home.html" class="menu-link"><button class="back-button">返回首頁</button></a>
+<a href="../users/home.jsp" class="menu-link"><button class="back-button">返回首頁</button></a>
 </div>
 </div>
 </body>

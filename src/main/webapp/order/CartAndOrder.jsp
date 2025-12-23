@@ -130,12 +130,16 @@ button {
 	<!-- 訂單系統按鈕 -->
 
 	<a href="../GetAllOrders">
-		<button class="primary-action-button">查詢所有訂單</button>
+		<button class="primary-action-button">查詢活動訂單</button>
+	</a>
+	
+	<a href="../GetAllCancelOrders">
+		<button class="primary-action-button">查詢取消/退貨訂單</button>
 	</a>
 
 	<br>
 	<br>
-	<a href="../users/home.html"><button class="back-button">返回首頁</button></a>
+	<a href="../users/home.jsp"><button class="back-button">返回首頁</button></a>
 	</div>
 </body>
 

@@ -2,25 +2,21 @@ package bookstore.controller;
 
 import java.io.IOException;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+
+import bookstore.bean.Orders;
+import bookstore.dao.impl.OrderService;
+import bookstore.util.HibernateUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import bookstore.bean.Orders;
-import bookstore.dao.impl.OrderService;
-
 @WebServlet("/UpdateOrder")
 public class UpdateOrder extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private OrderService orderService;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        orderService = new OrderService();
-    }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -33,6 +29,10 @@ public class UpdateOrder extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
 
         try {
+            SessionFactory factory = HibernateUtil.getSessionFactory();
+            Session session = factory.getCurrentSession();
+            OrderService orderService = new OrderService(session);
+
             // 接收表單資料
             Integer orderId = Integer.parseInt(request.getParameter("orderId"));
             String recipient = request.getParameter("recipient");

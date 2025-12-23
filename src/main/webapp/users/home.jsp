@@ -1,3 +1,4 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -91,6 +92,37 @@
     transform: translateY(0);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
+
+.logout-button {
+    height: 45px;
+    padding: 0 30px;
+    background-color: #e8e4dc;
+    color: #6d6d6d;
+    border: 1px solid #dcd5c7;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: normal;
+    letter-spacing: 1px;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.logout-button:hover {
+    background-color: #dcd5c7;
+    color: #4a4a4a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logout-button:active {
+    background-color: #cec7b9;
+    transform: translateY(0);
+}
+
+.logout-link {
+    text-decoration: none;
+}
 </style>
 <title>網路書店後台系統</title>
 </head>
@@ -106,6 +138,9 @@
 		<a href="../reviews/review.jsp" class="menu-link"><button class="menu-button">評價管理</button></a>
 </div>
 <hr class="divider">
+<div>
+<a href="${pageContext.request.contextPath}/LogoutServlet"><button class="logout-button">登出系統</button></a>
+</div>
 </div>
 </body>
 </html>

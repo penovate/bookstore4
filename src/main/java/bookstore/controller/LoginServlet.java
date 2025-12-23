@@ -46,7 +46,7 @@ public class LoginServlet extends HttpServlet {
 			
 			HttpSession session = request.getSession();
 			session.setAttribute("user", user);
-			response.sendRedirect(request.getContextPath() + "/users/home.html");
+			response.sendRedirect(request.getContextPath() + "/users/home.jsp");
 			
 		} else {
 			request.setAttribute("loginMessage", "登入失敗，信箱或密碼錯誤！");

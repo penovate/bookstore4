@@ -7,7 +7,6 @@ import java.util.List;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -59,10 +58,10 @@ public class UserBean implements java.io.Serializable {
 	@Column(name = "updated_at", insertable = false, updatable = false)
 	private Date updatedAt;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<ReviewBean> reviews = new ArrayList<>();
 //
-	@OneToMany(mappedBy = "userBean", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "userBean", fetch = FetchType.LAZY)
 	private List<Orders> orders = new ArrayList<>();
 
 //	@OneToMany(mappedBy = "userId", cascade = CascadeType.ALL)

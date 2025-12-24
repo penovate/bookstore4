@@ -19,11 +19,17 @@ public class DeleteReview extends HttpServlet {
 		request.setCharacterEncoding("UTF-8");
 		String message = "";
 		
-		String reviewId = request.getParameter("review_id");
+		// 取得參數（一定是 String）
+		String reviewIdStr = request.getParameter("review_id");
 		
-		if (reviewId == null || reviewId.isEmpty()) {
+		if (reviewIdStr == null || reviewIdStr.isEmpty()) {
 			message = "刪除失敗：缺少評價ID！";
 		} else {
+			
+			// String → Integer（Servlet 的責任）
+			try {
+			Integer reviewId = Integer.valueOf(reviewIdStr);
+			
 			ReviewsDAOImpl dao = new ReviewsDAOImpl();
 			int count = dao.deleteReview(reviewId); 
 			
@@ -32,6 +38,9 @@ public class DeleteReview extends HttpServlet {
 			} else {
 				message = "刪除失敗：找不到該評價資料！";
 			}
+		 } catch (NumberFormatException e) {
+	         message = "刪除失敗：評價ID格式錯誤！";
+	        }
 		}
 		
 		String encodedMessage = URLEncoder.encode(message, "UTF-8");

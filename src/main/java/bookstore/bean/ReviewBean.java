@@ -1,66 +1,158 @@
 package bookstore.bean;
 
-public class ReviewBean implements java.io.Serializable {
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
+@Entity
+@Table(name = "reviews")
+public class ReviewBean implements Serializable {
+
 	private static final long serialVersionUID = 1L;
-	private String reviewId;
-	private String userId;
-	private String bookId;
-    private String rating; 
-    private String comment;
-    private String createdAt;
-    
-	public String getReviewId() {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "review_id")
+	private Integer reviewId; 
+
+	// ===== FK → ManyToOne（關鍵）=====
+
+	// ✅ ManyToOne：同一個欄位做關聯，但設為「只讀」，避免重複 mapping
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", insertable = false, updatable = false)
+	private UserBean user;
+//
+	@ManyToOne(fetch = FetchType.LAZY )
+	@JoinColumn(name = "book_id", nullable = false)
+	private BooksBean book;
+
+	@Column(name = "user_id", nullable = false)
+	private Integer userId;
+
+	@Column(name = "book_id", insertable = false, updatable = false)
+	private Integer bookId;
+
+	// ===== 其他欄位 =====
+
+	@Column(name = "rating", nullable = false)
+	private Integer rating;
+
+	@Column(name = "comment")
+	private String comment;
+
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
+
+	// ====== 過渡期：舊 JSP 可能用到 ======
+	@Transient
+	private String userName;
+
+	@Transient
+	private String bookName;
+
+	// ===== getter / setter =====
+	public Integer getReviewId() {
 		return reviewId;
 	}
-	public void setReviewId(String reviewId) {
+
+	public void setReviewId(Integer reviewId) {
 		this.reviewId = reviewId;
 	}
-	public String getUserId() {
+
+	public Integer getUserId() {
 		return userId;
 	}
-	public void setUserId(String userId) {
+
+	public void setUserId(Integer userId) {
 		this.userId = userId;
 	}
-	public String getBookId() {
+
+	public Integer getBookId() {
 		return bookId;
 	}
-	public void setBookId(String bookId) {
-		this.bookId = bookId;
+
+	public void setBookId(Integer bookId) {
+		if (this.book == null) {
+			this.book = new BooksBean();
+		}
+		this.book.setBookId(bookId);
 	}
-	public String getRating() {
+
+	public UserBean getUser() {
+		return user;
+	}
+
+	// 這個現在可用可不用
+	public void setUser(UserBean user) {
+		this.user = user;
+	}
+
+	public BooksBean getBook() {
+		return book;
+	}
+
+	// 這個現在可用可不用
+	public void setBook(BooksBean book) {
+		this.book = book;
+	}
+
+	public Integer getRating() {
 		return rating;
 	}
-	public void setRating(String rating) {
+
+	public void setRating(Integer rating) {
 		this.rating = rating;
 	}
+
 	public String getComment() {
 		return comment;
 	}
+
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
-	public String getCreatedAt() {
+
+	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
-	public void setCreatedAt(String createdAt) {
+
+	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
-	
-	// join部分
-	private String userName;
-	private String bookName;
 
-	public String getUserName() { return userName; }
-	public void setUserName(String userName) { this.userName = userName; }
+	// ✅ 舊 JSP 仍可用：優先從關聯拿名稱（不會再一直 null）
+	public String getUserName() {
+		return (user != null) ? user.getUserName() : userName;
+	}
 
-	public String getBookName() { return bookName; }
-	public void setBookName(String bookName) { this.bookName = bookName; }
-	
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getBookName() {
+		return (book != null) ? book.getBookName() : bookName;
+	}
+
+	public void setBookName(String bookName) {
+		this.bookName = bookName;
+	}
+
 	@Override
 	public String toString() {
-		return "Bean [reviewId=" + reviewId + ", userId=" + userId + ", bookId=" + bookId + ", rating=" + rating
-				+ ", comment=" + comment + ", createdAt=" + createdAt + "]";
+		return "ReviewBean [reviewId=" + reviewId + ", user=" + user + ", book=" + book + ", userId=" + userId
+				+ ", rating=" + rating + ", comment=" + comment + ", createdAt=" + createdAt + ", userName=" + userName
+				+ ", bookName=" + bookName + "]";
 	}
+
 }
-    
-	

@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8" import="java.util.*,bookstore.bean.ReviewBean"%>
+    pageEncoding="UTF-8" import="java.util.*,bookstore.bean.ReviewBean,java.time.format.DateTimeFormatter"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -120,6 +120,9 @@ a button:active {
 <h2>評價詳細資料</h2>
 
 <jsp:useBean id="review" scope="request" class="bookstore.bean.ReviewBean" />
+<%
+DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+%>
 
 <table>
 <tr><td>評價編號:
@@ -129,7 +132,7 @@ a button:active {
 <tr><td>會員名稱:
 	<td><input type="text" disabled value="<%= review.getUserName() %>">
 <tr><td>書本編號:
-	<td><input type="text" disabled value="<%= review.getBookId() %>">
+	<td><input type="text" disabled value="<%= (review.getBook() != null) ? review.getBook().getBookId() : review.getBookId() %>">
 <tr><td>書本名稱:
 	<td><input type="text" disabled value="<%= review.getBookName() %>">
 <tr><td>評分:
@@ -137,7 +140,7 @@ a button:active {
 <tr><td>評價:
 	<td><textarea id="comment" name="comment" rows="4" cols="40" disabled><%= review.getComment() %></textarea></td>
 <tr><td>創建時間:
-	<td><input type="text" disabled value="<%= review.getCreatedAt() %>">
+	<td><input type="text" disabled value="<%= (review.getCreatedAt() == null ? "" : review.getCreatedAt().format(fmt)) %>">
 </table>
 <br>
 

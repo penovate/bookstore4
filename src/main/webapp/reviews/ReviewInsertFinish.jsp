@@ -146,19 +146,13 @@ select[disabled] {
             </tr>
             <tr>
                 <td><label for="bookid">書本編號:</label></td>
-                <td><input type="text" id="bookid" name="book_id" value="<%= review.getBookId() %>" disabled></td>
+                <td><input type="text" id="bookid" name="book_id" value="<%= (review.getBook() != null) ? review.getBook().getBookId() : review.getBookId() %>" disabled></td>
             </tr>
             
             <tr>
                 <td><label for="rating">評分:</label></td>
                 <td>
-					<select id="rating" name="rating" disabled>
-    					<option value="1" <%= "1".equals(review.getRating()) ? "selected" : "" %>>1</option>
-    					<option value="2" <%= "2".equals(review.getRating()) ? "selected" : "" %>>2</option>
-    					<option value="3" <%= "3".equals(review.getRating()) ? "selected" : "" %>>3</option>
-    					<option value="4" <%= "4".equals(review.getRating()) ? "selected" : "" %>>4</option>
-    					<option value="5" <%= "5".equals(review.getRating()) ? "selected" : "" %>>5</option>
-</select>
+					 <input type="text" disabled value="<%= review.getRating() %>">
                 </td>
             </tr>
             <tr>

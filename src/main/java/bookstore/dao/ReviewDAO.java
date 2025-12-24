@@ -5,8 +5,8 @@ import bookstore.bean.ReviewBean;
 
 public interface ReviewDAO {
 	public List<ReviewBean> selectAllReviews();
-	public ReviewBean selectReviewById(String reviewId);
+	public ReviewBean selectReviewById(Integer reviewId);
 	public int insertReview(ReviewBean review);
 	public int updateReview(ReviewBean review);
-	public int deleteReview(String reviewId);
+	public int deleteReview(Integer reviewId);
 }

@@ -1,14 +1,15 @@
 package bookstore.controller;
 
+import java.io.IOException;
+
+import bookstore.bean.BooksBean;
+import bookstore.bean.ReviewBean;
+import bookstore.dao.impl.ReviewsDAOImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
-import bookstore.bean.ReviewBean;
-import bookstore.dao.impl.ReviewsDAOImpl;
 
 @WebServlet("/InsertReview")
 public class InsertReview extends HttpServlet {
@@ -61,8 +62,11 @@ public class InsertReview extends HttpServlet {
 
         // --- 建立 Bean ---
         ReviewBean review = new ReviewBean();
-        review.setUserId(userId);
+        BooksBean book = new BooksBean();
+        book.setBookId(bookId);
+        review.setBook(book);
         review.setBookId(bookId);
+        review.setUserId(userId);
         review.setRating(rating);
         review.setComment(comment);
 

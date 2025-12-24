@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 
+import bookstore.bean.BooksBean;
 import bookstore.bean.ReviewBean;
 import bookstore.dao.impl.ReviewsDAOImpl;
 
@@ -86,9 +87,11 @@ public class UpdateReview extends HttpServlet {
 
         // === 組 Bean ===
         ReviewBean review = new ReviewBean();
+        BooksBean book = new BooksBean();
+        book.setBookId(bookId);
         review.setReviewId(reviewId);
         review.setUserId(userId);
-        review.setBookId(bookId);
+        review.setBook(book);
         review.setRating(rating);
         review.setComment(comment);
         // createdAt 不動（更新不該改建立時間）

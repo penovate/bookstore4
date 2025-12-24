@@ -18,12 +18,10 @@ public class OrdersDao {
 
 	// 新增訂單
 	public void insertOrder(Orders order) {
-		System.out.println("有盡到insert方法");
 		if (order.getCreatedAt() == null) {
 			order.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 		}
 		session.persist(order);
-		System.out.println("這裡接到的Oder物件內容"+order);
 	}
 
 	// 更新訂單

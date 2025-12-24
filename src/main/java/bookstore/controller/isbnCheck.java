@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import bookstore.bean.BooksBean;
 import bookstore.dao.impl.bookService;
 
 @WebServlet("/isbnCheck")
@@ -29,6 +30,7 @@ public class isbnCheck extends HttpServlet {
 		} else {
 			isbnChckready = "false";
 		}
+		System.out.println(isbnChckready);
 		response.getWriter().write(isbnChckready);
 		response.getWriter().flush();
 

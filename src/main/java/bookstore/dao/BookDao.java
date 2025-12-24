@@ -71,7 +71,11 @@ public class BookDao {
 
 	// select by isbn------
 	public BooksBean selectBooksByIsbn(String isbn) {
-		return null;
+		Session session = sessionFactory.getCurrentSession();
+		String hql = "FROM BooksBean WHERE isbn = :isbn";
+		BooksBean book = session.createQuery(hql, BooksBean.class).setParameter("isbn", isbn).uniqueResult(); 
+																												
+		return book;
 	}
 
 	// select by onShelf-----

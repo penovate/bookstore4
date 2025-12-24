@@ -28,11 +28,11 @@ public class bookService {
 	// select by isbn
 	public Boolean selectBookByisbn(String isbnStr) {
 		Boolean check = null;
-		BookDao bookDao = new BookDao();
-		if (bookDao.selectBooksByIsbn(isbnStr) != null) {
-			check = true;
-		} else {
-			check = false;
+		BooksBean bookcheck = bookDao.selectBooksByIsbn(isbnStr);
+		if (bookcheck!=null) {
+			check=true;
+		}else {
+			check=false;
 		}
 		return check;
 	}

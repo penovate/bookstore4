@@ -276,61 +276,64 @@ table button {
 }
 /* --- 矩形 Switch 樣式 --- */
 .switch-container {
-    display: flex;
-    flex-direction: column; /* 文字放在開關下方或並排 */
-    align-items: center;
-    gap: 4px;
+	display: flex;
+	flex-direction: column; /* 文字放在開關下方或並排 */
+	align-items: center;
+	gap: 4px;
 }
 
 .book-switch {
-    position: relative;
-    display: inline-block;
-    width: 50px; /* 長方形寬度 */
-    height: 24px;
+	position: relative;
+	display: inline-block;
+	width: 50px; /* 長方形寬度 */
+	height: 24px;
 }
 
 .book-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
+	opacity: 0;
+	width: 0;
+	height: 0;
 }
 
 .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #dcd5c7; /* 關閉時的顏色 (淺土色) */
-    transition: .3s;
-    border-radius: 4px; /* 矩形圓角，符合整體按鈕風格 */
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #dcd5c7; /* 關閉時的顏色 (淺土色) */
+	transition: .3s;
+	border-radius: 4px; /* 矩形圓角，符合整體按鈕風格 */
 }
 
 .slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 4px;
-    bottom: 3px;
-    background-color: white;
-    transition: .3s;
-    border-radius: 2px; /* 內鈕也採矩形設計 */
+	position: absolute;
+	content: "";
+	height: 18px;
+	width: 18px;
+	left: 4px;
+	bottom: 3px;
+	background-color: white;
+	transition: .3s;
+	border-radius: 2px; /* 內鈕也採矩形設計 */
 }
 
 /* 開啟狀態：皮革棕 */
-input:checked + .slider {
-    background-color: #a07d58;
+input:checked+.slider {
+	background-color: #a07d58;
 }
 
 /* 點擊移動距離 */
-input:checked + .slider:before {
-    transform: translateX(24px);
+input:checked+.slider:before {
+	transform: translateX(24px);
 }
 
 /* 狀態文字樣式 */
 .status-label {
-    font-size: 12px;
-    color: #7b5e47;
-    font-weight: bold;
+	font-size: 12px;
+	color: #7b5e47;
+	font-weight: bold;
 }
 </style>
 
@@ -344,18 +347,22 @@ input:checked + .slider:before {
 			<form action="InsertBook" method="get">
 				<input type="submit" value="新增書籍資料" class="btn-insert">
 			</form>
-
+			<!-- 
 			<form action="DeleteBook" method="post" id="mainBatchForm">
 				<input type="submit" value="批量刪除 (0)" class="btn btn-deleteAll"
 					id="batchDeleteBtn" disabled>
 			</form>
+ -->
 
 		</div>
 		<table class="books-table">
 			<thead>
 				<tr>
+					<!-- 
 					<th style="text-align: center;"><input type="checkbox"
 						id="checkAll"></th>
+				 -->
+
 					<th style="text-align: center;">書籍編號</th>
 					<th style="text-align: left;">書籍名稱</th>
 					<th style="text-align: center;">作者</th>
@@ -365,9 +372,12 @@ input:checked + .slider:before {
 					<th style="text-align: center;">價錢</th>
 					<th style="text-align: center;">ISBN</th>
 					<th style="text-align: center;">庫存</th>
-					<th style="text-align: center;">上下架狀態</th>
 					<th style="text-align: center;">修改</th>
-					<th style="text-align: center;">狀態
+					<th style="text-align: center;">刪除</th>
+					<th style="text-align: center;">銷售狀態</th>
+					<!-- 
+					<th style="text-align: center;">狀態</th>
+					 -->
 				</tr>
 			</thead>
 
@@ -380,24 +390,42 @@ input:checked + .slider:before {
 					for (BooksBean book : booksList) {
 				%>
 				<tr>
+					<!-- 
 					<td style="text-align: center;"><input type="checkbox"
 						class="checkOne" name="selectedBookId"
 						value="<%=book.getBookId()%>" form="mainBatchForm"></td>
+				 -->
 					<td style="text-align: center;"><%=book.getBookId()%></td>
 					<td style="text-align: left;"><a
 						href="GetBook?bookId=<%=book.getBookId()%>"><%=book.getBookName()%></a></td>
 					<td style="text-align: center;"><%=book.getAuthor()%></td>
 					<td style="text-align: center;"><%=(book.getTranslator() == null) ? "" : book.getTranslator()%></td>
 					<td style="text-align: center;"><%=book.getPress()%></td>
-					<td style="text-align: center;">${book.getGenreBean().getGenreName()}</td>
+					<td style="text-align: center;">
+						<%
+						if (book.getGenreBean() != null) {
+							out.print(book.getGenreBean().getGenreName());
+						} else {
+							out.print("未分類");
+						}
+						%>
+					</td>
 					<td style="text-align: center;"><%=book.getPrice().intValue()%></td>
 					<td style="text-align: center;"><%=book.getIsbn()%></td>
 					<td style="text-align: center;"><%=book.getStock()%></td>
+					<!-- 
 					<td style="text-align: center;"><%=(book.getOnShelf() == true) ? "上架中" : "下架中"%></td>
+					 -->
 					<td style="text-align: center;">
 						<form action="UpdateBook" method="get">
 							<input type="hidden" name="bookId" value="<%=book.getBookId()%>">
 							<input type="submit" value="修改" class="btn btn-edit">
+						</form>
+					</td>
+					<td style="text-align: center;">
+						<form action="DeleteBook" method="post">
+							<input type="hidden" name="bookId" value="<%=book.getBookId()%>">
+							<input type="submit" value="刪除" class="btn btn-delete">
 						</form>
 					</td>
 					<td style="text-align: center;">
@@ -466,6 +494,59 @@ $(document).ready(function () {
 });
 
 $(document).ready(function() {
+    // 監聽上下架 Switch 的變更事件 
+    $(document).on('change', '.on-shelf-toggle', function() {
+        const checkbox = $(this);
+        const bookId = checkbox.data('bookid');
+        const isChecked = checkbox.is(':checked'); 
+        const statusLabel = checkbox.closest('.switch-container').find('.status-label');
+        const actionText = isChecked ? "上架" : "下架";
+
+        checkbox.prop('checked', !isChecked);
+
+        Swal.fire({
+            title:'確認要將此書籍' + actionText + '嗎？',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#a07d58', 
+            cancelButtonColor: '#e8e4dc',
+            confirmButtonText: '確定',
+            cancelButtonText: '取消'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '<%=request.getContextPath()%>/UpdateShelfStatus', // 您的 Servlet 路徑
+                    type: 'POST',
+                    data: { 
+                        bookId: bookId, 
+                        status: isChecked 
+                    },
+                    success: function(res) {
+                        if (res.trim() === "success") {
+                            checkbox.prop('checked', isChecked);
+                            statusLabel.text(isChecked ? "上架中" : "下架中");
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: `${actionText}成功`,
+                                timer: 1000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire('失敗', '更新狀態失敗，請聯繫管理員', 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('錯誤', '伺服器通訊失敗', 'error');
+                    }
+                });
+            }
+        });
+    });
+});
+
+/*
+$(document).ready(function() {
 	//被選取的資料修改backGround	
 	$('.checkOne').on('change', function() {
         var row = $(this).closest('tr');
@@ -494,6 +575,7 @@ $(document).ready(function() {
     });
 
 	//動態檢視按鈕狀態
+	
    	function updateCheckAllStatus() {
         var singleChecks = $('.checkOne'); 
         var checkedChecks = $('.checkOne:checked');
@@ -510,167 +592,109 @@ $(document).ready(function() {
             checkAll.prop('checked', false).prop('indeterminate', false);
         }
         
- 		//控制批量刪除按鈕使用與否
         if (checkedCount > 0) {
             batchBtn.prop('disabled', false); 
         } else {
             batchBtn.prop('disabled', true); 
         }
- 		//動態修改選取數量
         batchBtn.val('批量刪除 (' + checkedCount + ')');
     }
     updateCheckAllStatus();
 
 });
+*/
 </script>
 
 	<script>
 	
-	//單筆刪除防呆檢查
-	/*
-	$('.btn-delete').on('click',function(e){
-		e.preventDefault();
-		const btn = $(this);
-		let form = $(this).closest('form');
-		let bookId = form.find('input[name=bookId]').val();
-		
-		
-		  $.ajax({
-		        url: '<%=request.getContextPath()%>/bookDeleteCheck',
-		        type: 'POST',
-		        data: { bookId: bookId },
-		        success: function (res) {
+	//單筆刪除檢查
+	$('.btn-delete').on('click', function(e) {
+	    e.preventDefault(); 
+	    
+	    const btn = $(this);
+	    const form = btn.closest('form');
+	    const bookId = form.find('input[name=bookId]').val();
+	    const row = btn.closest('tr');
+	    
+	    const onShelfStatus = row.find('.status-label').text().trim();
 
-		            if (res === "false") {
-		                Swal.fire({
-		                    icon: 'error',
-		                    title: '無法刪除',
-		                    text: '此書已有訂單或評論，無法刪除'
-		                });
-		                return; // ❗ 結束整個流程
-		            }
+	    if (onShelfStatus === '上架中') {
+	        Swal.fire({
+	            icon: 'error',
+	            title: '無法刪除',
+	            text: '書籍目前為「上架中」，請先將其下架。'
+	        });
+	        return; 
+	    }
 
-		            const row = btn.closest('tr');
-		            const onShelfStatus = row.find('td:eq(10)').text().trim();
+	    $.ajax({
+	        url: '<%=request.getContextPath()%>/bookDeleteCheck', 
+	        type: 'POST',
+	        data: { bookId: bookId },
+	        success: function(allCheck) {
+	            if (allCheck.trim() === "false") {
+	                Swal.fire({
+	                    icon: 'error',
+	                    title: '無法刪除',
+	                    text: '此書籍已有關聯的訂單或評價資料，不可刪除。'
+	                });
+	            } else {
+	                Swal.fire({
+	                    title: '確認刪除這筆資料？',
+	                    text: '此操作將永久刪除且無法復原！',
+	                    icon: 'warning',
+	                    showCancelButton: true,
+	                    confirmButtonColor: '#d89696', 
+	                    cancelButtonColor: '#e8e4dc',
+	                    confirmButtonText: '確認刪除',
+	                    cancelButtonText: '取消'
+	                }).then((result) => {
+	                    if (result.isConfirmed) {
+	                        form.submit();
+	                    }
+	                });
+	            }
+	        },
+	        error: function() {
+	            Swal.fire('錯誤', '系統檢查失敗，請稍後再試', 'error');
+	        }
+	    });
+	});
 
-		            if (onShelfStatus === '上架中') {
-		                Swal.fire({
-		                    icon: 'error',
-		                    title: '無法刪除',
-		                    text: '書籍狀態為上架中，請先下架'
-		                });
-		                return; // ❗ 結束
-		            }
+	
+	// 修改按鈕防呆檢查
+	$('.btn-edit').on('click', function(e) {
+	    const btn = $(this);
+	    const row = btn.closest('tr');
+	    
+	    const onShelfStatus = row.find('.status-label').text().trim();
 
-		            Swal.fire({
-		                title: '確定刪除這筆資料？',
-		                text: '此操作無法復原',
-		                icon: 'warning',
-		                showCancelButton: true,
-		                confirmButtonText: '確認刪除',
-		                cancelButtonText: '取消'
-		            }).then((result) => {
-		                if (result.isConfirmed) {
-		                    form[0].submit();
-		                }
-		            });
-		        },
-		        error: function () {
-		            Swal.fire({
-		                icon: 'error',
-		                title: '系統錯誤',
-		                text: '刪除檢查失敗'
-		            });
-		        }
-		    });
-		});
-	*/
-//批次刪除防呆
-/*
-$('.btn-deleteAll').on('click', function(e) {
-    let hasOnShelfBook = false;
-    $('.checkOne:checked').each(function() {
-        const row = $(this).closest('tr');
-        
-        const onShelfStatusCell = row.find('td:eq(10)'); 
-        const onShelfStatus = onShelfStatusCell.text().trim();
-        
-        if (onShelfStatus === "上架中") {
-            hasOnShelfBook = true;
-            return false; 
-        }
-    });
-    if (hasOnShelfBook) {
-        e.preventDefault(); 
-        e.stopImmediatePropagation(); 
-        Swal.fire({
-            icon: "error",
-            title: "無法批量刪除",
-            text: "選取項目中包含狀態為「上架中」的書籍，請先將其下架。",
-        });
-        return false; 
-    }
-});
-	*/
+	    if (onShelfStatus === '上架中') {
+	        e.preventDefault(); 
+	        
+	        Swal.fire({
+	            icon: 'error',
+	            title: '無法修改',
+	            text: '書籍目前處於「上架中」狀態，請先將其下架後再進行修改。',
+	            confirmButtonColor: '#a07d58' // 皮革棕
+	        });
+	    }
+	});
 </script>
 
 	<script>
-	/*
-//批量刪除Controller
-$('.btn-deleteAll').on('click', function(e) {
-    e.preventDefault();
-    let form = $(this).closest('form')
-    Swal.fire({
-        title: "確認刪除勾選資料?",
-        text: "資料將被永久刪除且無法復原！",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: CONFIRM_COLOR, 
-        cancelButtonColor: CANCEL_COLOR,
-        confirmButtonText: "確認刪除",
-        cancelButtonText: "取消"
-    }).then((result) => {
-        if (result.isConfirmed) {
-        	form.submit();
-        	
-        }
-    }) 
-}) 
+	
 
-*/
-//單筆刪除Controller
-/*
-$('.btn-delete').on('click',function(e){
-	 e.preventDefault();
-	 let form = $(this).closest('form')
-	 
-	  Swal.fire({
-	        title: "確認刪除這筆資料?",
-	        text: "這筆資料將被永久刪除且無法復原！",
-	        icon: "warning",
-	        showCancelButton: true,
-	        confirmButtonColor: CONFIRM_COLOR,
-	        cancelButtonColor: CANCEL_COLOR, 
-	        confirmButtonText: "確認刪除",
-	        cancelButtonText: "取消"
-	    }).then((result) => {
-	        if (result.isConfirmed) {
-	        	form.submit();
-	        }
-	    }) 
-})
 
-*/
 
 let deleteStatus = "<%=request.getParameter("deleteStatus")%>"
-if(deleteStatus=="success")
-	Swal.fire({
-        icon: "success",
-        title: "已刪除",
-        text: "資料已成功刪除。",
-    });
-
-</script>
+		if (deleteStatus == "success")
+			Swal.fire({
+				icon : "success",
+				title : "已刪除",
+				text : "資料已成功刪除。",
+			});
+	</script>
 
 
 </body>

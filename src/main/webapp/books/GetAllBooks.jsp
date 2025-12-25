@@ -526,12 +526,6 @@ $(document).ready(function() {
                             checkbox.prop('checked', isChecked);
                             statusLabel.text(isChecked ? "上架中" : "下架中");
 
-                            Swal.fire({
-                                icon: 'success',
-                                title: `${actionText}成功`,
-                                timer: 1000,
-                                showConfirmButton: false
-                            });
                         } else {
                             Swal.fire('失敗', '更新狀態失敗，請聯繫管理員', 'error');
                         }

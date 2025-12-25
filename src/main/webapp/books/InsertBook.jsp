@@ -142,17 +142,20 @@ td input:focus, td select:focus {
 				<tr>
 					<td>書籍名稱:</td>
 					<td><span id="nameSpan" class="requirement">*</span> <input
-						type="text" name="bookName" id="bookName" required placeholder="請輸入書籍名稱.."></td>
+						type="text" name="bookName" id="bookName" required
+						placeholder="請輸入書籍名稱.."></td>
 				</tr>
 				<tr>
 					<td>作者:</td>
 					<td><span id="authorSpan" class="requirement">*</span> <input
-						type="text" name="author" id="author" required placeholder="請輸入書籍作者.."></td>
+						type="text" name="author" id="author" required
+						placeholder="請輸入書籍作者.."></td>
 				</tr>
 				<tr>
 					<td>譯者:</td>
 					<td><span id="translatorSpan" class="requirement">*</span> <input
-						type="text" name="translator" id="translator" required placeholder="請輸入書籍譯者.."></td>
+						type="text" name="translator" id="translator" required
+						placeholder="請輸入書籍譯者.."></td>
 				</tr>
 
 				<tr>
@@ -178,7 +181,8 @@ td input:focus, td select:focus {
 				<tr>
 					<td>出版社:</td>
 					<td><span id="pressSpan" class="requirement">*</span> <input
-						type="text" name="press" required id="press" placeholder="請輸入書籍出版社.."></td>
+						type="text" name="press" required id="press"
+						placeholder="請輸入書籍出版社.."></td>
 				</tr>
 				<tr>
 					<td>價錢:</td>
@@ -188,17 +192,20 @@ td input:focus, td select:focus {
 				<tr>
 					<td>ISBN:</td>
 					<td><span id="isbnSpan" class="requirement">*</span> <input
-						type="text" name="isbn" maxlength="13" id="isbn" required placeholder="請輸入書13位數字.."></td>
+						type="text" name="isbn" maxlength="13" id="isbn" required
+						placeholder="請輸入書13位數字.."></td>
 				</tr>
 				<tr>
 					<td>庫存:</td>
 					<td><span id="stockSpan" class="requirement">*</span> <input
-						type="text" name="stock" required id="stock" placeholder="請輸入庫存量..">
+						type="text" name="stock" required id="stock"
+						placeholder="請輸入庫存量..">
 				</tr>
 				<tr>
 					<td>簡述:</td>
 					<td><span id="shortDescSpan" class="requirement">*</span> <input
-						type="text" name="short_desc" id="shortDesc" required placeholder="請輸入書籍描述..">
+						type="text" name="short_desc" id="shortDesc" required
+						placeholder="請輸入書籍描述..">
 				</tr>
 			</table>
 			<input type="submit" class="btn-submit" value="送出">
@@ -328,11 +335,22 @@ td input:focus, td select:focus {
 
 		//shortDesc Check function
 		function shortDescCheck() {
-			let content = $(this).val()
-			if (content >= 0) {
-				$('#shortDescSpan').text('✓').css('color', 'green')
-			}
-		}
+    let content = $(this).val().trim(); // 使用 trim() 移除純空白字元
+    let $span = $('#shortDescSpan');
+
+    if (content === "") {
+        // 1. 判斷是否為空白
+        $span.text('欄位不可為空白').css('color', 'red');
+    } 
+    else if (content.length < 10) {
+        // 2. 判斷字數是否足夠
+        $span.text('字數不足，至少需要 10 個字 (目前: ' + content.length + ')').css('color', 'orange');
+    } 
+    else {
+        // 3. 符合所有條件
+        $span.text('✓').css('color', 'green');
+    }
+}
 		$('#shortDesc').on('input', shortDescCheck)
 
 		//insert表單送出檢查
@@ -366,7 +384,6 @@ td input:focus, td select:focus {
 					}
 
 				})
-
 	</script>
 
 

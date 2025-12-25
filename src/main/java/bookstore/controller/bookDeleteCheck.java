@@ -25,7 +25,7 @@ public class bookDeleteCheck extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		System.out.println("有進到doPost進行檢查");
-		String bookId = request.getParameter("bookId");
+		Integer bookId = Integer.parseInt(request.getParameter("bookId"));
 
 		// true代表有資料
 		BookDao bookDao = new BookDao();

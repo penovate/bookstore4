@@ -142,17 +142,17 @@ td input:focus, td select:focus {
 				<tr>
 					<td>書籍名稱:</td>
 					<td><span id="nameSpan" class="requirement">*</span> <input
-						type="text" name="bookName" id="bookName" required></td>
+						type="text" name="bookName" id="bookName" required placeholder="請輸入書籍名稱.."></td>
 				</tr>
 				<tr>
 					<td>作者:</td>
 					<td><span id="authorSpan" class="requirement">*</span> <input
-						type="text" name="author" id="author" required></td>
+						type="text" name="author" id="author" required placeholder="請輸入書籍作者.."></td>
 				</tr>
 				<tr>
 					<td>譯者:</td>
 					<td><span id="translatorSpan" class="requirement">*</span> <input
-						type="text" name="translator" id="translator" required></td>
+						type="text" name="translator" id="translator" required placeholder="請輸入書籍譯者.."></td>
 				</tr>
 
 				<tr>
@@ -161,7 +161,6 @@ td input:focus, td select:focus {
 						name="genre" id="genre" required>
 							<option value="" disabled selected>-- 請選擇書籍類型 --</option>
 							<%
-							
 							if (genreList != null && !genreList.isEmpty()) {
 								for (GenreBean genre : genreList) {
 							%>
@@ -179,27 +178,27 @@ td input:focus, td select:focus {
 				<tr>
 					<td>出版社:</td>
 					<td><span id="pressSpan" class="requirement">*</span> <input
-						type="text" name="press" required id="press"></td>
+						type="text" name="press" required id="press" placeholder="請輸入書籍出版社.."></td>
 				</tr>
 				<tr>
 					<td>價錢:</td>
-					<td><span id="priceSpan" class="requirement">*</span> 
-					<input	type="text" name="price" required id="price"></td>
+					<td><span id="priceSpan" class="requirement">*</span> <input
+						type="text" name="price" required id="price" placeholder="請輸入價錢.."></td>
 				</tr>
 				<tr>
 					<td>ISBN:</td>
-					<td><span id="isbnSpan" class="requirement">*</span>
-					 <input	type="text" name="isbn" maxlength="13" id="isbn" required></td>
+					<td><span id="isbnSpan" class="requirement">*</span> <input
+						type="text" name="isbn" maxlength="13" id="isbn" required placeholder="請輸入書13位數字.."></td>
 				</tr>
 				<tr>
 					<td>庫存:</td>
 					<td><span id="stockSpan" class="requirement">*</span> <input
-						type="text" name="stock" required id="stock">
+						type="text" name="stock" required id="stock" placeholder="請輸入庫存量..">
 				</tr>
 				<tr>
 					<td>簡述:</td>
 					<td><span id="shortDescSpan" class="requirement">*</span> <input
-						type="text" name="short_desc" id="shortDesc" required>
+						type="text" name="short_desc" id="shortDesc" required placeholder="請輸入書籍描述..">
 				</tr>
 			</table>
 			<input type="submit" class="btn-submit" value="送出">
@@ -224,21 +223,37 @@ td input:focus, td select:focus {
 
 		//isbn Check function
 		function isbnCheck() {
-			let rule1 = /[0-9]/
-			let content = $(this).val()
-			if (content.length < 0) {
-				$('#isbnSpan').text('ISBN不可空白').css('color', 'red')
-			} else if (content.length == 0) {
-				$('#isbnSpan').text('*').css('color', 'red')
-			} else if (!rule1.test(content)) {
-				$('#isbnSpan').text('ISBN只能為數字').css('color', 'red')
-			} else if (content.length < 13) {
-				$('#isbnSpan').text('ISBN必須為13碼數字').css('color', 'red')
-			} else {
-				$('#isbnSpan').text('✓').css('color', 'green')
-			}
+		    const rule1 = /^[0-9]+$/;
+		    const content = $(this).val(); // 建議統一使用 content
+		    const $span = $('#isbnSpan');
+
+		    if (content.length == 0) {
+		        $span.text('ISBN不可空白').css('color', 'red');
+		    } else if (!rule1.test(content)) {
+		        $span.text('ISBN只能為數字').css('color', 'red');
+		    } else if (content.length < 13) {
+		        $span.text('ISBN必須為13碼數字').css('color', 'red');
+		    } else {
+		        // --- 只有以上格式都通過 (滿13碼且全數字)，才執行 Ajax ---
+		        $.ajax({
+		            url: '<%=request.getContextPath()%>/isbnCheck',
+					type : 'post',
+					dataType : 'text',
+					data : {
+						isbn : content
+					// 修正：這裡要用 content，而不是 value
+					},
+					success : function(e) {
+						if (e == "false") {
+							$span.text('✓').css('color', 'green');
+						} else {
+							$span.text('此ISBN已存在').css('color', 'red');
+						}
+					}
+				}); // Ajax 結束
+			} // else 結束
 		}
-		$('#isbn').on('input', isbnCheck)
+		$('#isbn').on('input', isbnCheck);
 
 		//genre Check function
 		function genreCheck() {
@@ -320,9 +335,10 @@ td input:focus, td select:focus {
 		}
 		$('#shortDesc').on('input', shortDescCheck)
 
-		
 		//insert表單送出檢查
-		$('.btn-submit').on('click',function(e) {
+		$('.btn-submit').on(
+				'click',
+				function(e) {
 					let form = $(this).closest('form')
 					let nameVal = $('#nameSpan').text();
 					let authorVal = $('#authorSpan').text();
@@ -340,7 +356,7 @@ td input:focus, td select:focus {
 							&& shortDescVal == '✓') {
 						form.submit();
 					} else {
-					e.preventDefault();
+						e.preventDefault();
 						Swal.fire({
 							icon : "error",
 							title : "無法送出",
@@ -350,26 +366,7 @@ td input:focus, td select:focus {
 					}
 
 				})
-				
-			//isbn唯一性檢查 Ajax
-			$('#isbn').on('keyup',function(){
-				let value = $(this).val();
-				
-				$.ajax({
-					url:'<%=request.getContextPath()%>/isbnCheck',
-					type:'post',
-					dataType:'text',
-					data:{isbn:value},
-					success:function(e){
-						if(e=="false"){
-							$('#isbnSpan').text('✓').css('color','green')
-						}else{
-							$('#isbnSpan').text('此ISBN已存在').css('color','red')
-						}
-					}
-					
-				})
-			})
+
 	</script>
 
 

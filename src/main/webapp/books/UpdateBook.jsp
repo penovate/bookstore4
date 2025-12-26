@@ -1,8 +1,7 @@
 <%@page import="java.util.List"%>
 <%@page import="bookstore.bean.GenreBean"%>
 <%@page import="bookstore.bean.BooksBean"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%
 BooksBean book = (BooksBean) request.getAttribute("book");
 List<GenreBean> genreList = (List<GenreBean>) request.getAttribute("genresList");
@@ -74,6 +73,16 @@ td {
 /* 讓輸入欄位靠左對齊 */
 td:nth-child(2) {
 	text-align: left;
+}
+
+/* ------------------ 訊息提示樣式 (與 InsertBook 相同) ------------------ */
+.requirement {
+	color: red;
+	display: block;
+	font-size: 13px;
+	font-weight: normal;
+	height: 18px;
+	margin-bottom: 3px;
 }
 
 /* 輸入框與下拉式選單共用樣式 */
@@ -173,7 +182,7 @@ td input:focus, td select:focus {
 		<form method="post" action="UpdateBook">
 			<table>
 
-				<input type="hidden" name="bookId" value="<%=book.getBookId()%>">
+				<input type="hidden" name="bookId" id="bookId" value="<%=book.getBookId()%>">
 
 				<tr>
 					<td>書籍編號 (ID):</td>
@@ -183,22 +192,22 @@ td input:focus, td select:focus {
 
 				<tr>
 					<td>書籍名稱:</td>
-					<td><input type="text" name="bookName"
+					<td><span id="nameSpan" class="requirement">*</span><input type="text" name="bookName" id="bookName"
 						value="<%=book.getBookName()%>" required></td>
 				</tr>
 				<tr>
 					<td>作者:</td>
-					<td><input type="text" name="author"
+					<td><span id="authorSpan" class="requirement">*</span><input type="text" name="author" id="author"
 						value="<%=book.getAuthor()%>" required></td>
 				</tr>
 				<tr>
 					<td>譯者:</td>
-					<td><input type="text" name="translator"
+					<td><span id="translatorSpan" class="requirement"></span><input type="text" name="translator" id="translator"
 						value="<%=book.getTranslator() == null ? "" : book.getTranslator()%>"></td>
 				</tr>
 				<tr>
 					<td>類型:</td>
-					<td><select name="genre" required>
+					<td><span id="genreSpan" class="requirement">*</span><select name="genre" id="genre" required>
 							<option value="" disabled>-- 請選擇書籍類型 --</option>
 							<%
 							if (genreList != null && !genreList.isEmpty()) {
@@ -217,30 +226,30 @@ td input:focus, td select:focus {
 				</tr>
 				<tr>
 					<td>出版社:</td>
-					<td><input type="text" name="press"
+					<td><span id="pressSpan" class="requirement">*</span><input type="text" name="press" id="press"
 						value="<%=book.getPress()%>" required></td>
 				</tr>
 				<tr>
 					<td>價錢:</td>
-					<td><input type="text" name="price"
-						value="<%=book.getPrice()%>" required
-						pattern="[0-9]+(\.[0-9]{1,2})?"></td>
+					<td><span id="priceSpan" class="requirement">*</span><input type="text" name="price" id="price"
+						value="<%=book.getPrice()%>" required></td>
 				</tr>
 				<tr>
 					<td>ISBN:</td>
-					<td><input type="text" name="isbn" value="<%=book.getIsbn()%>"
-						required></td>
+					<td><span id="isbnSpan" class="requirement">*</span><input type="text" name="isbn" id="isbn" value="<%=book.getIsbn()%>"
+						maxlength="13" required></td>
 				</tr>
 				<tr>
 					<td>庫存:</td>
-					<td><input type="text" name="stock"
-						value="<%=book.getStock()%>" required pattern="[0-9]+"></td>
+					<td><span id="stockSpan" class="requirement">*</span><input type="text" name="stock" id="stock"
+						value="<%=book.getStock()%>" required></td>
 				</tr>
 				<tr>
 					<td>簡述:</td>
-					<td><input type="text" name="short_desc"
+					<td><span id="shortDescSpan" class="requirement"></span><input type="text" name="short_desc" id="shortDesc"
 						value="<%=book.getShortDesc() == null ? "" : book.getShortDesc()%>"></td>
 				</tr>
+				<!-- 
 				<tr>
 					<td>上下架狀態:</td>
 					<td><select name="on_shelf" required>
@@ -250,6 +259,7 @@ td input:focus, td select:focus {
 								(False)</option>
 					</select></td>
 				</tr>
+				 -->
 			</table>
 
 			<div class="btn-container">
@@ -260,5 +270,117 @@ td input:focus, td select:focus {
 		</form>
 	</div>
 
+	<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+	<script>
+		$(function() {
+			// 紀錄原始 ISBN，用於修改時的比對
+			const originalIsbn = $('#isbn').val();
+
+			// 書名檢查
+			$('#bookName').on('input', function() {
+				let content = $(this).val().trim();
+				$('#nameSpan').text(content.length === 0 ? '書名不可為空白！' : '✓').css('color', content.length === 0 ? 'red' : 'green');
+			});
+
+			// 作者檢查
+			$('#author').on('input', function() {
+				let content = $(this).val().trim();
+				$('#authorSpan').text(content.length === 0 ? '作者不可為空白' : '✓').css('color', content.length === 0 ? 'red' : 'green');
+			});
+
+			// ISBN 檢查 (含 Ajax)
+			$('#isbn').on('input', function() {
+				let content = $(this).val().trim();
+				let $span = $('#isbnSpan');
+				let rule = /^\d{13}$/;
+
+				if (content === originalIsbn) {
+					$span.text('✓ (未變更)').css('color', 'green');
+					return;
+				}
+
+				if (content.length === 0) {
+					$span.text('ISBN不可空白').css('color', 'red');
+				} else if (!rule.test(content)) {
+					$span.text('ISBN必須為13碼數字').css('color', 'red');
+				} else {
+					$.ajax({
+						url: '<%=request.getContextPath()%>/isbnCheck',
+						type: 'post',
+						data: { isbn: content },
+						success: function(res) {
+							if (res.trim() === "false") {
+								$span.text('✓').css('color', 'green');
+							} else {
+								$span.text('此ISBN已存在').css('color', 'red');
+							}
+						}
+					});
+				}
+			});
+
+			// 價格檢查
+			$('#price').on('input', function() {
+				let content = $(this).val();
+				let rule = /^[0-9]+(\.[0-9]{1,2})?$/;
+				if (content.length === 0) {
+					$('#priceSpan').text('請輸入價格').css('color', 'red');
+				} else if (!rule.test(content)) {
+					$('#priceSpan').text('只能輸入數字').css('color', 'red');
+				} else {
+					$('#priceSpan').text('✓').css('color', 'green');
+				}
+			});
+
+			// 出版社檢查
+			$('#press').on('input', function() {
+				let content = $(this).val().trim();
+				$('#pressSpan').text(content.length === 0 ? '出版社不可空白' : '✓').css('color', content.length === 0 ? 'red' : 'green');
+			});
+
+			// 庫存檢查
+			$('#stock').on('input', function() {
+				let content = $(this).val();
+				let rule = /^[0-9]+$/;
+				if (content.length === 0) {
+					$('#stockSpan').text('請輸入庫存').css('color', 'red');
+				} else if (!rule.test(content)) {
+					$('#stockSpan').text('只能輸入數字').css('color', 'red');
+				} else {
+					$('#stockSpan').text('✓').css('color', 'green');
+				}
+			});
+
+			// 類型檢查
+			$('#genre').on('change', function() {
+				$('#genreSpan').text('✓').css('color', 'green');
+			});
+
+			// 表單送出檢查
+			$('.btn-submit').on('click', function(e) {
+				let isAllOk = true;
+				// 手動觸發一次所有必填項驗證
+				$('#bookName, #author, #press, #price, #isbn, #stock').trigger('input');
+				
+				$('.requirement').each(function() {
+					let t = $(this).text();
+					if (t !== '✓' && t !== '✓ (未變更)' && t !== '*' && t !== '') {
+						isAllOk = false;
+					}
+				});
+
+				if (!isAllOk) {
+					e.preventDefault();
+					Swal.fire("提醒", "請確認標記為紅色的欄位內容是否正確。", "error");
+				}
+			});
+
+			// 初始化：進入頁面先標示原本正確的欄位
+			$('#bookName, #author, #press, #price, #isbn, #stock').trigger('input');
+			if($('#genre').val()) $('#genreSpan').text('✓').css('color', 'green');
+		});
+	</script>
 </body>
 </html>

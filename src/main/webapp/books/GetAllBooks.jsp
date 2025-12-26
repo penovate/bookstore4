@@ -494,7 +494,6 @@ $(document).ready(function () {
 });
 
 $(document).ready(function() {
-    // 監聽上下架 Switch 的變更事件 
     $(document).on('change', '.on-shelf-toggle', function() {
         const checkbox = $(this);
         const bookId = checkbox.data('bookid');

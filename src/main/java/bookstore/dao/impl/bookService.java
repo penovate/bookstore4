@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
 import bookstore.dao.BookDao;
@@ -39,19 +40,12 @@ public class bookService {
 		 * 資料驗證區域
 		 */
 		Boolean check = null;
-<<<<<<< HEAD
 		BooksBean bookcheck = bookDao.selectBooksByIsbn(isbnStr);
-		if (bookcheck!=null) {
-			check=true;
-		}else {
-			check=false;
-=======
 		BooksBean book = bookDao.selectBooksByIsbn(isbnStr);
 		if (book != null) {
 			check = true;
 		} else {
 			check = false;
->>>>>>> 0ee399f507da12ac3030f676cdbb0e9d0b79f112
 		}
 		return check;
 	}
@@ -60,22 +54,9 @@ public class bookService {
 	public BooksBean inserttBook(BooksBean booksBean) {
 		/*
 		 * 資料驗證區域
+		 * 
 		 */
 		BooksBean bookInsert = bookDao.insertBooks(booksBean);
-
-		/*
-		 * // genres轉型 Integer genres = null; if (genresStr != null &&
-		 * !genresStr.isBlank()) { genres = Integer.valueOf(genresStr.trim()); }
-		 * 
-		 * // price轉型 BigDecimal price = null; if (pressStr != null &&
-		 * !pressStr.isBlank()) { price = new BigDecimal(priceStr.trim()); }
-		 * 
-		 * // stock轉型 Integer stock = null; if (stockStr != null && !stockStr.isBlank())
-		 * { stock = Integer.valueOf(stockStr.trim()); }
-		 * 
-		 * // translator保留空白 if (translatorStr == null || translatorStr.isBlank()) {
-		 * translatorStr = "-"; }
-		 */
 
 		return bookInsert;
 	}
@@ -121,5 +102,17 @@ public class bookService {
 		boolean isSuccess = bookDao.updateOnShelfStatus(bookId, newStatus);
 		return isSuccess;
 	}
+	
+	public class BusinessException extends RuntimeException {
+	    private int errorCode;
+
+	    public BusinessException(String message, int errorCode) {
+	        super(message);
+	        this.errorCode = errorCode;
+	    }
+	    public int getErrorCode() { return errorCode; }
+	}
+	
+	
 
 }

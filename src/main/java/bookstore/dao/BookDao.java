@@ -72,14 +72,11 @@ public class BookDao {
 	// select by isbn------
 	public BooksBean selectBooksByIsbn(String isbn) {
 		Session session = sessionFactory.getCurrentSession();
-<<<<<<< HEAD
-		String hql = "FROM BooksBean WHERE isbn = :isbn";
-		BooksBean book = session.createQuery(hql, BooksBean.class).setParameter("isbn", isbn).uniqueResult(); 
-																												
-=======
-		String hql = "from BooksBean b where b.isbn = :isbn";
-		BooksBean book = session.createQuery(hql, BooksBean.class).setParameter("isbn", isbn).uniqueResult();
->>>>>>> 0ee399f507da12ac3030f676cdbb0e9d0b79f112
+
+
+		String hql1 = "from BooksBean b where b.isbn = :isbn";
+		BooksBean book = session.createQuery(hql1, BooksBean.class).setParameter("isbn", isbn).uniqueResult();
+
 		return book;
 	}
 

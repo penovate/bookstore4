@@ -275,7 +275,6 @@ td input:focus, td select:focus {
 
 	<script>
 		$(function() {
-			// 紀錄原始 ISBN，用於修改時的比對
 			const originalIsbn = $('#isbn').val();
 
 			// 書名檢查

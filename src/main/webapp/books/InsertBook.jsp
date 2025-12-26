@@ -231,7 +231,7 @@ td input:focus, td select:focus {
 		//isbn Check function
 		function isbnCheck() {
 		    const rule1 = /^[0-9]+$/;
-		    const content = $(this).val(); // 建議統一使用 content
+		    const content = $(this).val();
 		    const $span = $('#isbnSpan');
 
 		    if (content.length == 0) {
@@ -241,14 +241,12 @@ td input:focus, td select:focus {
 		    } else if (content.length < 13) {
 		        $span.text('ISBN必須為13碼數字').css('color', 'red');
 		    } else {
-		        // --- 只有以上格式都通過 (滿13碼且全數字)，才執行 Ajax ---
 		        $.ajax({
 		            url: '<%=request.getContextPath()%>/isbnCheck',
 					type : 'post',
 					dataType : 'text',
 					data : {
 						isbn : content
-					// 修正：這裡要用 content，而不是 value
 					},
 					success : function(e) {
 						if (e == "false") {
@@ -257,8 +255,8 @@ td input:focus, td select:focus {
 							$span.text('此ISBN已存在').css('color', 'red');
 						}
 					}
-				}); // Ajax 結束
-			} // else 結束
+				}); 
+			} 
 		}
 		$('#isbn').on('input', isbnCheck);
 

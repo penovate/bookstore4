@@ -55,7 +55,7 @@ public class InsertBook extends HttpServlet {
 		List<GenreBean> genreList = genreService.getAllGenres();
 
 		bookService bookService = new bookService();
-		bookService.inserttBook(book);
+		bookService.insertBook(book);
 		request.setAttribute("bookInsert", book);
 		request.setAttribute("genreList", genreList);
 		request.getRequestDispatcher("/books/InsertSuccess.jsp").forward(request, response);

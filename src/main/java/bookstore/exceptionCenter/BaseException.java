@@ -1,10 +1,10 @@
 package bookstore.exceptionCenter;
 
-public class BookException extends RuntimeException {
+public class BaseException extends RuntimeException {
 
 	private int code;
 
-	public BookException(int code, String message) {
+	public BaseException(int code, String message) {
 		super(message);
 		this.code = code;
 	}

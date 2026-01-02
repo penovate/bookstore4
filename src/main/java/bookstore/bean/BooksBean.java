@@ -19,7 +19,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+<<<<<<< HEAD
 import jakarta.*;
+=======
+>>>>>>> a401b6c936e75582745296f81f034773168888bc
 
 @Entity
 @Table(name = "books")

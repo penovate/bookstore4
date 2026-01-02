@@ -130,7 +130,7 @@
         }
     %>
 
-    <form action="${pageContext.request.contextPath}/LoginServlet" method="POST" class="login-form"> 
+    <form action="${pageContext.request.contextPath}/login" method="POST" class="login-form"> 
         <div class="form-group">
             <label for="email" class="form-label">帳號（信箱）:</label><br>
             <input type="email" id="email" name="email" required class="form-input">

@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8" import="java.util.*,bookstore.bean.UserBean" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <%!@SuppressWarnings("unchecked")%>
 <html>
@@ -230,12 +231,11 @@
 </head>
 <body class="center-body">
 <%
-    String currentSearchName = (String) request.getAttribute("currentSearchName");
-    String currentUserTypeFilter = (String) request.getAttribute("currentUserTypeFilter");
-    
-    boolean isNameSet = (currentSearchName != null && !currentSearchName.trim().isEmpty());
-    String nameValue = isNameSet ? currentSearchName : "";
-    String typeValue = (currentUserTypeFilter != null) ? currentUserTypeFilter : "";
+	Object typeFilterObj = request.getAttribute("currentUserTypeFilter");
+	String typeValue = (typeFilterObj != null) ? typeFilterObj.toString() : "";
+
+	String currentSearchName = (String) request.getAttribute("currentSearchName");
+	String nameValue = (currentSearchName != null) ? currentSearchName : "";
 %>
 <div align="center">
 <h2>所有會員資料</h2>
@@ -249,7 +249,7 @@
                padding: 5px 10px;
                ">X</button>
 </div>
-<form action="GetAllUsers" method="GET">
+<form action="${pageContext.request.contextPath}/users/list" method="GET">
     <input type="text" name="searchName" placeholder="輸入「姓氏」進行查詢" 
            value="<%= nameValue %>">
     <select name="userTypeFilter">
@@ -258,7 +258,7 @@
         <option value="1" <%= typeValue.equals("1") ? "selected" : "" %>>僅顯示「一般會員」</option>
     </select>
     <input type="submit" value="查詢">
-    <a href="GetAllUsers">
+    <a href="${pageContext.request.contextPath}/users/list">
         <button type="button" class="system-button back-to-center-button">取消篩選</button>
     </a>
 </form>
@@ -289,18 +289,18 @@ List<UserBean> users = (List<UserBean>)request.getAttribute("users");
 	    	}
 	%>
 	<tr><td><%= user.getUserId() %>
-	<td><a href="GetUser?userId=<%= user.getUserId()%>"><%= user.getUserName() %></a>
+	<td><a href="${pageContext.request.contextPath}/users/get?userId=<%= user.getUserId()%>"><%= user.getUserName() %></a>
 	<td><%= user.getUserPwd() %>
 	<td><%= user.getEmail() %>
 	<td><%= genderDisplay %>
-	<td><%= user.getBirth() %>
+	<td><fmt:formatDate value="<%= user.getBirth() %>" pattern="yyyy-MM-dd" /></td>
 	<td><%= user.getPhoneNum() %>
 	<td><%= user.getAddress() %>
 	<td><%= userTypeDisplay %>
-	<td><a href="UpdateUser?user_id=<%= user.getUserId() %>">
+	<td><a href="${pageContext.request.contextPath}/users/update?userId=<%= user.getUserId() %>">
 	    <button class="update-button">修改</button>
 	</a>
-	<td><a href="DeleteUser?user_id=<%= user.getUserId() %>" 
+	<td><a href="${pageContext.request.contextPath}/users/delete?userId=<%= user.getUserId() %>" 
            onclick="return confirm('確定要刪除會員 「<%= user.getUserName() %>」 的資料嗎？');">
             <button class="delete-button">刪除</button>
         </a>
@@ -308,8 +308,8 @@ List<UserBean> users = (List<UserBean>)request.getAttribute("users");
 <% } %>	
 </table>
 <h3>共 <%= users.size() %> 筆會員資料</h3>
-<a href="users/UserInsert.jsp"><button class="system-button add-button">新增會員資料</button></a>
-<a href="users/users.html"><button class="system-button back-to-center-button">回到會員中心首頁</button></a>
+<a href="${pageContext.request.contextPath}/users/insert"><button class="system-button add-button">新增會員資料</button></a>
+<a href="users.jsp"><button class="system-button back-to-center-button">回到會員中心首頁</button></a>
 </div>
 
 <script>

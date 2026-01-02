@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Component;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +20,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
+@Component
 @DynamicInsert
 @DynamicUpdate
 public class UserBean implements java.io.Serializable {
@@ -36,6 +39,7 @@ public class UserBean implements java.io.Serializable {
 	@Column(name = "gender")
 	private String gender;
 	@Column(name = "birth")
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private Date birth;
 	@Column(name = "phone_num")
 	private String phoneNum;

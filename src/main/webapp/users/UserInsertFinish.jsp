@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -211,16 +212,12 @@ p a:hover {
                 </td>
             </tr>
             <tr>
-                <td><label for="birth">生日:</label></td>
-                <td>
-                	<%
-                		String birthVal = "";
-                	if(user.getBirth() != null) {
-                			birthVal = user.getBirth().toString().substring(0, 10);
-                	}
-                	%>
-                <input type="date" id="birth" name="birth" value="<%= birthVal %>" disabled></td>
-            </tr>
+    			<td><label for="birth">生日:</label></td>
+    			<td>
+        			<input type="date" id="birth" name="birth" 
+               			value="<fmt:formatDate value='${user.birth}' pattern='yyyy-MM-dd'/>" disabled>
+    			</td>
+			</tr>
             <tr>
                 <td><label for="phone">聯絡電話:</label></td>
                 <td><input type="text" id="phone" name="phone_num" value="<%= user.getPhoneNum() %>" disabled></td>
@@ -244,7 +241,7 @@ p a:hover {
         <br>
         <h3><%= request.getAttribute("message") %></h3>
     <div class="form-action-group">
-    <a href="${pageContext.request.contextPath}/GetAllUsers"><button class="form-back-button">返回會員列表</button></a>
+    <a href="${pageContext.request.contextPath}/users/list"><button class="form-back-button">返回會員列表</button></a>
 	</div>
 </div>
 </body>

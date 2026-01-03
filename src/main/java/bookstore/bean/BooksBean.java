@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -18,6 +17,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "books")
@@ -29,31 +34,46 @@ public class BooksBean {
 	@Column(name = "book_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer bookId; // 序號
-
+	
+//	@NotBlank(message = "書名不可為空白")
+//	@Size(max = 50, message = "書名長度不可超過50字")
 	@Column(name = "book_name")
 	private String bookName; // 書名
 
+	
+//	@NotBlank(message = "作者不可為空白")
 	@Column(name = "author")
 	private String author; // 作者
+
 	
 	@Column(name = "translator")
 	private String translator; // 譯者
 
+//	@NotBlank(message = "價錢不可為空白")
+//	@DecimalMin(value = "0.0",inclusive = true,message = "價格不能小0且不可為負數")
 	@Column(name = "price")
 	private BigDecimal price; // 價錢
 
+	
+//	@NotBlank(message = "ISBN不可為空白")
+//	@Pattern(regexp = "^\\d{13}$",message = "格式驗證失敗，必須為13位數字")
 	@Column(name = "isbn")
 	private String isbn; // 書本身分證
 
+	
+//	@NotNull(message = "庫存量不可為空")
+//	@Min(value = 0,message = "庫存量不可小於0")
 	@Column(name = "stock")
 	private Integer stock; // 庫存量
 
 	@Column(name = "short_desc")
 	private String shortDesc; // 簡述
-
-	@Column(name = "created_at")
+	
+	
+	@Column(name = "created_at",updatable = false)
 	private LocalDateTime createdAt; // 建立時間
 
+//	@NotBlank(message = "出版社不可為空白")
 	@Column(name = "press")
 	private String press; // 出版社
 
@@ -66,7 +86,7 @@ public class BooksBean {
 
 	@OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
 	private List<ReviewBean> reviews;
-	
+
 	// -------Constructor--------
 	public BooksBean() {
 
@@ -214,7 +234,7 @@ public class BooksBean {
 	public void setGenreBean(GenreBean genreBean) {
 		this.genreBean = genreBean;
 	}
-	
+
 	public List<ReviewBean> getReviews() {
 		return reviews;
 	}

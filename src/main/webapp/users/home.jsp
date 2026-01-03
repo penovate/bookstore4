@@ -132,14 +132,14 @@
     <h1 class="main-title">網路書店後台系統</h1>
     <h2 class="sub-title">功能選單</h2>
     <div class="button-group">
-		<a href="users.html" class="menu-link"><button class="menu-button">會員中心</button></a>
+		<a href="users.jsp" class="menu-link"><button class="menu-button">會員中心</button></a>
 		<a href="../books/booksIndex.html" class="menu-link"><button class="menu-button">書籍資料處理</button></a>
 		<a href="../order/CartAndOrder.jsp" class="menu-link"><button class="menu-button">訂單與購物車系統</button></a>
 		<a href="../reviews/review.jsp" class="menu-link"><button class="menu-button">評價管理</button></a>
 </div>
 <hr class="divider">
 <div>
-<a href="${pageContext.request.contextPath}/LogoutServlet"><button class="logout-button">登出系統</button></a>
+<a href="${pageContext.request.contextPath}/logout"><button class="logout-button">登出系統</button></a>
 </div>
 </div>
 </body>

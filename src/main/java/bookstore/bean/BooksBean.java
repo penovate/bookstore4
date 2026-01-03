@@ -8,7 +8,6 @@ import java.util.List;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -65,7 +64,7 @@ public class BooksBean {
 	@JoinColumn(name = "genre_id")
 	private GenreBean genreBean;
 
-	@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
 	private List<ReviewBean> reviews;
 	
 	// -------Constructor--------

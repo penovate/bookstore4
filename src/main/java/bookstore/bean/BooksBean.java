@@ -2,11 +2,13 @@ package bookstore.bean;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,12 +19,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "books")
@@ -34,18 +30,16 @@ public class BooksBean {
 	@Column(name = "book_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer bookId; // 序號
-	
+
 //	@NotBlank(message = "書名不可為空白")
 //	@Size(max = 50, message = "書名長度不可超過50字")
 	@Column(name = "book_name")
 	private String bookName; // 書名
 
-	
 //	@NotBlank(message = "作者不可為空白")
 	@Column(name = "author")
 	private String author; // 作者
 
-	
 	@Column(name = "translator")
 	private String translator; // 譯者
 
@@ -54,13 +48,11 @@ public class BooksBean {
 	@Column(name = "price")
 	private BigDecimal price; // 價錢
 
-	
 //	@NotBlank(message = "ISBN不可為空白")
 //	@Pattern(regexp = "^\\d{13}$",message = "格式驗證失敗，必須為13位數字")
 	@Column(name = "isbn")
 	private String isbn; // 書本身分證
 
-	
 //	@NotNull(message = "庫存量不可為空")
 //	@Min(value = 0,message = "庫存量不可小於0")
 	@Column(name = "stock")
@@ -68,9 +60,8 @@ public class BooksBean {
 
 	@Column(name = "short_desc")
 	private String shortDesc; // 簡述
-	
-	
-	@Column(name = "created_at",updatable = false)
+
+	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt; // 建立時間
 
 //	@NotBlank(message = "出版社不可為空白")
@@ -78,7 +69,7 @@ public class BooksBean {
 	private String press; // 出版社
 
 	@Column(name = "on_shelf")
-	private boolean onShelf; // 上下架狀態
+	private Boolean onShelf; // 上下架狀態
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "genre_id")
@@ -87,13 +78,21 @@ public class BooksBean {
 	@OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
 	private List<ReviewBean> reviews;
 
+	@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<BookImageBean> imageList = new ArrayList<BookImageBean>();
+
+	public void addImage(BookImageBean image) {
+		imageList.add(image);
+		image.setBook(this);
+	}
+
 	// -------Constructor--------
 	public BooksBean() {
 
 	}
 
 	public BooksBean(Integer bookId, String bookName, String author, String translator, BigDecimal price, Integer stock,
-			String shortDesc, LocalDateTime createdAt, String press, String isbn, boolean onShelf) {
+			String shortDesc, LocalDateTime createdAt, String press, String isbn, Boolean onShelf) {
 		super();
 		this.bookId = bookId;
 		this.bookName = bookName;
@@ -109,7 +108,7 @@ public class BooksBean {
 	}
 
 	public BooksBean(String bookName, String author, String translator, BigDecimal price, String isbn, Integer stock,
-			String shortDesc, String press, boolean onShelf, GenreBean genreBean) {
+			String shortDesc, String press, Boolean onShelf, GenreBean genreBean) {
 		super();
 		this.bookName = bookName;
 		this.author = author;
@@ -139,7 +138,7 @@ public class BooksBean {
 	}
 
 	// --------getter/setter-------
-	public int getBookId() {
+	public Integer getBookId() {
 		return bookId;
 	}
 
@@ -179,7 +178,7 @@ public class BooksBean {
 		this.price = price;
 	}
 
-	public int getStock() {
+	public Integer getStock() {
 		return stock;
 	}
 
@@ -219,11 +218,11 @@ public class BooksBean {
 		this.isbn = isbn;
 	}
 
-	public boolean getOnShelf() {
+	public Boolean getOnShelf() {
 		return onShelf;
 	}
 
-	public void setOnShelf(boolean onShelf) {
+	public void setOnShelf(Boolean onShelf) {
 		this.onShelf = onShelf;
 	}
 

@@ -218,7 +218,7 @@ DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	<tr><td><a href="GetReview?reviewId=<%= review.getReviewId()%>"><%= review.getReviewId() %></a></td>
 	<td><%= review.getUserId() %></td>
 	<td><%= review.getUserName() %></td>
-	<td><%= review.getBookId() %></td>
+	<td><%= (review.getBook() != null) ? review.getBook().getBookId() : review.getBookId() %></td>
 	<td><%= review.getBookName() %></td>
 <%--<td><%= review.getUserId() %><a href="GetUser?userId=<%= user.getUserId()%>"><%= user.getUserId() %></a> --%>	
 <%--<td><%= review.getBookId() %><a href="GetBook?bookId=<%= book.getBookId()%>"><%= book.getBookId() %></a> --%>	

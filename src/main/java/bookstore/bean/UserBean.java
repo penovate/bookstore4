@@ -6,8 +6,9 @@ import java.util.List;
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Component;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,6 +20,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
+@Component
 @DynamicInsert
 @DynamicUpdate
 public class UserBean implements java.io.Serializable {
@@ -37,6 +39,7 @@ public class UserBean implements java.io.Serializable {
 	@Column(name = "gender")
 	private String gender;
 	@Column(name = "birth")
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private Date birth;
 	@Column(name = "phone_num")
 	private String phoneNum;
@@ -59,10 +62,10 @@ public class UserBean implements java.io.Serializable {
 	@Column(name = "updated_at", insertable = false, updatable = false)
 	private Date updatedAt;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<ReviewBean> reviews = new ArrayList<>();
 //
-	@OneToMany(mappedBy = "userBean", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "userBean", fetch = FetchType.LAZY)
 	private List<Orders> orders = new ArrayList<>();
 
 //	@OneToMany(mappedBy = "userId", cascade = CascadeType.ALL)

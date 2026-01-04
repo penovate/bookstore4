@@ -252,7 +252,7 @@ button {
 				%>
 				<tr>
 					<td><%=item.getOrderItemId()%></td>
-					<td><%=item.getBookId()%></td>
+					<td><%=item.getBooksBean().getBookId()%></td>
 					<td><%=item.getPrice()%></td>
 					<td><%=item.getQuantity()%></td>
 					<td><%=item.getSubtotal()%></td>

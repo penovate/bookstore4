@@ -1,10 +1,11 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <style>
 .center-body {
-    font-family: '微軟正黑體', 'Arial', sans-serif;
+    font-family: 'Ã¥Â¾Â®Ã¨Â»ÂÃ¦Â­Â£Ã©Â»ÂÃ©Â«Â', 'Arial', sans-serif;
     background-color: #fcf8f0;
     color: #4a4a4a;
     margin: 0;
@@ -108,14 +109,14 @@
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 </style>
-<title>會員中心</title>
+<title>會員中心</title>
 </head>
 <body class="center-body">
 <div align="center" class="container center-container">
 	<h1 class="main-title">網路書店後台系統</h1>
     <h2 class="sub-title">會員中心</h2>
     <div class="button-group">
-		<a href="../GetAllUsers" class="menu-link"><button class="menu-button-small">查詢所有會員資料</button></a>
+		<a href="${pageContext.request.contextPath}/users/list" class="menu-link"><button class="menu-button-small">查詢所有會員資料</button></a>
 		<a href="home.jsp" class="menu-link"><button class="menu-button-small back-button">返回首頁</button></a>
 	</div>
 	<hr class="divider">

@@ -16,20 +16,31 @@ public class bookService {
 	// ------select all books-----------
 	public List<BooksBean> selectAllBooks() {
 		List<BooksBean> bookslist = bookDao.selectAllBooks();
+
+		/*
+		 * 資料驗證區域
+		 */
 		return bookslist;
 	}
 
 	// Select book by id-----------------
 	public BooksBean selectBookByIdS(Integer bookIdStr) {
+		/*
+		 * 資料驗證區域
+		 */
 		BooksBean book = bookDao.selectBooksById(bookIdStr);
+
 		return book;
 	}
 
 	// select by isbn
 	public Boolean selectBookByisbn(String isbnStr) {
+		/*
+		 * 資料驗證區域
+		 */
 		Boolean check = null;
-		BookDao bookDao = new BookDao();
-		if (bookDao.selectBooksByIsbn(isbnStr) != null) {
+		BooksBean book = bookDao.selectBooksByIsbn(isbnStr);
+		if (book != null) {
 			check = true;
 		} else {
 			check = false;
@@ -39,8 +50,10 @@ public class bookService {
 
 	// ------insertBook-----------
 	public BooksBean inserttBook(BooksBean booksBean) {
-		BooksBean bookInsert = 
-		bookDao.insertBooks(booksBean);
+		/*
+		 * 資料驗證區域
+		 */
+		BooksBean bookInsert = bookDao.insertBooks(booksBean);
 
 		/*
 		 * // genres轉型 Integer genres = null; if (genresStr != null &&
@@ -61,17 +74,27 @@ public class bookService {
 
 	// UpDate Book-----------------
 	public BooksBean upDateBook(BooksBean booksBean) {
+		/*
+		 * 資料驗證區域
+		 */
 		BooksBean beanUpdate = bookDao.upDateBook(booksBean);
 		return beanUpdate;
 	}
 
 	// delete book-----------------
 	public void deleteBook(Integer bookIdStr) {
+		/*
+		 * 資料驗證區域
+		 */
+		bookDao.deleteBooks(bookIdStr);
 
 	}
 
 	// select genre
 	public GenreBean selectGenreById(Integer genreId) {
+		/*
+		 * 資料驗證、業務邏輯區域
+		 */
 		GenreBean genreBean = bookDao.selectGenreById(genreId);
 		return genreBean;
 	}
@@ -79,6 +102,16 @@ public class bookService {
 	public boolean isbnCheck(String isbnStr) {
 
 		return false;
-
 	}
+
+	// update onShelf
+	public boolean updateOnShelfStatus(int bookId, boolean newStatus) {
+		/*
+		 * 資料驗證區域
+		 */
+		BookDao bookDao = new BookDao();
+		boolean isSuccess = bookDao.updateOnShelfStatus(bookId, newStatus);
+		return isSuccess;
+	}
+
 }

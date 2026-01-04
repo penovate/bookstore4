@@ -71,7 +71,10 @@ public class BookDao {
 
 	// select by isbn------
 	public BooksBean selectBooksByIsbn(String isbn) {
-		return null;
+		Session session = sessionFactory.getCurrentSession();
+		String hql = "from BooksBean b where b.isbn = :isbn";
+		BooksBean book = session.createQuery(hql, BooksBean.class).setParameter("isbn", isbn).uniqueResult();
+		return book;
 	}
 
 	// select by onShelf-----
@@ -81,61 +84,40 @@ public class BookDao {
 	}
 
 	// delete驗證，若評價有該書內容不可將書籍刪除
-	public Boolean selectReviewByBookId(String bookId) {
-		Boolean reviewCheck = false;
-		String sql = "select * from reviews where book_id = ?";
-		ReviewBean review = new ReviewBean();
+	public Boolean selectReviewByBookId(Integer bookId) {
+		Boolean exists = false;
 		try {
-			Connection connection = DBUtil.getConnection();
-			PreparedStatement stmt = connection.prepareStatement(sql);
-			stmt.setString(1, bookId);
-			ResultSet rs = stmt.executeQuery();
-			if (rs.next()) {
-				review.setReviewId(rs.getInt("review_id"));
-				review.setUserId(rs.getInt("user_id"));
-				review.setRating(rs.getInt("rating"));
-				review.setComment(rs.getString("comment"));
-				review.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-				if (review != null) {
-					reviewCheck = true;
-				} else
-					reviewCheck = false;
-			}
-		} catch (SQLException e) {
+			Session session = sessionFactory.getCurrentSession();
+			String hql = "SELECT count(r) FROM ReviewBean r WHERE r.bookId = :id";
+			Long count = (Long) session.createQuery(hql).setParameter("id", bookId).uniqueResult();
+
+			exists = (count > 0);
+
+		} catch (Exception e) {
 			e.printStackTrace();
+			exists = false;
 		}
-		System.out.println(review);
-		return reviewCheck;
+		return exists;
 	}
 
 	// delete驗證，若訂單有該書，不可將書籍刪除
-//	public Boolean selectOrderItemByBookId(String bookId) {
-//		Integer bookId1 = Integer.valueOf(bookId);
-//		Boolean orderItemCheck = false;
-//		String sql = "select * from order_item where book_id = ?";
-//		OrderItem orderItem = new OrderItem();
-//		try (Connection connection = DBUtil.getConnection();
-//				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-//			preparedStatement.setInt(1, bookId1);
-//			ResultSet resultSet = preparedStatement.executeQuery();
-//			if (resultSet.next()) {
-//				orderItem.setOrderItemId(resultSet.getInt("order_item_id"));
-//				orderItem.setOrderId(resultSet.getInt("order_id"));
-//				orderItem.setQuantity(resultSet.getInt("quantity"));
-//				orderItem.setPrice(resultSet.getBigDecimal("price"));
-//				orderItem.setSubtotal(resultSet.getBigDecimal("subtotal"));
-//				orderItem.setBookId(resultSet.getInt("book_id"));
-//				if (orderItem != null) {
-//					orderItemCheck = true;
-//				} else {
-//					orderItemCheck = false;
-//				}
-//			}
-//		} catch (SQLException e) {
-//		}
-//		System.out.println(orderItem);
-//		return orderItemCheck;
-//	}
+	public Boolean selectOrderItemByBookId(Integer bookId) {
+		Boolean exists = false;
+		try {
+			Session session = sessionFactory.getCurrentSession();
+
+			String hql = "SELECT count(i) FROM OrderItemBean i WHERE i.bookId = :id";
+
+			Long count = (Long) session.createQuery(hql).setParameter("id", bookId).uniqueResult();
+
+			exists = (count > 0);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			exists = false;
+		}
+		return exists;
+	}
 
 	public BooksBean selectBookByName(String bookName) {
 
@@ -152,12 +134,10 @@ public class BookDao {
 	}
 
 	// delete book by Id-----
-	public BooksBean deleteBooks(Integer bookId) {
-		BooksBean book = selectBooksById(bookId);
+	public void deleteBooks(Integer bookId) {
 		Session session = sessionFactory.getCurrentSession();
 		BooksBean bookdelete = selectBooksById(bookId);
 		session.remove(bookdelete);
-		return book;
 	}
 
 	// Update Book--------------
@@ -167,4 +147,19 @@ public class BookDao {
 		return bookUpdate;
 	}
 
+	// Update on_shelf
+	public boolean updateOnShelfStatus(Integer bookId, boolean newStatus) {
+		try {
+			Session session = sessionFactory.getCurrentSession();
+
+			String hql = "UPDATE BooksBean b SET b.onShelf = :status WHERE b.bookId = :id";
+			int rowCount = session.createQuery(hql).setParameter("status", newStatus).setParameter("id", bookId)
+					.executeUpdate();
+			boolean hasUpdated = rowCount > 0;
+			return hasUpdated;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 }

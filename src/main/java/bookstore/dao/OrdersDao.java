@@ -18,6 +18,7 @@ public class OrdersDao {
 
 	// 新增訂單
 	public void insertOrder(Orders order) {
+
 		Timestamp now = new Timestamp(System.currentTimeMillis());
 	    
 	    if (order.getCreatedAt() == null) {

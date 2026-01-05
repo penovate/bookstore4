@@ -142,8 +142,9 @@ button[type="submit"]:active {
 
 	<h2>修改訂單</h2>
 
-	<form action="<%= request.getContextPath() %>/UpdateOrder"
+	<form action="<%= request.getContextPath() %>/order/update"
 		method="post">
+		<input type="hidden" name="userBean.userId" value="<%= request.getParameter("userId") %>">
 		<div class="form-group">
 			<label>訂單編號:</label> <input type="text" name="orderId"
 				value="<%= request.getParameter("orderId") %>" readonly
@@ -157,7 +158,7 @@ button[type="submit"]:active {
 		</div>
 
 		<div class="form-group">
-			<label>收件人:</label> <input type="text" name="recipient"
+			<label>收件人:</label> <input type="text" name="recipientAt"
 				value="<%= request.getParameter("recipient") %>" required>
 		</div>
 
@@ -232,7 +233,7 @@ button[type="submit"]:active {
 	<script>
             $(function () {
                 $("#btnCancel").click(function () {
-                    window.location.href = "<%= request.getContextPath() %>/GetAllOrders";
+                    window.location.href = "<%= request.getContextPath() %>/order/activeList";
                 });
             })
         </script>

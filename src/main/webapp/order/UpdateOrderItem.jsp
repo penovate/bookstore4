@@ -146,13 +146,13 @@
 
         <h2>修改訂單明細</h2>
 
-        <form action="<%= request.getContextPath() %>/UpdateOrderItem" method="post">
+        <form action="<%= request.getContextPath() %>/order/updateItem" method="post">
             <input type="hidden" name="orderItemId" value="<%= request.getParameter("orderItemId") %>">
             <input type="hidden" name="orderId" value="<%= request.getParameter("orderId") %>">
 
             <div class="form-group">
                 <label>書籍 ID:</label>
-                <input type="text" name="bookId" value="<%= request.getParameter("bookId") %>" readonly
+                <input type="text" name="booksBean.bookId" value="<%= request.getParameter("bookId") %>" readonly
                 style="background-color: #eee;">
             </div>
 
@@ -177,7 +177,7 @@
         <script>
             $(function () {
                 $("#btnCancel").click(function () {
-                    window.location.href = "<%= request.getContextPath() %>/GetOrder?id=<%= request.getParameter("orderId") %>";
+                    window.location.href = "<%= request.getContextPath() %>/order/get?id=<%= request.getParameter("orderId") %>";
                 });
             })
         </script>

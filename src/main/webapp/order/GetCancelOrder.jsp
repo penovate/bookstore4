@@ -269,7 +269,7 @@ button {
                $(function () {
                 // 1. 返回按鈕
                   $("#btnBack").click(function () {
-                    window.location.href = "<%=request.getContextPath()%>/GetAllCancelOrders";
+                    window.location.href = "<%=request.getContextPath()%>/order/cancelledList";
                   });
                });
         </script>

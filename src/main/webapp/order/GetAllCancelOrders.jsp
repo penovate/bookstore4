@@ -362,18 +362,18 @@ tbody tr:hover {
 		$(function() {
 			// 回到上一頁 (CartAndOrder.jsp)
 			$("#btnBack").click(function() {
-				window.location.href = "order/CartAndOrder.jsp";
+				window.location.href = "${pageContext.request.contextPath}/order/CartAndOrder.jsp";
 			});
 
 			// 查詢活動訂單 (GetAllOrders)
 			$("#btnBackActive").click(function() {
-				window.location.href = "GetAllOrders";
+				window.location.href = "${pageContext.request.contextPath}/order/activeList";
 			});
 
 			// 查詢取消訂單明細
 			$(".btn-detail").click(function() {
 				let id = $(this).data("id");
-				window.location.href = "GetCancelOrder?id=" + id;
+				window.location.href = "${pageContext.request.contextPath}/order/getCancel?id=" + id;
 			});
 
 			// 還原訂單
@@ -387,7 +387,7 @@ tbody tr:hover {
 										function(confirmed) {
 											if (confirmed) {
 												// 建立動態表單發送 POST 請求至 RestoreOrder Servlet
-												let form = $('<form action="RestoreOrder" method="post">'
+												let form = $('<form action="${pageContext.request.contextPath}/order/restore" method="post">'
 														+ '<input type="hidden" name="id" value="' + id + '">'
 														+ '</form>');
 												$('body').append(form);

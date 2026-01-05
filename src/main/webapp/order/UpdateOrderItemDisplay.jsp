@@ -98,7 +98,7 @@
         <script>
             $(function () {
                 $("#btnBackToDetail").click(function () {
-                    window.location.href = "<%= request.getContextPath() %>/GetOrder?id=<%= request.getAttribute("orderId") %>";
+                    window.location.href = "<%= request.getContextPath() %>/order/get?id=<%= request.getAttribute("orderId") %>";
                 });
             })
         </script>

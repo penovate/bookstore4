@@ -356,11 +356,13 @@ tbody tr:hover {
 						<button class="btn btn-detail" data-id="<%=order.getOrderId()%>">查詢明細</button>
 						<br>
 						<button class="btn btn-edit btn-update"
+							data-userid="<%=order.getUserBean().getUserId()%>"
 							data-id="<%=order.getOrderId()%>"
 							data-recipient="<%=order.getRecipientAt()%>"
 							data-address="<%=order.getAddress()%>"
 							data-phone="<%=order.getPhone()%>"
 							data-payment="<%=order.getPaymentMethod()%>"
+							data-paymentstatus="<%=order.getPaymentStatus()%>"
 							data-status="<%=order.getOrderStatus()%>"
 							data-total="<%=order.getTotalAmount()%>">修改訂單</button>
 						<br>
@@ -422,44 +424,47 @@ tbody tr:hover {
 
 		$(function() {
 			$("#btnBack").click(function() {
-				window.location.href = "order/CartAndOrder.jsp";
+				window.location.href = "${pageContext.request.contextPath}/order/CartAndOrder.jsp";
 			});
 
 			$("#btnAddOrder").click(function() {
-				window.location.href = "order/InsertOrder.jsp";
+				window.location.href = "${pageContext.request.contextPath}/order/InsertOrder.jsp";
 			});
 
 			$("#btnGetAllOrderItems").click(function() {
-				window.location.href = "GetAllOrderItems";
+				window.location.href = "${pageContext.request.contextPath}/order/allItems";
 			});
 		
 			$("#btnCancelOrder").click(function() {
-				window.location.href = "GetAllCancelOrders";
+				window.location.href = "${pageContext.request.contextPath}/order/cancelledList";
 			});
 
 			$(".btn-detail").click(function() {
 				let id = $(this).data("id");
-				window.location.href = "GetOrder?id=" + id;
+				window.location.href = "/order/get?id=" + id;
 			});
 
 			$(".btn-update").click(
 					function() {
+						let userId = $(this).data("userid");
 						let id = $(this).data("id");
 						let recipient = $(this).data("recipient");
 						let address = $(this).data("address");
 						let phone = $(this).data("phone");
 						let payment = $(this).data("payment");
+						let paymentstatus = $(this).data("paymentstatus");
 						let status = $(this).data("status");
 						let total = $(this).data("total");
 
-						let url = "order/UpdateOrder.jsp?orderId=" + id
+						let url = "${pageContext.request.contextPath}/order/UpdateOrder.jsp?userId=" + userId
+								+ "&orderId=" + id
 								+ "&recipient=" + encodeURIComponent(recipient)
 								+ "&address=" + encodeURIComponent(address)
 								+ "&phone=" + encodeURIComponent(phone)
-								+ "&paymentMethod="
-								+ encodeURIComponent(payment) + "&orderStatus="
-								+ encodeURIComponent(status) + "&totalAmount="
-								+ total;
+								+ "&paymentMethod=" + encodeURIComponent(payment)
+								+ "&paymentStatus=" + encodeURIComponent(paymentstatus)
+								+ "&orderStatus=" + encodeURIComponent(status) 
+								+ "&totalAmount=" + total;
 						window.location.href = url;
 					});
 
@@ -473,7 +478,7 @@ tbody tr:hover {
 										'確定要取消這筆訂單嗎？',
 										function(confirmed) {
 											if (confirmed) {
-												let form = $('<form action="CancelOrder" method="post">'
+												let form = $('<form action="${pageContext.request.contextPath}/order/cancel" method="post">'
 														+ '<input type="hidden" name="id" value="' + id + '">'
 														+ '</form>');
 												$('body').append(form);

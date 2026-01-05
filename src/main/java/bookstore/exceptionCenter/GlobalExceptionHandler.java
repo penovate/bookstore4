@@ -1,6 +1,5 @@
 package bookstore.exceptionCenter;
 
-
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,7 +12,6 @@ public class GlobalExceptionHandler {
 
 	private static final org.slf4j.Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-	
 	@ExceptionHandler(BusinessException.class)
 	public String handleBusinessException(BusinessException ex, RedirectAttributes ra, HttpServletRequest request) {
 		log.warn("業務異常[代碼:{}]:{}", ex.getCode(), ex.getMessage());
@@ -23,7 +21,11 @@ public class GlobalExceptionHandler {
 
 		String referer = request.getHeader("Referer");
 
-		return "redirect:" + (referer != null ? referer : "/login");
+		if (referer != null && !referer.isEmpty()) {
+			return "redirect:" + referer;
+		}
+
+		return "redirect:/";
 	}
 
 }

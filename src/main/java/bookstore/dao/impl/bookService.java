@@ -16,8 +16,12 @@ import org.springframework.web.multipart.MultipartFile;
 import bookstore.bean.BookImageBean;
 import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
+import bookstore.bean.ReviewBean;
 import bookstore.exceptionCenter.BusinessException;
 import bookstore.repository.BookRepository;
+import bookstore.repository.GenreRepository;
+import bookstore.repository.OrderItemRepository;
+import bookstore.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -26,6 +30,13 @@ public class bookService {
 	private static final Logger log = LoggerFactory.getLogger(bookService.class);
 	@Autowired
 	private BookRepository bookRepo;
+
+	@Autowired
+	private GenreRepository genreRepo;
+	@Autowired
+	private OrderItemRepository orderItemRepo;
+	@Autowired
+	private ReviewRepository reviewRepo;
 	@Value("${file.upload.dir:C:/uploads/book-images/}")
 	private String uploadDir;
 
@@ -69,6 +80,11 @@ public class bookService {
 		}
 	}
 
+	// isbn for Ajax
+	public Boolean existsByIsbn(String isbnStr) {
+		return bookRepo.findByIsbn(isbnStr).isPresent();
+	}
+
 	// select by genre
 	@Transactional
 	public List<BooksBean> selectByGenre(Integer genreId) {
@@ -84,11 +100,11 @@ public class bookService {
 
 	// select by onShelf
 	@Transactional
-	public Boolean selectOnShelfById(Integer bookId) {
+	public Integer selectOnShelfById(Integer bookId) {
 		Optional<BooksBean> opt = bookRepo.findById(bookId);
 		if (opt.isPresent()) {
-			Boolean status = opt.get().getOnShelf();
-			log.info("查詢成功 - 查詢ID:{} - 上下架狀態:{}", bookId, status);
+			Integer status = opt.get().getOnShelf();
+			log.info("查詢成功 - 查詢ID:{} - 狀態:{}", bookId, status);
 			return status;
 
 		} else {
@@ -136,7 +152,7 @@ public class bookService {
 
 				file.transferTo(dest);
 				BookImageBean imageBean = new BookImageBean();
-				imageBean.setImageUrl("/upload-images" + fileName);
+				imageBean.setImageUrl("/upload-images/" + fileName);
 				imageBean.setIsMain(true);
 				book.addImage(imageBean);
 
@@ -214,7 +230,7 @@ public class bookService {
 			existingBook.setStock(book.getStock());
 		}
 
-		// 上下架狀態
+		// 狀態
 		if (book.getOnShelf() != null) {
 			existingBook.setOnShelf(book.getOnShelf());
 		}
@@ -258,14 +274,54 @@ public class bookService {
 	public void updateOnShelfStatus(Integer bookId, boolean newStatus) {
 		Optional<BooksBean> opt = bookRepo.findById(bookId);
 		if (!opt.isPresent()) {
-			log.warn("查詢失敗 - 無該ID相關書籍資料");
+			log.warn("查詢失敗 - 無ID:{} 相關書籍資料", bookId);
 			throw new BusinessException(404, "查詢失敗 - 無該ID相關書籍資料");
 		}
 		BooksBean book = opt.get();
-		book.setOnShelf(newStatus);
+		if (book.getOnShelf() == 2) {
+			log.warn("修改失敗 - 已封存書籍不可上架");
+			return;
+		}
+		book.setOnShelf(newStatus ? 1 : 0);
 		bookRepo.save(book);
-		log.info("狀態修改成功 - 書籍ID:{}", book.getBookId());
+		log.info("狀態修改成功 - 書籍ID:{} - 狀態:{}", book.getBookId(), book.getOnShelf());
 
+	}
+
+	// archive book
+	@Transactional
+	public void archiveBook(Integer bookId) {
+		Optional<BooksBean> opt = bookRepo.findById(bookId);
+		if (!opt.isPresent()) {
+			log.warn("查詢失敗 - 無ID:{} 相關書籍資料", bookId);
+		} else {
+			BooksBean book = opt.get();
+			book.setOnShelf(2);
+			bookRepo.save(book);
+			log.info("書籍 ID:{}已成功封存", bookId);
+		}
+	}
+
+	@Transactional
+	public void unarchiveBook(Integer bookId) {
+		Optional<BooksBean> opt = bookRepo.findById(bookId);
+		if (!opt.isPresent()) {
+			log.warn("查詢失敗 -無:ID{}相關書籍資料", bookId);
+		} else {
+			BooksBean book = opt.get();
+			book.setOnShelf(0);
+			bookRepo.save(book);
+			log.info("書籍ID:{}已成功解封", bookId);
+		}
+	}
+
+	public void reviewCheck(Integer bookId) {
+		Optional<ReviewBean> opt = reviewRepo.findById(bookId);
+	}
+
+	@Transactional
+	public List<GenreBean> getAllGenres() {
+		return genreRepo.findAll();
 	}
 
 }

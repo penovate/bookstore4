@@ -135,9 +135,19 @@ td input:focus, td select:focus {
 	<div class="card">
 		<h2>請輸入書籍資料</h2>
 
-		<form method="post" action="InsertBook">
+		<form method="post" action="<%=request.getContextPath()%>/books/insert"
+			enctype="multipart/form-data">
 			<table>
-
+				<tr>
+					<td>書籍封面:</td>
+					<td><span id="imgSpan" class="requirement">*</span> <input
+						type="file" name="mainImage" id="mainImage" accept="image/*"
+						required>
+						<div style="margin-top: 10px;">
+							<img id="previewImage" src="#" alt="圖片預覽"
+								style="max-width: 200px; display: none; border: 1px solid #dcd5c7; border-radius: 4px;">
+						</div></td>
+				</tr>
 
 				<tr>
 					<td>書籍名稱:</td>
@@ -161,7 +171,7 @@ td input:focus, td select:focus {
 				<tr>
 					<td>類型:</td>
 					<td><span id="genreSpan" class="requirement">*</span> <select
-						name="genre" id="genre" required>
+						name="genreBean.genreId" id="genre" required>
 							<option value="" disabled selected>-- 請選擇書籍類型 --</option>
 							<%
 							if (genreList != null && !genreList.isEmpty()) {
@@ -204,7 +214,7 @@ td input:focus, td select:focus {
 				<tr>
 					<td>簡述:</td>
 					<td><span id="shortDescSpan" class="requirement">*</span> <input
-						type="text" name="short_desc" id="shortDesc" required
+						type="text" name="shortDesc" id="shortDesc" required
 						placeholder="請輸入書籍描述..">
 				</tr>
 			</table>
@@ -213,7 +223,28 @@ td input:focus, td select:focus {
 	</div>
 	<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+	<script>
+$(document).ready(function() {
+    // 監聽檔案上傳欄位的變化
+    $('#mainImage').change(function() {
+        const file = this.files[0];
+        if (file) {
+            // 建立檔案讀取器
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // 將讀取到的結果設定給 img 標籤並顯示
+                $('#previewImage').attr('src', e.target.result).fadeIn();
+            }
+            
+            reader.readAsDataURL(file);
+        } else {
+            // 若取消選取，隱藏預覽圖
+            $('#previewImage').hide();
+        }
+    });
+});
+</script>
 	<!-- JQ資料驗證 -->
 	<script>
 		//booksName Check Function	
@@ -227,7 +258,6 @@ td input:focus, td select:focus {
 		}
 
 		$('#bookName').on('input', nameCheck);
-
 		//isbn Check function
 		function isbnCheck() {
 		    const rule1 = /^[0-9]+$/;
@@ -242,7 +272,7 @@ td input:focus, td select:focus {
 		        $span.text('ISBN必須為13碼數字').css('color', 'red');
 		    } else {
 		        $.ajax({
-		            url: '<%=request.getContextPath()%>/isbnCheck',
+		            url: '<%=request.getContextPath()%>/books/isbnCheck',
 					type : 'post',
 					dataType : 'text',
 					data : {
@@ -255,11 +285,11 @@ td input:focus, td select:focus {
 							$span.text('此ISBN已存在').css('color', 'red');
 						}
 					}
-				}); 
-			} 
+				});
+			}
 		}
 		$('#isbn').on('input', isbnCheck);
-
+-->
 		//genre Check function
 		function genreCheck() {
 			let content = $(this).val()
@@ -333,22 +363,21 @@ td input:focus, td select:focus {
 
 		//shortDesc Check function
 		function shortDescCheck() {
-    let content = $(this).val().trim(); // 使用 trim() 移除純空白字元
-    let $span = $('#shortDescSpan');
+			let content = $(this).val().trim(); // 使用 trim() 移除純空白字元
+			let $span = $('#shortDescSpan');
 
-    if (content === "") {
-        // 1. 判斷是否為空白
-        $span.text('欄位不可為空白').css('color', 'red');
-    } 
-    else if (content.length < 10) {
-        // 2. 判斷字數是否足夠
-        $span.text('字數不足，至少需要 10 個字 (目前: ' + content.length + ')').css('color', 'orange');
-    } 
-    else {
-        // 3. 符合所有條件
-        $span.text('✓').css('color', 'green');
-    }
-}
+			if (content === "") {
+				// 1. 判斷是否為空白
+				$span.text('欄位不可為空白').css('color', 'red');
+			} else if (content.length < 10) {
+				// 2. 判斷字數是否足夠
+				$span.text('字數不足，至少需要 10 個字 (目前: ' + content.length + ')').css(
+						'color', 'orange');
+			} else {
+				// 3. 符合所有條件
+				$span.text('✓').css('color', 'green');
+			}
+		}
 		$('#shortDesc').on('input', shortDescCheck)
 
 		//insert表單送出檢查

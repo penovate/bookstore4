@@ -8,6 +8,8 @@ import java.util.List;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -69,8 +71,9 @@ public class BooksBean {
 	private String press; // 出版社
 
 	@Column(name = "on_shelf")
-	private Boolean onShelf; // 上下架狀態
+	private Integer onShelf; // 上下架狀態
 
+	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "genre_id")
 	private GenreBean genreBean;
@@ -92,7 +95,7 @@ public class BooksBean {
 	}
 
 	public BooksBean(Integer bookId, String bookName, String author, String translator, BigDecimal price, Integer stock,
-			String shortDesc, LocalDateTime createdAt, String press, String isbn, Boolean onShelf) {
+			String shortDesc, LocalDateTime createdAt, String press, String isbn, Integer onShelf) {
 		super();
 		this.bookId = bookId;
 		this.bookName = bookName;
@@ -108,7 +111,7 @@ public class BooksBean {
 	}
 
 	public BooksBean(String bookName, String author, String translator, BigDecimal price, String isbn, Integer stock,
-			String shortDesc, String press, Boolean onShelf, GenreBean genreBean) {
+			String shortDesc, String press, Integer onShelf, GenreBean genreBean) {
 		super();
 		this.bookName = bookName;
 		this.author = author;
@@ -218,11 +221,11 @@ public class BooksBean {
 		this.isbn = isbn;
 	}
 
-	public Boolean getOnShelf() {
+	public Integer getOnShelf() {
 		return onShelf;
 	}
 
-	public void setOnShelf(Boolean onShelf) {
+	public void setOnShelf(Integer onShelf) {
 		this.onShelf = onShelf;
 	}
 

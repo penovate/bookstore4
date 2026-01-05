@@ -14,7 +14,7 @@ public interface BookRepository extends JpaRepository<BooksBean, Integer> {
 	@Query("SELECT b FROM BooksBean b WHERE b.genreBean.genreId = :genreId")
 	List<BooksBean> findGenreBean_GenreId(Integer genreId);
 
-	List<BooksBean> findByOnShelf(Boolean status);
+	List<BooksBean> findByOnShelf(Integer onShelf);
 	
 	
 }

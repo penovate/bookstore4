@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import bookstore.bean.BooksBean;
 
-public interface BookRepository2 extends JpaRepository<BooksBean, Integer> {
+public interface BookRepository extends JpaRepository<BooksBean, Integer> {
 
 	Optional<BooksBean> findByIsbn(String isbn);
 	@Query("SELECT b FROM BooksBean b WHERE b.genreBean.genreId = :genreId")

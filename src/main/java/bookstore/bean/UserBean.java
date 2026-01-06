@@ -9,6 +9,10 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,6 +27,7 @@ import jakarta.persistence.Table;
 @Component
 @DynamicInsert
 @DynamicUpdate
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "reviews", "orders"})
 public class UserBean implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -40,6 +45,7 @@ public class UserBean implements java.io.Serializable {
 	private String gender;
 	@Column(name = "birth")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
 	private Date birth;
 	@Column(name = "phone_num")
 	private String phoneNum;
@@ -63,9 +69,11 @@ public class UserBean implements java.io.Serializable {
 	private Date updatedAt;
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+	@JsonIgnore
 	private List<ReviewBean> reviews = new ArrayList<>();
 //
 	@OneToMany(mappedBy = "userBean", fetch = FetchType.LAZY)
+	@JsonIgnore	
 	private List<Orders> orders = new ArrayList<>();
 
 //	@OneToMany(mappedBy = "userId", cascade = CascadeType.ALL)

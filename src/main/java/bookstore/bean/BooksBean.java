@@ -9,6 +9,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -26,6 +27,7 @@ import jakarta.persistence.Table;
 @Table(name = "books")
 @DynamicInsert
 @DynamicUpdate
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "reviews"})
 public class BooksBean {
 
 	@Id

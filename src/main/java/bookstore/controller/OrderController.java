@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import bookstore.bean.BooksBean;
 import bookstore.bean.OrderItem;
 import bookstore.bean.Orders;
+import bookstore.bean.UserBean;
 import bookstore.service.OrderService;
 import bookstore.service.bookService;
 //import bookstore.service.BookService; 
@@ -28,12 +29,8 @@ public class OrderController {
 	@Autowired
 	private OrderService orderService;
 
-	/*
+
 	@Autowired
-	private BookService bookService;
-	*/
-	
-	//待書籍程式也merge後刪掉改用上面的
 	private bookService bookService; 
 
 //==================新增類 Controller==================//
@@ -45,7 +42,9 @@ public class OrderController {
 			// 接收表單資料與set物件
 			Orders order = new Orders();
 			Integer userId = Integer.parseInt(request.getParameter("userId"));
-			order.getUserBean().setUserId(userId);
+			UserBean user = new UserBean();
+			user.setUserId(userId);
+	        order.setUserBean(user);
 			order.setRecipientAt(request.getParameter("recipientName"));
 			order.setAddress(request.getParameter("address"));
 			order.setPhone(request.getParameter("phone"));

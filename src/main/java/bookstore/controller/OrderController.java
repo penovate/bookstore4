@@ -17,8 +17,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import bookstore.bean.BooksBean;
 import bookstore.bean.OrderItem;
 import bookstore.bean.Orders;
-import bookstore.dao.impl.bookService;
 import bookstore.service.OrderService;
+import bookstore.service.bookService;
 //import bookstore.service.BookService; 
 import jakarta.servlet.http.HttpServletRequest;
 

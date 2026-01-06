@@ -4,7 +4,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%
 BooksBean book = (BooksBean) request.getAttribute("book");
-List<GenreBean> genreList = (List<GenreBean>) request.getAttribute("genresList");
+List<GenreBean> genreList = (List<GenreBean>) request.getAttribute("genreList");
 
 if (book == null) {
 	response.sendRedirect("BookList"); // 或者其他錯誤處理
@@ -179,7 +179,7 @@ td input:focus, td select:focus {
 	<div class="card">
 		<h2>
 			修改書籍資料：<%=book.getBookName()%></h2>
-		<form method="post" action="UpdateBook">
+		<form method="post" action="/books/update">
 			<table>
 
 				<input type="hidden" name="bookId" id="bookId" value="<%=book.getBookId()%>">
@@ -252,10 +252,7 @@ td input:focus, td select:focus {
 				<!-- 
 				<tr>
 					<td>上下架狀態:</td>
-					<td><select name="on_shelf" required>
-							<option value="true" <%=book.getOnShelf() ? "selected" : ""%>>上架
 								(True)</option>
-							<option value="false" <%=!book.getOnShelf() ? "selected" : ""%>>下架
 								(False)</option>
 					</select></td>
 				</tr>

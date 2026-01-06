@@ -161,7 +161,7 @@ a button:active {
 </tr>	
 </table>
 <br>
-<a href="${pageContext.request.contextPath}/GetAllUsers">
+<a href="${pageContext.request.contextPath}/users/list">
     <button>回到所有會員資料</button>
 </a>
 </div>

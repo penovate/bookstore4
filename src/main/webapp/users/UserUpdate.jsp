@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -157,8 +158,8 @@ a button:active {
 <div align="center">
     <h1>會員資料修改</h1>
     <jsp:useBean id="user" scope="request" class="bookstore.bean.UserBean" />
-    <form action="${pageContext.request.contextPath}/UpdateUser" method="POST"> 
-        <input type="hidden" name="user_id" value="${user.userId}">
+    <form action="${pageContext.request.contextPath}/users/update" method="POST"> 
+        <input type="hidden" name="userId" value="${user.userId}">
         <input type="hidden" name="status" value="${user.status}">
 		<input type="hidden" name="points" value="${user.points}">
         <table>
@@ -172,11 +173,11 @@ a button:active {
             </tr>
             <tr>
                 <td><label for="password">密碼:</label></td>
-                <td><input type="password" id="password" name="user_pwd" value="${user.userPwd}"></td>
+                <td><input type="password" id="password" name="UserPwd" value="${user.userPwd}"></td>
             </tr>
             <tr>
                 <td><label for="name">姓名:</label></td>
-                <td><input type="text" id="name" name="user_name" value="${user.userName}" required></td>
+                <td><input type="text" id="name" name="userName" value="${user.userName}" required></td>
             </tr>
             <tr>
                 <td><label for="gender">性別:</label></td>
@@ -189,15 +190,16 @@ a button:active {
                 </td>
             </tr>
             <tr><td><label for="birth">生日:</label></td>
-                <td><input type="date" id="birth" name="birth" value="${fn:substring(user.birth, 0, 10)}"></td></tr>
+                <td><input type="date" id="birth" name="birth" 
+       				 value="<fmt:formatDate value='${user.birth}' pattern='yyyy-MM-dd'/>"></td></tr>
             <tr><td><label for="phone">聯絡電話:</label></td>
-                <td><input type="text" id="phone" name="phone_num" value="${user.phoneNum}"></td></tr>
+                <td><input type="text" id="phone" name="phoneNum" value="${user.phoneNum}"></td></tr>
             <tr><td><label for="address">地址:</label></td>
                 <td><input type="text" id="address" name="address" value="${user.address}" size="50"></td></tr>
             <tr>
                 <td><label for="userType">權限等級:</label></td>
                 <td>
-                    <select id="userType" name="user_type">
+                    <select id="userType" name="userType">
                         <option value="">請選擇</option>
                         <option value="0" ${user.userType == 0 ? 'selected' : ''}>管理員</option>
                         <option value="1" ${user.userType == 1 ? 'selected' : ''}>一般會員</option>
@@ -209,7 +211,7 @@ a button:active {
         <input type="submit" value="確認修改">
     </form>
     <br>
-    <a href="${pageContext.request.contextPath}/GetAllUsers"><button>取消並返回列表</button></a>
+    <a href="${pageContext.request.contextPath}/users/list"><button>取消並返回列表</button></a>
 </div>
 </body>
 </html>

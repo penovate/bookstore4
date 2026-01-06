@@ -2,11 +2,13 @@ package bookstore.bean;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -31,50 +33,69 @@ public class BooksBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer bookId; // 序號
 
+//	@NotBlank(message = "書名不可為空白")
+//	@Size(max = 50, message = "書名長度不可超過50字")
 	@Column(name = "book_name")
 	private String bookName; // 書名
 
+//	@NotBlank(message = "作者不可為空白")
 	@Column(name = "author")
 	private String author; // 作者
-	
+
 	@Column(name = "translator")
 	private String translator; // 譯者
 
+//	@NotBlank(message = "價錢不可為空白")
+//	@DecimalMin(value = "0.0",inclusive = true,message = "價格不能小0且不可為負數")
 	@Column(name = "price")
 	private BigDecimal price; // 價錢
 
+//	@NotBlank(message = "ISBN不可為空白")
+//	@Pattern(regexp = "^\\d{13}$",message = "格式驗證失敗，必須為13位數字")
 	@Column(name = "isbn")
 	private String isbn; // 書本身分證
 
+//	@NotNull(message = "庫存量不可為空")
+//	@Min(value = 0,message = "庫存量不可小於0")
 	@Column(name = "stock")
 	private Integer stock; // 庫存量
 
 	@Column(name = "short_desc")
 	private String shortDesc; // 簡述
 
-	@Column(name = "created_at")
+	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt; // 建立時間
 
+//	@NotBlank(message = "出版社不可為空白")
 	@Column(name = "press")
 	private String press; // 出版社
 
 	@Column(name = "on_shelf")
-	private boolean onShelf; // 上下架狀態
+	private Integer onShelf; // 上下架狀態
 
+	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "genre_id")
 	private GenreBean genreBean;
 
-	@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
 	private List<ReviewBean> reviews;
-	
+
+	@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<BookImageBean> imageList = new ArrayList<BookImageBean>();
+
+	public void addImage(BookImageBean image) {
+		imageList.add(image);
+		image.setBook(this);
+	}
+
 	// -------Constructor--------
 	public BooksBean() {
 
 	}
 
 	public BooksBean(Integer bookId, String bookName, String author, String translator, BigDecimal price, Integer stock,
-			String shortDesc, LocalDateTime createdAt, String press, String isbn, boolean onShelf) {
+			String shortDesc, LocalDateTime createdAt, String press, String isbn, Integer onShelf) {
 		super();
 		this.bookId = bookId;
 		this.bookName = bookName;
@@ -90,7 +111,7 @@ public class BooksBean {
 	}
 
 	public BooksBean(String bookName, String author, String translator, BigDecimal price, String isbn, Integer stock,
-			String shortDesc, String press, boolean onShelf, GenreBean genreBean) {
+			String shortDesc, String press, Integer onShelf, GenreBean genreBean) {
 		super();
 		this.bookName = bookName;
 		this.author = author;
@@ -120,7 +141,7 @@ public class BooksBean {
 	}
 
 	// --------getter/setter-------
-	public int getBookId() {
+	public Integer getBookId() {
 		return bookId;
 	}
 
@@ -160,7 +181,7 @@ public class BooksBean {
 		this.price = price;
 	}
 
-	public int getStock() {
+	public Integer getStock() {
 		return stock;
 	}
 
@@ -200,11 +221,11 @@ public class BooksBean {
 		this.isbn = isbn;
 	}
 
-	public boolean getOnShelf() {
+	public Integer getOnShelf() {
 		return onShelf;
 	}
 
-	public void setOnShelf(boolean onShelf) {
+	public void setOnShelf(Integer onShelf) {
 		this.onShelf = onShelf;
 	}
 
@@ -215,7 +236,7 @@ public class BooksBean {
 	public void setGenreBean(GenreBean genreBean) {
 		this.genreBean = genreBean;
 	}
-	
+
 	public List<ReviewBean> getReviews() {
 		return reviews;
 	}

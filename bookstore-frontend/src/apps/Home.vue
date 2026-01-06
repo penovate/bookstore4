@@ -20,6 +20,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 const router = useRouter()
 
@@ -28,13 +29,27 @@ const goTo = (path) => {
 }
 
 const handleLogout = async () => {
-  try {
-    await axios.get('http://localhost:8080/logout', { withCredentials: true })
-    alert('已成功登出')
-    router.push('/login')
-  } catch (error) {
-    console.error('登出失敗', error)
-  }
+  Swal.fire({
+    title: '確定要登出嗎？',
+    text: '登出後將返回登入介面',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#b0957b',
+    cancelButtonColor: '#e8e4dc',
+    confirmButtonText: '登出',
+    cancelButtonText: '取消',
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await axios.get('http://localhost:8080/api/logout', { withCredentials: true })
+
+        router.push('/login?logout=true')
+      } catch (error) {
+        console.error('登出失敗', error)
+        router.push('/login?logout=true')
+      }
+    }
+  })
 }
 </script>
 

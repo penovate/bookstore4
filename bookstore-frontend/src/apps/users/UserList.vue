@@ -52,7 +52,7 @@
               <button class="update-button" @click="goToUpdate(user.userId)">修改</button>
             </td>
             <td>
-              <button class="delete-button" @click="handleDelete(user)">刪除</button>
+              <button class="delete-button" @click="deleteUser(user)">刪除</button>
             </td>
           </tr>
           <tr v-if="users.length === 0">
@@ -79,6 +79,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter, useRoute } from 'vue-router'
+import Swal from 'sweetalert2'
 
 const router = useRouter()
 const route = useRoute()
@@ -137,24 +138,34 @@ const resetFilters = () => {
   fetchUsers()
 }
 
-const handleDelete = async (user) => {
-  if (confirm(`確定要刪除會員 「${user.userName}」 的資料嗎？`)) {
-    try {
-      const response = await axios.delete(`http://localhost:8080/api/users/delete/${user.userId}`, {
-        withCredentials: true,
-      })
-
-      if (response.data.success) {
-        alertMessage.value = response.data.message
-        fetchUsers()
-      } else {
-        alert(response.data.message)
+const deleteUser = (user) => {
+  Swal.fire({
+    title: '確定要刪除嗎？',
+    text: `你即將刪除會員：${user.userName}，此動作無法撤銷！`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#e8e4dc',
+    confirmButtonText: '刪除',
+    cancelButtonText: '取消',
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.delete(
+          `http://localhost:8080/api/data/delete/${user.userId}`,
+          {
+            withCredentials: true,
+          },
+        )
+        if (response.data.success) {
+          Swal.fire('已刪除！', '會員資料已從系統移除。', 'success')
+          fetchUsers()
+        }
+      } catch (error) {
+        Swal.fire('出錯了', '刪除失敗，請稍後再試', 'error')
       }
-    } catch (error) {
-      console.error('刪除請求出錯', error)
-      alert('系統錯誤，無法執行刪除。')
     }
-  }
+  })
 }
 
 const goToUpdate = (id) => router.push(`/users/update/${id}`)
@@ -167,8 +178,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* --- 完全移植 JSP 的 CSS --- */
-
 .center-body {
   font-family: '微軟正黑體', 'Arial', sans-serif;
   background-color: #fcf8f0;
@@ -208,7 +217,6 @@ h3 {
   margin-bottom: 20px;
 }
 
-/* 查詢表單樣式 */
 .filter-form {
   display: flex;
   gap: 10px;
@@ -239,7 +247,6 @@ select:focus {
   box-shadow: 0 0 5px rgba(159, 184, 158, 0.4);
 }
 
-/* 查詢按鈕 (原本的 input[type="submit"]) */
 .submit-btn {
   height: 40px;
   padding: 10px 20px;
@@ -260,7 +267,6 @@ select:focus {
   transform: translateY(-1px);
 }
 
-/* 表格樣式 */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -302,7 +308,6 @@ td a:hover {
   text-decoration: underline;
 }
 
-/* 按鈕共用樣式 */
 button {
   padding: 8px 15px;
   border: none;

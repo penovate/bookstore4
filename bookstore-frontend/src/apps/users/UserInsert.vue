@@ -108,6 +108,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 const router = useRouter()
 const isSuccess = ref(false)
@@ -125,7 +126,6 @@ const formData = reactive({
 })
 
 const handleSubmit = async () => {
-  // 手動校驗電話格式
   if (!/^09\d{8}$/.test(formData.phoneNum)) {
     message.value = '新增失敗！電話號碼格式不正確！'
     return
@@ -137,20 +137,25 @@ const handleSubmit = async () => {
     })
 
     if (response.data.success) {
-      isSuccess.value = true
-      message.value = response.data.message
+      Swal.fire({
+        icon: 'success',
+        title: '新增成功！',
+        text: `會員 ${formData.userName} 已成功加入`,
+        confirmButtonColor: '#a07d58',
+        confirmButtonText: '確定',
+      }).then(() => {
+        router.push('/users/list')
+      })
     } else {
-      message.value = response.data.message
+      Swal.fire('失敗', response.data.message, 'error')
     }
   } catch (error) {
-    message.value = '系統錯誤，請稍後再試'
-    console.error(error)
+    Swal.fire('系統錯誤', '請檢查後端伺服器是否啟動', 'error')
   }
 }
 </script>
 
 <style scoped>
-/* 這裡完全移植你 UserInsert.jsp 的 CSS */
 .center-body {
   font-family: '微軟正黑體';
   background-color: #fcf8f0;

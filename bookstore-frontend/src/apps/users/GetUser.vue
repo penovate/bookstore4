@@ -92,7 +92,6 @@ onMounted(fetchUserDetail)
 </script>
 
 <style scoped>
-/* 這裡請保留剛才幫你寫的 JSP 移植樣式 */
 .center-body {
   font-family: '微軟正黑體';
   background-color: #fcf8f0;

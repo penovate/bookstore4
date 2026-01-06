@@ -75,6 +75,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 const route = useRoute()
 const router = useRouter()
@@ -118,15 +119,20 @@ const handleUpdate = async () => {
     })
 
     if (response.data.success) {
-      router.push({
-        path: '/users/list',
-        query: { status: 'success', msg: '會員資料更新成功！' },
+      Swal.fire({
+        icon: 'success',
+        title: '更新成功！',
+        text: `會員資料已修改完成`,
+        confirmButtonColor: '#a07d58',
+        confirmButtonText: '確定',
+      }).then(() => {
+        router.push('/users/list')
       })
     } else {
-      message.value = response.data.message
+      Swal.fire('更新失敗', response.data.message, 'error')
     }
   } catch (error) {
-    message.value = '更新失敗，請檢查資料格式'
+    Swal.fire('錯誤', '更新失敗，請檢查資料格式', 'error')
   }
 }
 

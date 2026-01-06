@@ -34,8 +34,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
 
-// 初始化變數與路由工具
 const errorMessage = ref('')
 const router = useRouter()
 
@@ -44,13 +44,10 @@ const loginForm = reactive({
   password: '',
 })
 
-// 處理登入邏輯
 const handleLogin = async () => {
-  errorMessage.value = '' // 每次按下登入先清空舊的錯誤訊息
-  console.log('準備登入，資料為：', loginForm)
+  errorMessage.value = ''
 
   try {
-    // 發送 POST 請求到 Spring Boot API
     const response = await axios.post(
       'http://localhost:8080/api/login',
       {
@@ -58,40 +55,46 @@ const handleLogin = async () => {
         password: loginForm.password,
       },
       {
-        withCredentials: true, // 允許跨域攜帶 Cookie/Session
+        withCredentials: true,
       },
     )
 
-    console.log('伺服器回傳：', response.data)
-
     if (response.data.success) {
-      // 1. 彈出成功視窗
-      alert(response.data.message)
-
-      // 2. 執行路由跳轉，導向到首頁 (功能選單)
-      router.push('/home')
+      Swal.fire({
+        icon: 'success',
+        title: '登入成功',
+        text: '歡迎進入網路書店後台系統',
+        confirmButtonColor: '#a5886d',
+        confirmButtonText: '進入系統',
+        timer: 1500,
+        timerProgressBar: true,
+      }).then(() => {
+        router.push('/home')
+      })
     } else {
-      // 顯示後端驗證失敗的訊息 (如：帳密錯誤、停權)
       errorMessage.value = response.data.message
     }
   } catch (error) {
     console.error('連線失敗：', error)
-    if (error.response) {
-      // 後端有回應但狀態碼非 2xx (如 401, 403, 404, 500)
-      errorMessage.value = error.response.data.message || '伺服器錯誤'
-    } else {
-      // 完全連不上伺服器
-      errorMessage.value = '連線不到後端伺服器，請檢查 Spring Boot 是否啟動'
-    }
+    Swal.fire({
+      icon: 'error',
+      title: '連線失敗',
+      text: '請檢查 Spring Boot 後端伺服器是否啟動',
+      confirmButtonColor: '#b05252',
+    })
   }
 }
 
-// 處理網址列是否有 logout 參數 (處理登出後的提示)
 onMounted(() => {
   const urlParams = new URLSearchParams(window.location.search)
   if (urlParams.has('logout')) {
-    alert('您已成功登出系統！')
-    // 清除網址列的 ?logout=true，避免重新整理後又跳彈窗
+    Swal.fire({
+      icon: 'info',
+      title: '您已登出',
+      confirmButtonColor: '#a5886d',
+      confirmButtonText: '確定',
+    })
+
     window.history.replaceState({}, document.title, window.location.pathname)
   }
 })

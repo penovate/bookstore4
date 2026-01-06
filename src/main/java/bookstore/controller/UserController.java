@@ -256,7 +256,7 @@ public class UserController {
 	}
 	
 	// Vue 版本刪除
-	@DeleteMapping("/api/users/delete/{id}") 
+	@DeleteMapping("/api/data/delete/{id}") 
 	@ResponseBody
 	public Map<String, Object> deleteUserApi(@PathVariable("id") Integer id) {
 	    Map<String, Object> response = new HashMap<>();
@@ -265,6 +265,7 @@ public class UserController {
 	        response.put("success", true);
 	        response.put("message", "會員資料刪除成功！");
 	    } catch (org.springframework.dao.DataIntegrityViolationException e) {
+	        // 這部分是為了處理外鍵關聯（例如會員買過書有訂單）
 	        response.put("success", false);
 	        response.put("message", "刪除失敗！此會員目前仍有訂單或相關紀錄，無法刪除。");
 	    } catch (Exception e) {

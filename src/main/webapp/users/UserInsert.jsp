@@ -189,7 +189,7 @@ p a:hover {
     <%
         }
     %>
-    <form action="${pageContext.request.contextPath}/InsertUser" method="POST"> 
+    <form action="${pageContext.request.contextPath}/users/insert" method="POST"> 
         <table>
             <tr>
                 <td><label for="email">帳號（Email）:</label></td>
@@ -197,11 +197,11 @@ p a:hover {
             </tr>
             <tr>
                 <td><label for="password">密碼:</label></td>
-                <td><input type="password" id="password" name="user_pwd" required></td>
+                <td><input type="password" id="password" name="userPwd" required></td>
             </tr>
             <tr>
                 <td><label for="name">姓名:</label></td>
-                <td><input type="text" id="name" name="user_name" required placeholder="必填"></td>
+                <td><input type="text" id="name" name="userName" required placeholder="必填"></td>
             </tr>
             
             <tr>
@@ -220,7 +220,7 @@ p a:hover {
             </tr>
             <tr>
                 <td><label for="phone">聯絡電話:</label></td>
-                <td><input type="text" id="phone" name="phone_num" required maxlength="10"
+                <td><input type="text" id="phone" name="phoneNum" required maxlength="10"
                 pattern="09[0-9]{8}" title="電話號碼必須是以 09 開頭的 10 個數字" placeholder="請輸入 09 開頭手機號碼"></td>
             </tr>
             <tr>
@@ -230,7 +230,7 @@ p a:hover {
             <tr>
                 <td><label for="userType">權限等級:</label></td>
                 <td>
-                    <select id="userType" name="user_type">
+                    <select id="userType" name="userType">
                         <option value="">請選擇</option>
                         <option value="0">管理員</option>
                         <option value="1">一般會員</option>
@@ -242,7 +242,7 @@ p a:hover {
         <input type="submit" value="新增會員資料">
     </form>
     <div class="form-action-group">
-    <a href="${pageContext.request.contextPath}/GetAllUsers"><button class="form-back-button">返回會員列表</button></a>
+    <a href="${pageContext.request.contextPath}/users/list"><button class="form-back-button">返回會員列表</button></a>
 	</div>
 </div>
 </body>

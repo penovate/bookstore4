@@ -252,7 +252,7 @@ button {
 				%>
 				<tr>
 					<td><%=item.getOrderItemId()%></td>
-					<td><%=item.getBookId()%></td>
+					<td><%=item.getBooksBean().getBookId()%></td>
 					<td><%=item.getPrice()%></td>
 					<td><%=item.getQuantity()%></td>
 					<td><%=item.getSubtotal()%></td>
@@ -269,7 +269,7 @@ button {
                $(function () {
                 // 1. 返回按鈕
                   $("#btnBack").click(function () {
-                    window.location.href = "<%=request.getContextPath()%>/GetAllCancelOrders";
+                    window.location.href = "<%=request.getContextPath()%>/order/cancelledList";
                   });
                });
         </script>

@@ -250,108 +250,114 @@ button {
 
 <body>
 	<div align="center">
-	<h2>訂單明細</h2>
+		<h2>訂單明細</h2>
 
-	<% Orders order=(Orders) request.getAttribute("order"); List<OrderItem> items = (List<OrderItem>)
-                request.getAttribute("items");
-                %>
+		<%
+		Orders order = (Orders) request.getAttribute("order");
+		List<OrderItem> items = (List<OrderItem>) request.getAttribute("items");
+		%>
 
-	<div class="order-info-block">
-		<p>
-			訂單編號：
-			<%= order.getOrderId() %>
-		</p>
-		<p>
-			收件人：
-			<%= order.getRecipientAt() %>
-		</p>
-		<p>
-			地址：
-			<%= order.getAddress() %>
-		</p>
-		<p>
-			電話：
-			<%= order.getPhone() %>
-		</p>
-		<p>
-			總金額：
-			<%= order.getTotalAmount() %>
-		</p>
-		<p>
-			狀態：
-			<%= order.getOrderStatus() %>
-		</p>
-	</div>
-	<div class="action-group-top">
-	<button id="btnBack">返回訂單列表</button>
-
-	<button id="btnUpdateOrder" class="btn-edit"
-		data-id="<%= order.getOrderId() %>"
-		data-recipient="<%= order.getRecipientAt() %>"
-		data-address="<%= order.getAddress() %>"
-		data-phone="<%= order.getPhone() %>"
-		data-payment="<%= order.getPaymentMethod() %>"
-		data-status="<%= order.getOrderStatus() %>"
-		data-total="<%= order.getTotalAmount() %>">修改訂單</button>
-
-	<button id="btnDeleteOrder" class="btn-del"
-		data-id="<%= order.getOrderId() %>">刪除訂單</button>
-
-	<button id="btnAddOrderItem"
-		data-id="<%= order.getOrderId() %>">新增訂單明細</button>
-	</div>
-	<h3>商品列表</h3>
-	<table>
-		<thead>
-			<tr>
-				<th>訂單明細編號</th>
-				<th>書籍編號</th>
-				<th>單價</th>
-				<th>數量</th>
-				<th>小計</th>
-				<th>操作</th>
-			</tr>
-		</thead>
-		<tbody>
-			<% if (items !=null) { for (OrderItem item : items) { %>
-			<tr>
-				<td><%= item.getOrderItemId() %></td>
-				<td><%= item.getBookId() %></td>
-				<td><%= item.getPrice() %></td>
-				<td><%= item.getQuantity() %></td>
-				<td><%= item.getSubtotal() %></td>
-				<td>
-					<button class="btn-edit btn-update-item"
-						data-itemid="<%= item.getOrderItemId() %>"
-						data-orderid="<%= item.getOrders().getOrderId() %>"
-						data-bookid="<%= item.getBookId() %>"
-						data-price="<%= item.getPrice() %>"
-						data-quantity="<%= item.getQuantity() %>">修改</button>
-
-					<button class="btn-del btn-delete-item"
-						data-itemid="<%= item.getOrderItemId() %>"
-						data-orderid="<%= item.getOrders().getOrderId() %>">刪除</button>
-				</td>
-			</tr>
-			<% } } %>
-		</tbody>
-	</table>
-
-	<div id="custom-modal" class="modal">
-		<div class="modal-content">
-
-			<div id="modal-content-icon" class="modal-icon"></div>
-
-			<p id="modal-content-text"
-				class="modal-text">
+		<div class="order-info-block">
+			<p>
+				訂單編號：
+				<%=order.getOrderId()%>
 			</p>
-
-			<div id="modal-buttons"></div>
+			<p>
+				收件人：
+				<%=order.getRecipientAt()%>
+			</p>
+			<p>
+				地址：
+				<%=order.getAddress()%>
+			</p>
+			<p>
+				電話：
+				<%=order.getPhone()%>
+			</p>
+			<p>
+				總金額：
+				<%=order.getTotalAmount()%>
+			</p>
+			<p>
+				狀態：
+				<%=order.getOrderStatus()%>
+			</p>
 		</div>
-	</div>
+		<div class="action-group-top">
+			<button id="btnBack">返回訂單列表</button>
 
-	<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-	<script>
+			<button id="btnUpdateOrder" class="btn-edit"
+				data-userid="<%=order.getUserBean().getUserId()%>"
+				data-id="<%=order.getOrderId()%>"
+				data-recipient="<%=order.getRecipientAt()%>"
+				data-address="<%=order.getAddress()%>"
+				data-phone="<%=order.getPhone()%>"
+				data-payment="<%=order.getPaymentMethod()%>"
+				data-paymentstatus="<%=order.getPaymentStatus()%>"
+				data-status="<%=order.getOrderStatus()%>"
+				data-total="<%=order.getTotalAmount()%>">修改訂單</button>
+
+			<button id="btnDeleteOrder" class="btn-del"
+				data-id="<%=order.getOrderId()%>">刪除訂單</button>
+
+			<button id="btnAddOrderItem" data-id="<%=order.getOrderId()%>">新增訂單明細</button>
+		</div>
+		<h3>商品列表</h3>
+		<table>
+			<thead>
+				<tr>
+					<th>訂單明細編號</th>
+					<th>書籍編號</th>
+					<th>單價</th>
+					<th>數量</th>
+					<th>小計</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				<%
+				if (items != null) {
+					for (OrderItem item : items) {
+				%>
+				<tr>
+					<td><%=item.getOrderItemId()%></td>
+					<td><%=item.getBooksBean().getBookId()%></td>
+					<td><%=item.getPrice()%></td>
+					<td><%=item.getQuantity()%></td>
+					<td><%=item.getSubtotal()%></td>
+					<td>
+						<button class="btn-edit btn-update-item"
+							data-itemid="<%=item.getOrderItemId()%>"
+							data-orderid="<%=item.getOrders().getOrderId()%>"
+							data-bookid="<%=item.getBooksBean().getBookId()%>"
+							data-price="<%=item.getPrice()%>"
+							data-quantity="<%=item.getQuantity()%>">修改</button>
+
+						<button class="btn-del btn-delete-item"
+							data-itemid="<%=item.getOrderItemId()%>"
+							data-orderid="<%=item.getOrders().getOrderId()%>">刪除</button>
+					</td>
+				</tr>
+				<%
+				}
+				}
+				%>
+			</tbody>
+		</table>
+
+		<div id="custom-modal" class="modal">
+			<div class="modal-content">
+
+				<div id="modal-content-icon" class="modal-icon"></div>
+
+				<p id="modal-content-text" class="modal-text"></p>
+
+				<div id="modal-buttons"></div>
+			</div>
+		</div>
+
+		<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+		<script>
                     // 儲存待刪除的表單提交function
                     let deferredSubmit = null;
 
@@ -384,89 +390,117 @@ button {
 
                     $(function () {
                         // 1. 返回按鈕
-                        $("#btnBack").click(function () {
-                            window.location.href = "<%= request.getContextPath() %>/GetAllOrders";
-                        });
+                        $("#btnBack").click(function () {window.location.href = "<%=request.getContextPath()%>/order/activeList";
+								});
 
-                        // 2. 修改訂單按鈕 (保持不變)
-                        $("#btnUpdateOrder").click(function () {
-                            let id = $(this).data("id");
-                            let recipient = $(this).data("recipient");
-                            let address = $(this).data("address");
-                            let phone = $(this).data("phone");
-                            let payment = $(this).data("payment");
-                            let status = $(this).data("status");
-                            let total = $(this).data("total");
+				// 2. 修改訂單按鈕 (保持不變)
+				$("#btnUpdateOrder")
+						.click(
+								function() {
+									let userId = $(this).data("userid");
+									let id = $(this).data("id");
+									let recipient = $(this).data("recipient");
+									let address = $(this).data("address");
+									let phone = $(this).data("phone");
+									let payment = $(this).data("payment");
+									let paymentstatus = $(this).data("paymentstatus");
+									let status = $(this).data("status");
+									let total = $(this).data("total");
 
-                            let url = "order/UpdateOrder.jsp?orderId=" + id +
-                                "&recipient=" + encodeURIComponent(recipient) +
-                                "&address=" + encodeURIComponent(address) +
-                                "&phone=" + encodeURIComponent(phone) +
-                                "&paymentMethod=" + encodeURIComponent(payment) +
-                                "&orderStatus=" + encodeURIComponent(status) +
-                                "&totalAmount=" + total;
-                            window.location.href = url;
-                        });
+									let url = "${pageContext.request.contextPath}/order/UpdateOrder.jsp?userId=" 
+											+ userId
+											+ "&orderId="
+											+ id
+											+ "&recipient="
+											+ encodeURIComponent(recipient)
+											+ "&address="
+											+ encodeURIComponent(address)
+											+ "&phone="
+											+ encodeURIComponent(phone)
+											+ "&paymentMethod="
+											+ encodeURIComponent(payment)
+											+ "&paymentStatus="
+											+ encodeURIComponent(paymentstatus)
+											+ "&orderStatus="
+											+ encodeURIComponent(status)
+											+ "&totalAmount=" + total;
+									window.location.href = url;
+								});
 
-                        // 3. 刪除整筆訂單按鈕 (有彈窗警告)
-                        $("#btnDeleteOrder").click(function () {
-                            let id = $(this).data("id");
-                            
-                            showConfirmModal('確定要刪除這筆訂單嗎？', function(confirmed) {
-                                if (confirmed) {
-                                    let form = $('<form action="DeleteOrder" method="post">' +
-                                        '<input type="hidden" name="id" value="' + id + '">' +
-                                        '</form>');
-                                    $('body').append(form);
-                                    form.submit();
-                                }
-                            });
-                        });
+				// 3. 取消整筆訂單按鈕 (有彈窗警告)
+				$("#btnDeleteOrder")
+						.click(
+								function() {
+									let id = $(this).data("id");
 
-                     // 4. 新增訂單明細按鈕
-                        $("#btnAddOrderItem").click(function () {
-                            // 取得當前訂單的主檔資訊
-                            let orderId = $(this).data("id");
-                            
-                            let url = "order/InsertOrderItems.jsp?orderId=" + orderId;
-                            window.location.href = url;
-                        });
-                        
-                        // 5. 修改明細按鈕
-                        $(".btn-update-item").click(function () {
-                            let itemId = $(this).data("itemid");
-                            let orderId = $(this).data("orderid");
-                            let bookId = $(this).data("bookid");
-                            let price = $(this).data("price");
-                            let quantity = $(this).data("quantity");
+									showConfirmModal(
+											'確定要取消這筆訂單嗎？',
+											function(confirmed) {
+												if (confirmed) {
+													let form = $('<form action="${pageContext.request.contextPath}/order/cancel" method="post">'
+															+ '<input type="hidden" name="id" value="' + id + '">'
+															+ '</form>');
+													$('body').append(form);
+													form.submit();
+												}
+											});
+								});
 
-                            let url = "order/UpdateOrderItem.jsp?orderItemId=" + itemId +
-                                "&orderId=" + orderId +
-                                "&bookId=" + bookId +
-                                "&price=" + price +
-                                "&quantity=" + quantity;
-                            window.location.href = url;
-                        });
+				// 4. 新增訂單明細按鈕
+				$("#btnAddOrderItem")
+						.click(
+								function() {
+									// 取得當前訂單的主檔資訊
+									let orderId = $(this).data("id");
 
-                        // 6. 刪除單一明細按鈕(會彈窗警告)
-                        $(".btn-delete-item").click(function () {
-                            let itemId = $(this).data("itemid");
-                            let orderId = $(this).data("orderid");
+									let url = "${pageContext.request.contextPath}/order/InsertOrderItems.jsp?orderId="
+											+ orderId;
+									window.location.href = url;
+								});
 
-                            showConfirmModal('確定要刪除此明細嗎？', function(confirmed) {
-                                if (confirmed) {
-                                    let form = $('<form action="DeleteOrderItem" method="post">' +
-                                        '<input type="hidden" name="orderItemId" value="' + itemId + '">' +
-                                        '<input type="hidden" name="orderId" value="' + orderId + '">' +
-                                        '</form>');
-                                    $('body').append(form);
-                                    form.submit();
-                                }
-                            });
-                        });
-                    });
-                </script>
+				// 5. 修改明細按鈕
+				$(".btn-update-item")
+						.click(
+								function() {
+									let itemId = $(this).data("itemid");
+									let orderId = $(this).data("orderid");
+									let bookId = $(this).data("bookid");
+									let price = $(this).data("price");
+									let quantity = $(this).data("quantity");
 
+									let url = "${pageContext.request.contextPath}/order/UpdateOrderItem.jsp?orderItemId="
+											+ itemId
+											+ "&orderId="
+											+ orderId
+											+ "&bookId="
+											+ bookId
+											+ "&price="
+											+ price + "&quantity=" + quantity;
+									window.location.href = url;
+								});
+
+				// 6. 刪除單一明細按鈕(會彈窗警告)
+				$(".btn-delete-item")
+						.click(
+								function() {
+									let itemId = $(this).data("itemid");
+									let orderId = $(this).data("orderid");
+
+									showConfirmModal(
+											'確定要刪除此明細嗎？',
+											function(confirmed) {
+												if (confirmed) {
+													let form = $('<form action="${pageContext.request.contextPath}/order/deleteItem" method="post">'
+															+ '<input type="hidden" name="orderItemId" value="' + itemId + '">'
+															+ '<input type="hidden" name="orderId" value="' + orderId + '">'
+															+ '</form>');
+													$('body').append(form);
+													form.submit();
+												}
+											});
+								});
+			});
+		</script>
 </body>
 
 </html>

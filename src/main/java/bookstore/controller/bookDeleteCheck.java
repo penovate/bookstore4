@@ -24,8 +24,7 @@ public class bookDeleteCheck extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		System.out.println("有進到doPost進行檢查");
-		String bookId = request.getParameter("bookId");
+		Integer bookId = Integer.parseInt(request.getParameter("bookId"));
 
 		// true代表有資料
 		BookDao bookDao = new BookDao();
@@ -33,7 +32,6 @@ public class bookDeleteCheck extends HttpServlet {
 		Boolean orderItemCheck = bookDao.selectOrderItemByBookId(bookId);
 
 		Boolean allCheck = !reviewCheck && !orderItemCheck;
-		System.out.println("allCheck檢查結果=" + allCheck);
 		response.setContentType("text/plain;charset=UTF-8");
 		response.getWriter().write(String.valueOf(allCheck));
 

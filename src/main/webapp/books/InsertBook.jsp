@@ -135,33 +135,45 @@ td input:focus, td select:focus {
 	<div class="card">
 		<h2>請輸入書籍資料</h2>
 
-		<form method="post" action="InsertBook">
+		<form method="post" action="<%=request.getContextPath()%>/books/insert"
+			enctype="multipart/form-data">
 			<table>
-
+				<tr>
+					<td>書籍封面:</td>
+					<td><span id="imgSpan" class="requirement">*</span> <input
+						type="file" name="mainImage" id="mainImage" accept="image/*"
+						required>
+						<div style="margin-top: 10px;">
+							<img id="previewImage" src="#" alt="圖片預覽"
+								style="max-width: 200px; display: none; border: 1px solid #dcd5c7; border-radius: 4px;">
+						</div></td>
+				</tr>
 
 				<tr>
 					<td>書籍名稱:</td>
 					<td><span id="nameSpan" class="requirement">*</span> <input
-						type="text" name="bookName" id="bookName" required></td>
+						type="text" name="bookName" id="bookName" required
+						placeholder="請輸入書籍名稱.."></td>
 				</tr>
 				<tr>
 					<td>作者:</td>
 					<td><span id="authorSpan" class="requirement">*</span> <input
-						type="text" name="author" id="author" required></td>
+						type="text" name="author" id="author" required
+						placeholder="請輸入書籍作者.."></td>
 				</tr>
 				<tr>
 					<td>譯者:</td>
 					<td><span id="translatorSpan" class="requirement">*</span> <input
-						type="text" name="translator" id="translator" required></td>
+						type="text" name="translator" id="translator" required
+						placeholder="請輸入書籍譯者.."></td>
 				</tr>
 
 				<tr>
 					<td>類型:</td>
 					<td><span id="genreSpan" class="requirement">*</span> <select
-						name="genre" id="genre" required>
+						name="genreBean.genreId" id="genre" required>
 							<option value="" disabled selected>-- 請選擇書籍類型 --</option>
 							<%
-							
 							if (genreList != null && !genreList.isEmpty()) {
 								for (GenreBean genre : genreList) {
 							%>
@@ -179,27 +191,31 @@ td input:focus, td select:focus {
 				<tr>
 					<td>出版社:</td>
 					<td><span id="pressSpan" class="requirement">*</span> <input
-						type="text" name="press" required id="press"></td>
+						type="text" name="press" required id="press"
+						placeholder="請輸入書籍出版社.."></td>
 				</tr>
 				<tr>
 					<td>價錢:</td>
-					<td><span id="priceSpan" class="requirement">*</span> 
-					<input	type="text" name="price" required id="price"></td>
+					<td><span id="priceSpan" class="requirement">*</span> <input
+						type="text" name="price" required id="price" placeholder="請輸入價錢.."></td>
 				</tr>
 				<tr>
 					<td>ISBN:</td>
-					<td><span id="isbnSpan" class="requirement">*</span>
-					 <input	type="text" name="isbn" maxlength="13" id="isbn" required></td>
+					<td><span id="isbnSpan" class="requirement">*</span> <input
+						type="text" name="isbn" maxlength="13" id="isbn" required
+						placeholder="請輸入書13位數字.."></td>
 				</tr>
 				<tr>
 					<td>庫存:</td>
 					<td><span id="stockSpan" class="requirement">*</span> <input
-						type="text" name="stock" required id="stock">
+						type="text" name="stock" required id="stock"
+						placeholder="請輸入庫存量..">
 				</tr>
 				<tr>
 					<td>簡述:</td>
 					<td><span id="shortDescSpan" class="requirement">*</span> <input
-						type="text" name="short_desc" id="shortDesc" required>
+						type="text" name="shortDesc" id="shortDesc" required
+						placeholder="請輸入書籍描述..">
 				</tr>
 			</table>
 			<input type="submit" class="btn-submit" value="送出">
@@ -207,7 +223,28 @@ td input:focus, td select:focus {
 	</div>
 	<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+	<script>
+$(document).ready(function() {
+    // 監聽檔案上傳欄位的變化
+    $('#mainImage').change(function() {
+        const file = this.files[0];
+        if (file) {
+            // 建立檔案讀取器
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // 將讀取到的結果設定給 img 標籤並顯示
+                $('#previewImage').attr('src', e.target.result).fadeIn();
+            }
+            
+            reader.readAsDataURL(file);
+        } else {
+            // 若取消選取，隱藏預覽圖
+            $('#previewImage').hide();
+        }
+    });
+});
+</script>
 	<!-- JQ資料驗證 -->
 	<script>
 		//booksName Check Function	
@@ -221,25 +258,38 @@ td input:focus, td select:focus {
 		}
 
 		$('#bookName').on('input', nameCheck);
-
 		//isbn Check function
 		function isbnCheck() {
-			let rule1 = /[0-9]/
-			let content = $(this).val()
-			if (content.length < 0) {
-				$('#isbnSpan').text('ISBN不可空白').css('color', 'red')
-			} else if (content.length == 0) {
-				$('#isbnSpan').text('*').css('color', 'red')
-			} else if (!rule1.test(content)) {
-				$('#isbnSpan').text('ISBN只能為數字').css('color', 'red')
-			} else if (content.length < 13) {
-				$('#isbnSpan').text('ISBN必須為13碼數字').css('color', 'red')
-			} else {
-				$('#isbnSpan').text('✓').css('color', 'green')
+		    const rule1 = /^[0-9]+$/;
+		    const content = $(this).val();
+		    const $span = $('#isbnSpan');
+
+		    if (content.length == 0) {
+		        $span.text('ISBN不可空白').css('color', 'red');
+		    } else if (!rule1.test(content)) {
+		        $span.text('ISBN只能為數字').css('color', 'red');
+		    } else if (content.length < 13) {
+		        $span.text('ISBN必須為13碼數字').css('color', 'red');
+		    } else {
+		        $.ajax({
+		            url: '<%=request.getContextPath()%>/books/isbnCheck',
+					type : 'post',
+					dataType : 'text',
+					data : {
+						isbn : content
+					},
+					success : function(e) {
+						if (e == "false") {
+							$span.text('✓').css('color', 'green');
+						} else {
+							$span.text('此ISBN已存在').css('color', 'red');
+						}
+					}
+				});
 			}
 		}
-		$('#isbn').on('input', isbnCheck)
-
+		$('#isbn').on('input', isbnCheck);
+-->
 		//genre Check function
 		function genreCheck() {
 			let content = $(this).val()
@@ -313,16 +363,27 @@ td input:focus, td select:focus {
 
 		//shortDesc Check function
 		function shortDescCheck() {
-			let content = $(this).val()
-			if (content >= 0) {
-				$('#shortDescSpan').text('✓').css('color', 'green')
+			let content = $(this).val().trim(); // 使用 trim() 移除純空白字元
+			let $span = $('#shortDescSpan');
+
+			if (content === "") {
+				// 1. 判斷是否為空白
+				$span.text('欄位不可為空白').css('color', 'red');
+			} else if (content.length < 10) {
+				// 2. 判斷字數是否足夠
+				$span.text('字數不足，至少需要 10 個字 (目前: ' + content.length + ')').css(
+						'color', 'orange');
+			} else {
+				// 3. 符合所有條件
+				$span.text('✓').css('color', 'green');
 			}
 		}
 		$('#shortDesc').on('input', shortDescCheck)
 
-		
 		//insert表單送出檢查
-		$('.btn-submit').on('click',function(e) {
+		$('.btn-submit').on(
+				'click',
+				function(e) {
 					let form = $(this).closest('form')
 					let nameVal = $('#nameSpan').text();
 					let authorVal = $('#authorSpan').text();
@@ -340,7 +401,7 @@ td input:focus, td select:focus {
 							&& shortDescVal == '✓') {
 						form.submit();
 					} else {
-					e.preventDefault();
+						e.preventDefault();
 						Swal.fire({
 							icon : "error",
 							title : "無法送出",
@@ -350,26 +411,6 @@ td input:focus, td select:focus {
 					}
 
 				})
-				
-			//isbn唯一性檢查 Ajax
-			$('#isbn').on('keyup',function(){
-				let value = $(this).val();
-				
-				$.ajax({
-					url:'<%=request.getContextPath()%>/isbnCheck',
-					type:'post',
-					dataType:'text',
-					data:{isbn:value},
-					success:function(e){
-						if(e=="false"){
-							$('#isbnSpan').text('✓').css('color','green')
-						}else{
-							$('#isbnSpan').text('此ISBN已存在').css('color','red')
-						}
-					}
-					
-				})
-			})
 	</script>
 
 

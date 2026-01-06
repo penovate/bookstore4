@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package bookstore.repository;
 
 import java.util.List;
@@ -21,3 +22,14 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
     @Query("DELETE FROM OrderItem i WHERE i.orders.orderId = :orderId")
     void deleteByOrderId(@Param("orderId") Integer orderId);
 }
+=======
+package bookstore.Repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import bookstore.bean.OrderItem;
+
+public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
+
+}
+>>>>>>> 81fe1af8f37f50999bbe43a1e58d947ed4dd5840

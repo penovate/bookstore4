@@ -72,15 +72,19 @@ public class BookDao {
 	// select by isbn------
 	public BooksBean selectBooksByIsbn(String isbn) {
 		Session session = sessionFactory.getCurrentSession();
-		String hql = "from BooksBean b where b.isbn = :isbn";
-		BooksBean book = session.createQuery(hql, BooksBean.class).setParameter("isbn", isbn).uniqueResult();
+
+		String hql1 = "from BooksBean b where b.isbn = :isbn";
+		BooksBean book = session.createQuery(hql1, BooksBean.class).setParameter("isbn", isbn).uniqueResult();
+
 		return book;
 	}
 
 	// select by onShelf-----
-	public List<BooksBean> selectBooksByOnShelf(Boolean onShelf) {
-
-		return null;
+	public Boolean selectOnShelfById(Integer bookId) {
+		Session session = sessionFactory.getCurrentSession();
+		String hql = "SELECT b.onShelf FROM BooksBean b WHERE b.bookId = :id";
+		Boolean onShelf = (Boolean) session.createQuery(hql).setParameter("id", bookId).uniqueResult();
+		return onShelf;
 	}
 
 	// delete驗證，若評價有該書內容不可將書籍刪除
@@ -106,7 +110,7 @@ public class BookDao {
 		try {
 			Session session = sessionFactory.getCurrentSession();
 
-			String hql = "SELECT count(i) FROM OrderItemBean i WHERE i.bookId = :id";
+			String hql = "SELECT count(i) FROM OrderItem i WHERE i.bookId = :id";
 
 			Long count = (Long) session.createQuery(hql).setParameter("id", bookId).uniqueResult();
 

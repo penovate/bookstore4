@@ -4,7 +4,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"	pageEncoding="UTF-8"%>
 <%
 BooksBean book = (BooksBean) request.getAttribute("book");
-List<GenreBean> genreList = (List<GenreBean>) request.getAttribute("genresList");
+List<GenreBean> genreList = (List<GenreBean>) request.getAttribute("genreList");
 
 if (book == null) {
 	response.sendRedirect("BookList"); // 或者其他錯誤處理
@@ -179,7 +179,7 @@ td input:focus, td select:focus {
 	<div class="card">
 		<h2>
 			修改書籍資料：<%=book.getBookName()%></h2>
-		<form method="post" action="UpdateBook">
+		<form method="post" action="/books/update">
 			<table>
 
 				<input type="hidden" name="bookId" id="bookId" value="<%=book.getBookId()%>">
@@ -252,20 +252,16 @@ td input:focus, td select:focus {
 				<!-- 
 				<tr>
 					<td>上下架狀態:</td>
-					<td><select name="on_shelf" required>
-							<option value="true" <%=book.getOnShelf() ? "selected" : ""%>>上架
 								(True)</option>
-							<option value="false" <%=!book.getOnShelf() ? "selected" : ""%>>下架
 								(False)</option>
 					</select></td>
 				</tr>
 				 -->
 			</table>
-
 			<div class="btn-container">
 				<input type="submit" class="btn btn-submit" value="確認修改">
-				<button type="button" class="btn btn-back"
-					onclick="window.location.href='GetAllBooks'">取消並返回列表</button>
+				<button type="submit" class="btn btn-back"
+				method="get" action="/books/getAllBooks">取消並返回列表</button>
 			</div>
 		</form>
 	</div>
@@ -275,7 +271,6 @@ td input:focus, td select:focus {
 
 	<script>
 		$(function() {
-			// 紀錄原始 ISBN，用於修改時的比對
 			const originalIsbn = $('#isbn').val();
 
 			// 書名檢查

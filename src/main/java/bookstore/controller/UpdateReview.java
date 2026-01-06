@@ -1,75 +1,75 @@
 package bookstore.controller;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
 import java.net.URLEncoder;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import bookstore.bean.BooksBean;
 import bookstore.bean.ReviewBean;
 import bookstore.dao.impl.ReviewsDAOImpl;
 
-@WebServlet("/UpdateReview")
-public class UpdateReview extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-	// 顯示更新頁面   
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		request.setCharacterEncoding("UTF-8");
-		String reviewIdStr = request.getParameter("review_id");
-		if (reviewIdStr == null || reviewIdStr.isEmpty()) {
-			response.sendRedirect(request.getContextPath() + "/GetAllReviews?error=缺少評價ID");
-			return;
-		}
+@Controller
+public class UpdateReview {
 
-		Integer reviewId = Integer.valueOf(reviewIdStr);
-		ReviewsDAOImpl dao = new ReviewsDAOImpl();
-		ReviewBean review = dao.selectReviewById(reviewId);
-		if (review != null) {
-			request.setAttribute("review", review);
-			request.getRequestDispatcher("/reviews/ReviewUpdate.jsp").forward(request, response);
-		} else {
-			response.sendRedirect(request.getContextPath() + "/GetAllReviews?error=找不到該評價資料！");
-		}
-		
-	}
+    @Autowired
+    private ReviewsDAOImpl reviewsDAO;
 
-	 // 處理更新
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		request.setCharacterEncoding("UTF-8");
-        String message = "";
-        
-        String reviewIdStr = request.getParameter("review_id");
-        String userIdStr = request.getParameter("user_id"); 
-        String bookIdStr = request.getParameter("book_id");
-        String ratingStr = request.getParameter("rating");
-        String comment = request.getParameter("comment");
-        
+    // =============================
+    // 顯示更新頁面（GET）
+    // =============================
+    @GetMapping("/UpdateReview")
+    public String showUpdateForm(
+            @RequestParam(value = "review_id", required = false) String reviewIdStr,
+            Model model) throws Exception {
+
         if (reviewIdStr == null || reviewIdStr.isEmpty()) {
-            message = "更新失敗！缺少評價ID！";
-            response.sendRedirect(request.getContextPath() + "/GetAllReviews?msg=" + URLEncoder.encode(message, "UTF-8"));
-            return;
+            String msg = URLEncoder.encode("缺少評價ID", "UTF-8");
+            return "redirect:/GetAllReviews?error=" + msg;
         }
+
+        Integer reviewId = Integer.valueOf(reviewIdStr);
+        ReviewBean review = reviewsDAO.selectReviewById(reviewId);
+
+        if (review == null) {
+            String msg = URLEncoder.encode("找不到該評價資料！", "UTF-8");
+            return "redirect:/GetAllReviews?error=" + msg;
+        }
+
+        model.addAttribute("review", review);
+        return "reviews/ReviewUpdate";
+    }
+
+    // =============================
+    // 處理更新（POST）
+    // =============================
+    @PostMapping("/UpdateReview")
+    public String updateReview(
+            @RequestParam("review_id") String reviewIdStr,
+            @RequestParam("user_id") String userIdStr,
+            @RequestParam("book_id") String bookIdStr,
+            @RequestParam("rating") String ratingStr,
+            @RequestParam("comment") String comment,
+            Model model) throws Exception {
+
+        String message;
 
         if (comment == null || comment.trim().isEmpty()) {
-            message = "更新失敗！評論內容不能為空白！";
-            response.sendRedirect(request.getContextPath() 
-                    + "/UpdateReview?review_id=" + reviewIdStr 
-                    + "&error=" + URLEncoder.encode(message, "UTF-8"));
-            return;
+            message = URLEncoder.encode("更新失敗！評論內容不能為空白！", "UTF-8");
+            return "redirect:/UpdateReview?review_id=" + reviewIdStr + "&error=" + message;
         }
 
-     // === String → Integer（Servlet 的責任）===
         Integer reviewId;
         Integer userId;
         Integer bookId;
         Integer rating;
-        
+
         try {
-        		reviewId = Integer.valueOf(reviewIdStr);
+            reviewId = Integer.valueOf(reviewIdStr);
             userId   = Integer.valueOf(userIdStr);
             bookId   = Integer.valueOf(bookIdStr);
             rating   = Integer.valueOf(ratingStr);
@@ -78,40 +78,31 @@ public class UpdateReview extends HttpServlet {
                 throw new IllegalArgumentException();
             }
         } catch (Exception e) {
-            message = "更新失敗！評分必須是 1~5 的數字！";
-            response.sendRedirect(request.getContextPath() 
-                    + "/UpdateReview?review_id=" + reviewIdStr
-                    + "&error=" + URLEncoder.encode(message, "UTF-8"));
-            return;
+            message = URLEncoder.encode("更新失敗！評分必須是 1~5 的數字！", "UTF-8");
+            return "redirect:/UpdateReview?review_id=" + reviewIdStr + "&error=" + message;
         }
 
         // === 組 Bean ===
         ReviewBean review = new ReviewBean();
         BooksBean book = new BooksBean();
         book.setBookId(bookId);
+
         review.setReviewId(reviewId);
         review.setUserId(userId);
         review.setBook(book);
         review.setRating(rating);
         review.setComment(comment);
-        // createdAt 不動（更新不該改建立時間）
-        
-        ReviewsDAOImpl dao = new ReviewsDAOImpl();
-        int result = dao.updateReview(review);
+        // createdAt 不動（更新不改建立時間）
 
-        try {
-        	if (result > 0) {
-                message = "評價更新成功！";
-            } else {
-                message = "更新失敗！找不到該評價或資料未變更！";
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            message = "更新失敗！資料庫錯誤！";
+        int result = reviewsDAO.updateReview(review);
+
+        if (result > 0) {
+            message = "評價更新成功！";
+        } else {
+            message = "更新失敗！找不到該評價或資料未變更！";
         }
-        
-        
-        response.sendRedirect(request.getContextPath() 
-        	    + "/GetAllReviews?status=success&msg=" + URLEncoder.encode(message, "UTF-8"));
+
+        return "redirect:/GetAllReviews?status=success&msg="
+                + URLEncoder.encode(message, "UTF-8");
     }
 }

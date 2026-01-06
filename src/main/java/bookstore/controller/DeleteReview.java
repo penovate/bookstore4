@@ -1,56 +1,55 @@
 package bookstore.controller;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
 import java.net.URLEncoder;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import bookstore.dao.impl.ReviewsDAOImpl;
 
-@WebServlet("/DeleteReview")
-public class DeleteReview extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-       
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		request.setCharacterEncoding("UTF-8");
-		String message = "";
-		
-		// 取得參數（一定是 String）
-		String reviewIdStr = request.getParameter("review_id");
-		
-		if (reviewIdStr == null || reviewIdStr.isEmpty()) {
-			message = "刪除失敗：缺少評價ID！";
-		} else {
-			
-			// String → Integer（Servlet 的責任）
-			try {
-			Integer reviewId = Integer.valueOf(reviewIdStr);
-			
-			ReviewsDAOImpl dao = new ReviewsDAOImpl();
-			int count = dao.deleteReview(reviewId); 
-			
-			if (count > 0) {
-				message = "評價資料刪除成功！";
-			} else {
-				message = "刪除失敗：找不到該評價資料！";
-			}
-		 } catch (NumberFormatException e) {
-	         message = "刪除失敗：評價ID格式錯誤！";
-	        }
-		}
-		
-		String encodedMessage = URLEncoder.encode(message, "UTF-8");
-        
-		response.sendRedirect(request.getContextPath() 
-		    + "/GetAllReviews?status=success&msg=" + encodedMessage);
-	}
+@Controller
+public class DeleteReview {
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doGet(request, response);
-	}
+    @Autowired
+    private ReviewsDAOImpl reviewsDAO;
 
+    @GetMapping("/DeleteReview")
+    public String deleteReview(
+            @RequestParam(value = "review_id", required = false) String reviewIdStr)
+            throws Exception {
+
+        String message;
+
+        if (reviewIdStr == null || reviewIdStr.isEmpty()) {
+            message = "刪除失敗：缺少評價ID！";
+        } else {
+            try {
+                Integer reviewId = Integer.valueOf(reviewIdStr);
+                int count = reviewsDAO.deleteReview(reviewId);
+
+                if (count > 0) {
+                    message = "評價資料刪除成功！";
+                } else {
+                    message = "刪除失敗：找不到該評價資料！";
+                }
+            } catch (NumberFormatException e) {
+                message = "刪除失敗：評價ID格式錯誤！";
+            }
+        }
+
+        return "redirect:/GetAllReviews?status=success&msg="
+                + URLEncoder.encode(message, "UTF-8");
+    }
+
+    @PostMapping("/DeleteReview")
+    public String deleteReviewPost(
+            @RequestParam(value = "review_id", required = false) String reviewIdStr)
+            throws Exception {
+
+        // 行為與 GET 完全一致
+        return deleteReview(reviewIdStr);
+    }
 }

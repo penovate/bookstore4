@@ -1,31 +1,44 @@
 package bookstore.controller;
 
-import java.io.IOException;
+import java.time.LocalDateTime;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import bookstore.bean.BooksBean;
 import bookstore.bean.ReviewBean;
 import bookstore.dao.impl.ReviewsDAOImpl;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet("/InsertReview")
-public class InsertReview extends HttpServlet {
-    private static final long serialVersionUID = 1L;
+@Controller
+public class InsertReview {
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
+    @Autowired
+    private ReviewsDAOImpl reviewsDAO;
 
-        request.setCharacterEncoding("UTF-8");
-        String message = "";
+    // =============================
+    // 顯示新增表單（GET）
+    // =============================
+    @GetMapping("/InsertReview")
+    public String showInsertForm() {
+        return "reviews/ReviewInsert";
+    }
 
-        // 從表單取得資料（完全對應 JSP 的 input name）
-        String userIdStr = request.getParameter("user_id");
-        String bookIdStr = request.getParameter("book_id");
-        String ratingStr = request.getParameter("rating");
-        String comment = request.getParameter("comment");
+    // =============================
+    // 處理新增（POST）
+    // =============================
+    @PostMapping("/InsertReview")
+    public String insertReview(
+            @RequestParam("user_id") String userIdStr,
+            @RequestParam("book_id") String bookIdStr,
+            @RequestParam("rating") String ratingStr,
+            @RequestParam("comment") String comment,
+            Model model) {
+
+        String message;
 
         // --- 基本欄位檢查 ---
         if (userIdStr == null || userIdStr.isEmpty() ||
@@ -34,12 +47,10 @@ public class InsertReview extends HttpServlet {
             comment == null || comment.isEmpty()) {
 
             message = "新增失敗！會員編號、書籍編號、評分與評論內容都不能為空白。";
-            request.setAttribute("message", message);
-            request.getRequestDispatcher("/reviews/ReviewInsert.jsp").forward(request, response);
-            return;
+            model.addAttribute("message", message);
+            return "reviews/ReviewInsert";
         }
-        
-        // String → Integer（Servlet 的責任）
+
         Integer userId;
         Integer bookId;
         Integer rating;
@@ -54,61 +65,42 @@ public class InsertReview extends HttpServlet {
             }
         } catch (Exception e) {
             message = "新增失敗！評分必須是 1~5 的數字。";
-            request.setAttribute("message", message);
-            request.getRequestDispatcher("/reviews/ReviewInsert.jsp")
-                   .forward(request, response);
-            return;
+            model.addAttribute("message", message);
+            return "reviews/ReviewInsert";
         }
 
         // --- 建立 Bean ---
         ReviewBean review = new ReviewBean();
         BooksBean book = new BooksBean();
         book.setBookId(bookId);
+
         review.setBook(book);
         review.setBookId(bookId);
         review.setUserId(userId);
         review.setRating(rating);
         review.setComment(comment);
+        review.setCreatedAt(LocalDateTime.now());
 
-        // 很重要：建立時間
-        review.setCreatedAt(java.time.LocalDateTime.now());
-        
         // --- 呼叫 DAO ---
-        ReviewsDAOImpl dao = new ReviewsDAOImpl();
-        int result;
-
         try {
-            result = dao.insertReview(review);
+            int result = reviewsDAO.insertReview(review);
+
+            if (result > 0) {
+                message = "新增書籍評論成功！";
+                model.addAttribute("review", review);
+                model.addAttribute("message", message);
+                return "reviews/ReviewInsertFinish";
+            } else {
+                message = "新增失敗！請稍後再試。";
+                model.addAttribute("message", message);
+                return "reviews/ReviewInsert";
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             message = "新增失敗！資料庫寫入錯誤，請檢查資料是否正確！";
-            request.setAttribute("message", message);
-            request.getRequestDispatcher("/reviews/ReviewInsert.jsp")
-                   .forward(request, response);
-            return;
-        }
-
-        // 結果處理
-        // --- 新增成功 ---
-        if (result > 0) {
-            message = "新增書籍評論成功！";
-            request.setAttribute("review", review);
-            request.setAttribute("message", message);
-            request.getRequestDispatcher("/reviews/ReviewInsertFinish.jsp").forward(request, response);
-            return;
-        } else {
-            message = "新增失敗！請稍後再試。";
-            request.setAttribute("message", message);
-            request.getRequestDispatcher("/reviews/ReviewInsert.jsp")
-                   .forward(request, response);
+            model.addAttribute("message", message);
+            return "reviews/ReviewInsert";
         }
     }
-
-
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        response.sendRedirect(request.getContextPath() + "/reviews/ReviewInsert.jsp");
-    }
-
 }
-

@@ -3,7 +3,8 @@ package bookstore.bean;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.CascadeType;
+import org.springframework.stereotype.Component;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,6 +18,7 @@ import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "reviews")
+@Component
 public class ReviewBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;

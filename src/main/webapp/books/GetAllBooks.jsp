@@ -73,7 +73,7 @@
 					<td style="text-align: center;"><%=book.getStock()%></td>
 					<td style="text-align: center;">
 						<form action="/books/updatePage" method="get">
-							<input type="hidden" name="id" value="<%=book.getBookId()%>">
+							<input type="hidden" name="bookId" value="<%=book.getBookId()%>">
 							<input type="submit" value="修改" class="btn btn-edit" <%=(book.getOnShelf() == 2) ? "disabled" : ""%>>
 						</form>
 					</td>
@@ -91,7 +91,7 @@
 					<td style="text-align: center;">
 						<div class="switch-container">
 							<label class="book-switch"> <input type="checkbox"
-								class="on-shelf-toggle" data-bookid="<%=book.getBookId()%>"
+								class="on-shelf-toggle" data-bookId="<%=book.getBookId()%>"
 								<%=(book.getOnShelf() == 1) ? "checked" : ""%>
 								<%=(book.getOnShelf() == 2) ? "disabled" : ""%>> <span
 								class="slider"></span>
@@ -126,7 +126,7 @@
 			<%=bookList.size()%>
 			筆資料
 		</h3>
-		<a href="books/booksIndex.html"><button
+		<a href="books/booksIndex"><button
 				class="back-to-index-button">返回書籍資料處理首頁</button></a>
 
 	</div>
@@ -205,7 +205,7 @@ window.onload = function() {
 
 $(document).on('click', '.archive-btn', function() {
     const btn = $(this);
-    const bookId = btn.data('bookid');
+    const bookId = btn.data('bookId');
     const status = btn.data('status');
     const isArchived = (status == 2);
     const actionText = isArchived ? "解封" : "封存";

@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -104,10 +106,13 @@ button, input[type="submit"] {
 <body>
 	<div>
 		<h2 class="main-title">書籍資料處理</h2>
-		<form method="post" action="../GetAllBooks">
+		<form method="get" action="/books/getAllBooks">
 			<input type="submit" value="書籍管理" class="primary-button">
 		</form>
-		<a href="../users/home.jsp"><button class="back-button">返回首頁</button></a>
+		<form method="get" action="/users/home.jsp">
+			<input type="submit" value="返回首頁" class="back-button">
+		</form>
+	<!-- > 	<a href="../users/home.jsp"><button class="back-button">返回首頁</button></a>-->
 		<!-- 
 		<a href="../users/home.jsp" class="menu-link"><button class="menu-button-small back-button">返回首頁</button></a>
 		 -->

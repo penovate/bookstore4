@@ -258,11 +258,10 @@ td input:focus, td select:focus {
 				</tr>
 				 -->
 			</table>
-
 			<div class="btn-container">
 				<input type="submit" class="btn btn-submit" value="確認修改">
-				<button type="button" class="btn btn-back"
-					onclick="window.location.href='GetAllBooks'">取消並返回列表</button>
+				<button type="submit" class="btn btn-back"
+				method="get" action="/books/getAllBooks">取消並返回列表</button>
 			</div>
 		</form>
 	</div>

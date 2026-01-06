@@ -55,7 +55,7 @@
 				<tr>
 					<td style="text-align: center;"><%=book.getBookId()%></td>
 					<td style="text-align: left;"><a
-						href="GetBook?bookId=<%=book.getBookId()%>"><%=book.getBookName()%></a></td>
+						href="/books/getBook?id=<%=book.getBookId()%>"><%=book.getBookName()%></a></td>
 					<td style="text-align: center;"><%=book.getAuthor()%></td>
 					<td style="text-align: center;"><%=(book.getTranslator() == null || book.getTranslator().isEmpty()) ? "" : book.getTranslator()%></td>
 					<td style="text-align: center;"><%=book.getPress()%></td>
@@ -126,8 +126,12 @@
 			<%=bookList.size()%>
 			筆資料
 		</h3>
-		<a href="books/booksIndex.html"><button
-				class="back-to-index-button">返回書籍資料處理首頁</button></a>
+		<!-- 
+		<a href="/books/booksIndex" class="back-to-index-button"><button class="menu-button">書籍資料處理</button></a>
+		 -->
+		<form method="get" action="/books/booksIndex">
+		<input type="submit" class="back-to-index-button"  value="返回書籍首頁">
+		</form>
 
 	</div>
 	<script src="https://code.jquery.com/jquery-3.6.0.js"></script>

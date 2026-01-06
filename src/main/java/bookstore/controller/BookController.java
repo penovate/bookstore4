@@ -26,6 +26,12 @@ public class BookController {
 
 	@Autowired
 	private bookService bookService;
+	
+	
+	@GetMapping("/booksIndex")
+	public String bookIndex(Model model) {
+		return"books/booksIndex";
+	}
 
 	@GetMapping("/getAllBooks")
 	public String getAllBooks(Model model) {

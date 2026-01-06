@@ -18,10 +18,10 @@ import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
 import bookstore.bean.ReviewBean;
 import bookstore.exceptionCenter.BusinessException;
-import bookstore.repository.BookRepository;
-import bookstore.repository.GenreRepository;
-import bookstore.repository.OrderItemRepository;
-import bookstore.repository.ReviewRepository;
+import bookstore.Repository.BookRepository;
+import bookstore.Repository.GenreRepository;
+import bookstore.Repository.OrderItemRepository;
+import bookstore.Repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 
 @Service

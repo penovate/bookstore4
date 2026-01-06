@@ -1,4 +1,4 @@
-package bookstore.repository;
+package bookstore.Repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +14,7 @@ public interface BookRepository extends JpaRepository<BooksBean, Integer> {
 	@Query("SELECT b FROM BooksBean b WHERE b.genreBean.genreId = :genreId")
 	List<BooksBean> findGenreBean_GenreId(Integer genreId);
 
+	//新增加
 	List<BooksBean> findByOnShelf(Integer onShelf);
 	
 	

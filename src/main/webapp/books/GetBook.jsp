@@ -260,14 +260,8 @@ input[type="submit"]:active {
 						</div>
 					</details></td>
 			</tr>
-			<tr>
-				<td class="field-label">上下架狀態：</td>
-				<td class="field-value"><input type="text"
-					class="readonly-input" disabled value="<%=book.getOnShelf()%>">
-				</td>
-			</tr>
 		</table>
-				<form action="GetAllBooks" method="GET">
+				<form action="/books/getAllBooks" method="GET">
 					<input type="submit" value="查看所有書籍">
 				</form>
 		</div>

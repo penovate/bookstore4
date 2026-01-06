@@ -308,7 +308,7 @@ button[type="submit"]:active {
 	<%}%>
 
 	<form id="insertItemForm"
-		action="<%= request.getContextPath() %>/InsertOrderItems"
+		action="<%= request.getContextPath() %>/order/addItems"
 		method="post">
 
 		<input type="hidden" name="orderId" value="<%= orderIdStr %>">
@@ -423,7 +423,7 @@ button[type="submit"]:active {
 
                 // 呼叫 /GetBookDetail Servlet
                 $.ajax({
-                    url: contextPath + "/GetBookDetail", 
+                    url: contextPath + "/order/getBookDetail", 
                     type: 'GET', 
                     data: { bookId: selectedId }, 
                     dataType: 'json',

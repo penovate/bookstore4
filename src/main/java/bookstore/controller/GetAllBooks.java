@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import bookstore.bean.BooksBean;
-import bookstore.dao.impl.bookService;
+import bookstore.service.bookService;
 
 @WebServlet("/GetAllBooks")
 public class GetAllBooks extends HttpServlet {

@@ -129,11 +129,11 @@ button {
 
 	<!-- 訂單系統按鈕 -->
 
-	<a href="../GetAllOrders">
+	<a href="${pageContext.request.contextPath}/order/activeList">
 		<button class="primary-action-button">查詢活動訂單</button>
 	</a>
 	
-	<a href="../GetAllCancelOrders">
+	<a href="${pageContext.request.contextPath}/order/cancelledList">
 		<button class="primary-action-button">查詢取消/退貨訂單</button>
 	</a>
 

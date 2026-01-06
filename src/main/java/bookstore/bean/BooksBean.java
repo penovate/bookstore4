@@ -8,7 +8,7 @@ import java.util.List;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -79,9 +79,11 @@ public class BooksBean {
 	private GenreBean genreBean;
 
 	@OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
+	@JsonIgnore
 	private List<ReviewBean> reviews;
 
 	@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonIgnore
 	private List<BookImageBean> imageList = new ArrayList<BookImageBean>();
 
 	public void addImage(BookImageBean image) {

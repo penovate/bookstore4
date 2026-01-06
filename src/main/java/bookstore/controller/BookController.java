@@ -1,7 +1,6 @@
 package bookstore.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,8 +16,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
-import bookstore.dao.impl.bookService;
 import bookstore.exceptionCenter.BusinessException;
+import bookstore.service.bookService;
 
 @Controller
 @RequestMapping("/books")
@@ -26,6 +25,12 @@ public class BookController {
 
 	@Autowired
 	private bookService bookService;
+	
+	
+	@GetMapping("/booksIndex")
+	public String bookIndex(Model model) {
+		return"books/booksIndex";
+	}
 
 	@GetMapping("/getAllBooks")
 	public String getAllBooks(Model model) {

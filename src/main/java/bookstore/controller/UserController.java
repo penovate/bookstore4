@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import bookstore.bean.UserBean;
-import bookstore.repository.UserRepository;
+import bookstore.service.UsersService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpSession;
 public class UserController {
 
 	@Autowired
-	private UserRepository userRepo;
+	private UsersService userService;
 	
 	@GetMapping("/login")
 	public String showLogin() {
@@ -35,7 +35,7 @@ public class UserController {
 			return "users/login";
 		}
 		
-		UserBean user = userRepo.findByEmailAndUserPwd(email, password);
+		UserBean user = userService.login(email, password);
 		
 		if (user != null) {
 			if (user.getStatus() != null && user.getStatus().equals(2)) {
@@ -79,20 +79,7 @@ public class UserController {
 	
 	@GetMapping("/users/list")
 	public String listUsers(@RequestParam(required = false) String searchName, @RequestParam(required = false) Integer userTypeFilter, Model model) {
-		List<UserBean> users;
-		
-		boolean hasName = (searchName != null && !searchName.trim().isEmpty());
-		boolean hasType = (userTypeFilter != null);
-		
-		if (hasName && hasType) {
-			users = userRepo.findByUserNameContainingAndUserType(searchName.trim(), userTypeFilter);
-		} else if (hasName) {
-			users = userRepo.findByUserNameContaining(searchName.trim());
-		} else if (hasType) {
-			users = userRepo.findByUserType(userTypeFilter);
-		} else {
-			users = userRepo.findAll();
-		}
+		List<UserBean> users = userService.searchUsers(searchName, userTypeFilter);
 		
 		model.addAttribute("users", users);
 		model.addAttribute("currentSearchName", searchName);
@@ -103,7 +90,7 @@ public class UserController {
 	
 	@GetMapping("/users/get")
 	public String getUserById(@RequestParam("userId") Integer userId, Model model) {
-		UserBean user = userRepo.findById(userId).orElse(null);
+		UserBean user = userService.findById(userId);
 		model.addAttribute("user", user);
 		return "users/GetUser";
 	}
@@ -130,7 +117,7 @@ public class UserController {
 		}
 		
 		try {
-			userRepo.save(user);
+			userService.saveUser(user);
 			model.addAttribute("user", user);
 			model.addAttribute("message", "新增會員資料成功！");
 			return "users/UserInsertFinish";
@@ -151,7 +138,7 @@ public class UserController {
 		String message = "";
 		
 		try {
-			userRepo.deleteById(userId);
+			userService.deleteUser(userId);
 			message = "會員資料刪除成功！";
 		} catch (org.springframework.dao.EmptyResultDataAccessException e) {
 	        message = "刪除失敗！查無此會員。";
@@ -170,7 +157,7 @@ public class UserController {
 
 	@GetMapping("/users/update")
 	public String showUpdatePage(@RequestParam("userId") Integer userId, Model model) {
-		UserBean user = userRepo.findById(userId).orElse(null);
+		UserBean user = userService.findById(userId);
 		
 		if (user != null) {
 			model.addAttribute("user", user);
@@ -185,7 +172,7 @@ public class UserController {
 		String message = "";
 		
 		try {
-			userRepo.save(user);
+			userService.saveUser(user);
 			message = "會員資料更新成功！";
 		} catch (Exception e) {
 			e.printStackTrace();

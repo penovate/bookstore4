@@ -96,7 +96,7 @@
         <script>
             $(function () {
                 $("#btnBackToList").click(function () {
-                    window.location.href = "<%= request.getContextPath() %>/GetAllOrders";
+                    window.location.href = "<%= request.getContextPath() %>/order/activeList";
                 });
             })
         </script>

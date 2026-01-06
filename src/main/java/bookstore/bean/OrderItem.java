@@ -3,6 +3,8 @@ package bookstore.bean;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import org.springframework.stereotype.Component;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,10 +15,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import bookstore.bean.BooksBean;
-
 @Entity
 @Table(name = "order_item")
+@Component
 public class OrderItem implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -30,8 +31,8 @@ public class OrderItem implements Serializable {
 //	private Integer orderId;
 
 //	整合後，可把Bookid註解掉
-	@Column(name = "BOOK_ID")
-	private Integer bookId;
+//	@Column(name = "BOOK_ID")
+//	private Integer bookId;
 
 	@Column(name = "QUANTITY")
 	private Integer quantity;
@@ -46,19 +47,19 @@ public class OrderItem implements Serializable {
 	@JoinColumn(name = "ORDER_ID")
 	private Orders orders;
 
-//	@ManyToOne(fetch = FetchType.LAZY)
-//	@JoinColumn(name = "BOOK_ID")
-//	private BooksBean booksBean;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "BOOK_ID")
+	private BooksBean booksBean;
 
 	public OrderItem() {
 	}
 
-	public OrderItem(Integer orderItemId , Integer bookId, Integer quantity, BigDecimal price,
+	public OrderItem(Integer orderItemId , Integer quantity, BigDecimal price,
 			BigDecimal subtotal) {
 		super();
 		this.orderItemId = orderItemId;
 //		this.orderId = orderId;
-		this.bookId = bookId;
+//		this.bookId = bookId;
 		this.quantity = quantity;
 		this.price = price;
 		this.subtotal = subtotal;
@@ -80,13 +81,13 @@ public class OrderItem implements Serializable {
 //		this.orderId = orderId;
 //	}
 
-	public Integer getBookId() {
-		return bookId;
-	}
-
-	public void setBookId(Integer bookId) {
-		this.bookId = bookId;
-	}
+//	public Integer getBookId() {
+//		return bookId;
+//	}
+//
+//	public void setBookId(Integer bookId) {
+//		this.bookId = bookId;
+//	}
 
 	public Integer getQuantity() {
 		return quantity;
@@ -134,13 +135,13 @@ public class OrderItem implements Serializable {
 		this.orders = orders;
 	}
 
-//	public BooksBean getBooksBean() {
-//		return booksBean;
-//	}
-//
-//	public void setBooksBean(BooksBean booksBean) {
-//		this.booksBean = booksBean;
-//	}
+	public BooksBean getBooksBean() {
+		return booksBean;
+	}
+
+	public void setBooksBean(BooksBean booksBean) {
+		this.booksBean = booksBean;
+	}
 
 	private void calculateSubtotal() {
 		if (this.price != null && this.quantity != null) {
@@ -153,7 +154,7 @@ public class OrderItem implements Serializable {
 
 	@Override
 	public String toString() {
-		return "OrderItem [orderItemId=" + orderItemId  + ", bookId=" + bookId + ", quantity="
+		return "OrderItem [orderItemId=" + orderItemId  + ", quantity="
 				+ quantity + ", price=" + price + ", subtotal=" + subtotal + "]";
 	}
 }

@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,6 +35,7 @@ public class ReviewBean implements Serializable {
 	// ✅ ManyToOne：同一個欄位做關聯，但設為「只讀」，避免重複 mapping
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", insertable = false, updatable = false)
+	@JsonIgnore
 	private UserBean user;
 //
 	@ManyToOne(fetch = FetchType.LAZY )

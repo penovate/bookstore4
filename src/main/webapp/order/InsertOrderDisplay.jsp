@@ -143,7 +143,7 @@ ul li:last-child {
 		<h3>訂單明細</h3>
 		<ul>
 			<% if (items !=null) { for (OrderItem item : items) { %>
-			<li>書籍ID: <%= item.getBookId() %>, 數量: <%= item.getQuantity() %>,
+			<li>書籍ID: <%= item.getBooksBean().getBookId() %>, 數量: <%= item.getQuantity() %>,
 				小計: <%= item.getSubtotal() %>
 			</li>
 			<% } } %>
@@ -156,7 +156,7 @@ ul li:last-child {
 	<script>
                     $(function () {
                         $("#btnBackToList").click(function () {
-                            window.location.href = "<%= request.getContextPath() %>/GetAllOrders";
+                            window.location.href = "<%= request.getContextPath() %>/order/activeList";
                         });
                     })
                 </script>

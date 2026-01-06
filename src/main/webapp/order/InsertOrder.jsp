@@ -255,7 +255,7 @@ button[type="submit"]:hover {
 		<%= request.getAttribute("error") !=null ? request.getAttribute("error") : "" %>
 	</p>
 
-	<form action="<%= request.getContextPath() %>/InsertOrder"
+	<form action="<%= request.getContextPath() %>/order/insert"
 		method="post">
 
 		<h3>收件資訊</h3>
@@ -408,7 +408,7 @@ button[type="submit"]:hover {
 
                 // URL 路徑改為 /GetBookDetail
                 $.ajax({
-                    url: contextPath + "/GetBookDetail", 
+                    url: contextPath + "/order/getBookDetail", 
                     type: 'GET', 
                     data: { bookId: selectedId }, 
                     dataType: 'json',
@@ -442,7 +442,7 @@ button[type="submit"]:hover {
 
             // 取消按鈕的邏輯
             $("#btnCancel").click(function () {
-                window.location.href = contextPath + "/GetAllOrders";
+                window.location.href = contextPath + "/order/activeList";
             });
         })
     </script>

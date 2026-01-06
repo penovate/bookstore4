@@ -252,7 +252,7 @@
 			<tr>
 				<td><%=item.getOrderItemId()%></td>
 				<td><%=item.getOrders().getOrderId()%></td>
-				<td><%=item.getBookId()%></td>
+				<td><%=item.getBooksBean().getBookId()%></td>
 				<td><%=item.getPrice()%></td>
 				<td><%=item.getQuantity()%></td>
 				<td><%=item.getSubtotal()%></td>
@@ -260,7 +260,7 @@
 					<button class="btn btn-edit btn-update-item"
 						data-itemid="<%=item.getOrderItemId()%>"
 						data-orderid="<%=item.getOrders().getOrderId()%>"
-						data-bookid="<%=item.getBookId()%>"
+						data-bookid="<%=item.getBooksBean().getBookId()%>"
 						data-price="<%=item.getPrice()%>"
 						data-quantity="<%=item.getQuantity()%>">修改</button>
 
@@ -323,16 +323,16 @@
 
 		$(function() {
 			$("#btnBack").click(function() {
-				window.location.href = "GetAllOrders";
+				window.location.href = "${pageContext.request.contextPath}/order/activeList";
 			});
 
 			$("#btnAddOrder").click(function() {
-				window.location.href = "order/InsertOrder.jsp";
+				window.location.href = "${pageContext.request.contextPath}/order/InsertOrder.jsp";
 			});
 
 			$(".btn-detail").click(function() {
 				let id = $(this).data("id");
-				window.location.href = "GetOrder?id=" + id;
+				window.location.href = "/order/get?id=" + id;
 			});
 
 			 // 4. 修改明細按鈕 (保持不變)
@@ -343,7 +343,7 @@
                 let price = $(this).data("price");
                 let quantity = $(this).data("quantity");
 
-                let url = "order/UpdateOrderItem.jsp?orderItemId=" + itemId +
+                let url = "${pageContext.request.contextPath}/order/UpdateOrderItem.jsp?orderItemId=" + itemId +
                     "&orderId=" + orderId +
                     "&bookId=" + bookId +
                     "&price=" + price +
@@ -358,7 +358,7 @@
 
                 showConfirmModal('確定要刪除此明細嗎？', function(confirmed) {
                     if (confirmed) {
-                        let form = $('<form action="DeleteOrderItem" method="post">' +
+                    	let form = $('<form action="${pageContext.request.contextPath}/order/deleteItem" method="post">' +
                             '<input type="hidden" name="orderItemId" value="' + itemId + '">' +
                             '<input type="hidden" name="orderId" value="' + orderId + '">' +
                             '</form>');

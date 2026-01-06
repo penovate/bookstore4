@@ -18,10 +18,17 @@ public class OrdersDao {
 
 	// 新增訂單
 	public void insertOrder(Orders order) {
-		if (order.getCreatedAt() == null) {
-			order.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-		}
-		session.persist(order);
+
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+	    
+	    if (order.getCreatedAt() == null) {
+	        order.setCreatedAt(now);
+	    }
+	    if (order.getUpdatedAt() == null) {
+	        order.setUpdatedAt(now);
+	    }
+	    
+	    session.persist(order);
 	}
 
 	// 更新訂單

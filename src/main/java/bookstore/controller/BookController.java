@@ -16,8 +16,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
-import bookstore.dao.impl.bookService;
 import bookstore.exceptionCenter.BusinessException;
+import bookstore.service.bookService;
 
 @Controller
 @RequestMapping("/books")

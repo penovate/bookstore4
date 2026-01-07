@@ -51,4 +51,14 @@ public class UsersService {
 	public void deleteUser(Integer id) {
 		userRepo.deleteById(id);
 	}
+	
+	public void updateStatus(Integer id, Integer status) {
+		UserBean user = userRepo.findById(id).orElse(null);
+		if (user != null) {
+			user.setStatus(status);
+			userRepo.save(user);
+		}
+	}
+	
+	
 }

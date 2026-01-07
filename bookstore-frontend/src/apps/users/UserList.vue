@@ -32,7 +32,7 @@
             <th>地址</th>
             <th>權限等級</th>
             <th>修改資料</th>
-            <th>刪除資料</th>
+            <th>帳號狀態</th>
           </tr>
         </thead>
         <tbody>
@@ -52,7 +52,19 @@
               <button class="update-button" @click="goToUpdate(user.userId)">修改</button>
             </td>
             <td>
-              <button class="delete-button" @click="deleteUser(user)">刪除</button>
+              <div class="switch-container">
+                <label class="switch">
+                  <input
+                    type="checkbox"
+                    :checked="user.status === 1"
+                    @click.prevent="handleToggleStatus(user)"
+                  />
+                  <span class="slider round"></span>
+                </label>
+                <span class="status-text" :class="{ 'active-text': user.status === 1 }">{{
+                  user.status === 1 ? '啟用' : '停權'
+                }}</span>
+              </div>
             </td>
           </tr>
           <tr v-if="users.length === 0">
@@ -138,32 +150,45 @@ const resetFilters = () => {
   fetchUsers()
 }
 
-const deleteUser = (user) => {
+const handleToggleStatus = (user) => {
+  const originalStatus = user.status
+  const newStatus = user.status === 1 ? 2 : 1
+  const actionText = newStatus === 2 ? '停權' : '恢復啟用'
+
   Swal.fire({
-    title: '確定要刪除嗎？',
-    text: `你即將刪除會員：${user.userName}，此動作無法撤銷！`,
+    title: `確定要${actionText}會員「${user.userName}」嗎？`,
+    text: newStatus === 2 ? '停權後該會員將無法登入系統！' : '恢復後該會員將重新獲得登入權限！',
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonColor: '#d33',
+    confirmButtonColor: newStatus === 2 ? '#d33' : '#9fb89e',
     cancelButtonColor: '#e8e4dc',
-    confirmButtonText: '刪除',
+    confirmButtonText: `${actionText}`,
     cancelButtonText: '取消',
+    allowOutsideClick: false,
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        const response = await axios.delete(
-          `http://localhost:8080/api/data/delete/${user.userId}`,
-          {
-            withCredentials: true,
-          },
+        const response = await axios.put(
+          `http://localhost:8080/api/data/status/${user.userId}`,
+          { status: newStatus },
+          { withCredentials: true },
         )
+
         if (response.data.success) {
-          Swal.fire('已刪除！', '會員資料已從系統移除。', 'success')
-          fetchUsers()
+          user.status = newStatus
+          Swal.fire({
+            icon: 'success',
+            title: '更新成功',
+            text: response.data.message,
+            timer: 1500,
+            showConfirmButton: false,
+          })
         }
       } catch (error) {
-        Swal.fire('出錯了', '刪除失敗，請稍後再試', 'error')
+        Swal.fire('錯誤', '更新失敗', 'error')
       }
+    } else {
+      console.log('使用者取消操作，開關已還原')
     }
   })
 }
@@ -400,5 +425,74 @@ button {
   position: absolute;
   right: 15px;
   cursor: pointer;
+}
+
+.switch-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-text {
+  font-size: 12px;
+  font-weight: bold;
+  color: #b05252;
+}
+
+.active-text {
+  color: #2d5a27;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input:checked + .slider {
+  background-color: #9fb89e;
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+.slider.round:before {
+  border-radius: 50%;
 }
 </style>

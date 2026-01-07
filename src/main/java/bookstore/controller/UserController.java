@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -255,25 +254,28 @@ public class UserController {
 	    return "users/UserInsert";
 	}
 	
-	// Vue 版本刪除
-	@DeleteMapping("/api/data/delete/{id}") 
+	// Vue 版本軟刪除（啟用/停權）
+	@PutMapping("/api/data/status/{id}")
 	@ResponseBody
-	public Map<String, Object> deleteUserApi(@PathVariable("id") Integer id) {
-	    Map<String, Object> response = new HashMap<>();
-	    try {
-	        userService.deleteUser(id);
-	        response.put("success", true);
-	        response.put("message", "會員資料刪除成功！");
-	    } catch (org.springframework.dao.DataIntegrityViolationException e) {
-	        // 這部分是為了處理外鍵關聯（例如會員買過書有訂單）
-	        response.put("success", false);
-	        response.put("message", "刪除失敗！此會員目前仍有訂單或相關紀錄，無法刪除。");
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        response.put("success", false);
-	        response.put("message", "刪除失敗：系統發生錯誤！");
-	    }
-	    return response;
+	public Map<String, Object> toggleUserStatus(@PathVariable("id") Integer id, @RequestBody Map<String, Integer> payload) {
+		Map<String, Object> response = new HashMap<>();
+		try {
+			Integer newStatus = payload.get("status");
+			if (newStatus == null) {
+				response.put("success", false);
+				response.put("message", "狀態碼不可為空！");
+				return response;
+			}
+			userService.updateStatus(id, newStatus);
+			response.put("success", true);
+			String action = (newStatus == 2) ? "停權" : "啟用";
+			response.put("message", "已成功將會員" + action + "！");
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.put("success", false);
+			response.put("message", "狀態變更失敗！系統錯誤");
+		}
+		return response;
 	}
 	
 	

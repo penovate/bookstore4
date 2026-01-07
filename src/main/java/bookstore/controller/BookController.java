@@ -67,10 +67,6 @@ public class BookController {
 		return "redirect:/books/getAllBooks";
 	}
 
-	@GetMapping("/insertSuccess")
-	public String insertSuccess() {
-		return "books/InsertSuccess";
-	}
 
 	@GetMapping("/updatePage")
 	public String updatePage(@RequestParam("bookId") Integer bookId, Model model) {

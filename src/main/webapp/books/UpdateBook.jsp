@@ -261,7 +261,7 @@ td input:focus, td select:focus {
 			<div class="btn-container">
 				<input type="submit" class="btn btn-submit" value="確認修改">
 				<button type="submit" class="btn btn-back"
-				method="get" action="/books/getAllBooks">取消並返回列表</button>
+				method="get" action="/books/getAllBooks">返回</button>
 			</div>
 		</form>
 	</div>

@@ -55,7 +55,7 @@
 				<tr>
 					<td style="text-align: center;"><%=book.getBookId()%></td>
 					<td style="text-align: left;"><a
-						href="/books/getBook?id=<%=book.getBookId()%>"><%=book.getBookName()%></a></td>
+						href="/books/getBook?bookId=<%=book.getBookId()%>"><%=book.getBookName()%></a></td>
 					<td style="text-align: center;"><%=book.getAuthor()%></td>
 					<td style="text-align: center;"><%=(book.getTranslator() == null || book.getTranslator().isEmpty()) ? "" : book.getTranslator()%></td>
 					<td style="text-align: center;"><%=book.getPress()%></td>
@@ -73,7 +73,7 @@
 					<td style="text-align: center;"><%=book.getStock()%></td>
 					<td style="text-align: center;">
 						<form action="/books/updatePage" method="get">
-							<input type="hidden" name="id" value="<%=book.getBookId()%>">
+							<input type="hidden" name="bookId" value="<%=book.getBookId()%>">
 							<input type="submit" value="修改" class="btn btn-edit" <%=(book.getOnShelf() == 2) ? "disabled" : ""%>>
 						</form>
 					</td>
@@ -91,7 +91,7 @@
 					<td style="text-align: center;">
 						<div class="switch-container">
 							<label class="book-switch"> <input type="checkbox"
-								class="on-shelf-toggle" data-bookid="<%=book.getBookId()%>"
+								class="on-shelf-toggle" data-bookId="<%=book.getBookId()%>"
 								<%=(book.getOnShelf() == 1) ? "checked" : ""%>
 								<%=(book.getOnShelf() == 2) ? "disabled" : ""%>> <span
 								class="slider"></span>
@@ -209,13 +209,13 @@ window.onload = function() {
 
 $(document).on('click', '.archive-btn', function() {
     const btn = $(this);
-    const bookId = btn.data('bookid');
+    const bookId = btn.data('bookId');
     const status = btn.data('status');
     const isArchived = (status == 2);
     const actionText = isArchived ? "解封" : "封存";
     Swal.fire({
         title:`確定要\${actionText}此書籍嗎？`,
-        text: isArchived ? "解封後書籍將處於下架狀態。" : "封存後將強制下架且無法直接操作開關！",
+        text: isArchived ? "解封後書籍將處於下架狀態。" : "封存後將強制下架且無法進行修改",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: isArchived ? '#28a745' : '#d33',

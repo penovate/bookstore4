@@ -18,6 +18,7 @@ import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
 import bookstore.bean.ReviewBean;
 import bookstore.exceptionCenter.BusinessException;
+import bookstore.exceptionCenter.GlobalExceptionHandler;
 import bookstore.repository.BookRepository;
 import bookstore.repository.GenreRepository;
 import bookstore.repository.OrderItemRepository;
@@ -26,6 +27,8 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class bookService {
+
+	private final GlobalExceptionHandler globalExceptionHandler;
 
 	private static final Logger log = LoggerFactory.getLogger(bookService.class);
 	@Autowired
@@ -39,6 +42,10 @@ public class bookService {
 	private ReviewRepository reviewRepo;
 	@Value("${file.upload.dir:C:/uploads/book-images/}")
 	private String uploadDir;
+
+	bookService(GlobalExceptionHandler globalExceptionHandler) {
+		this.globalExceptionHandler = globalExceptionHandler;
+	}
 
 	// ------select all books-----------
 	@Transactional
@@ -181,6 +188,10 @@ public class bookService {
 
 		BooksBean existingBook = opt.get();
 
+		if (book.getOnShelf() == 2) {
+			throw new BusinessException(400, "該書籍處於封存狀態，不可修改");
+		}
+
 		// 書名
 		if (book.getBookName() != null) {
 			if (book.getBookName().trim().isEmpty())
@@ -313,6 +324,21 @@ public class bookService {
 			bookRepo.save(book);
 			log.info("書籍ID:{}已成功解封", bookId);
 		}
+	}
+
+	@Transactional
+	public boolean isBookAvailable(Integer bookId) {
+		Optional<BooksBean> opt = bookRepo.findById(bookId);
+		if (!opt.isPresent()) {
+			log.warn("查詢失敗 -無:ID{}相關書籍資料", bookId);
+			throw new BusinessException(404, "無該ID相關書籍");
+		}
+		Integer onShelf = opt.get().getOnShelf();
+		if (onShelf == null || onShelf != 1) {
+			log.info("書籍ID:{} 狀態:{} 處於封存狀態，禁止新增關聯資料", bookId, onShelf);
+			return false;
+		}
+		return true;
 	}
 
 	public void reviewCheck(Integer bookId) {

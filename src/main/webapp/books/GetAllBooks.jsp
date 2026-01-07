@@ -215,7 +215,7 @@ $(document).on('click', '.archive-btn', function() {
     const actionText = isArchived ? "解封" : "封存";
     Swal.fire({
         title:`確定要\${actionText}此書籍嗎？`,
-        text: isArchived ? "解封後書籍將處於下架狀態。" : "封存後將強制下架且無法直接操作開關！",
+        text: isArchived ? "解封後書籍將處於下架狀態。" : "封存後將強制下架且無法進行修改",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: isArchived ? '#28a745' : '#d33',

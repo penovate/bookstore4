@@ -72,9 +72,17 @@
 					<td style="text-align: center;"><%=book.getIsbn()%></td>
 					<td style="text-align: center;"><%=book.getStock()%></td>
 					<td style="text-align: center;">
+						<%
+						// 先取出狀態並處理 null
+						Integer statusObj = book.getOnShelf();
+						int shelfStatus = (statusObj == null) ? 0 : statusObj;
+						boolean isArchived = (shelfStatus == 2);
+						%>
 						<form action="/books/updatePage" method="get">
 							<input type="hidden" name="bookId" value="<%=book.getBookId()%>">
-							<input type="submit" value="修改" class="btn btn-edit" <%=(book.getOnShelf() == 2) ? "disabled" : ""%>>
+							<input type="submit" value="修改"
+								class="btn btn-edit <%=isArchived ? "btn-disabled" : ""%>"
+								<%=isArchived ? "disabled" : ""%>>
 						</form>
 					</td>
 					<td style="text-align: center;">
@@ -83,7 +91,7 @@
 						%>
 						<button type="button"
 							class="btn <%=(currentStatus != null && currentStatus == 2) ? "btn-secondary" : "btn-danger"%> archive-btn"
-							data-bookid="<%=book.getBookId()%>"
+							data-bookId="<%=book.getBookId()%>"
 							data-status="<%=currentStatus%>">
 							<%=(currentStatus != null && currentStatus == 2) ? "解封" : "封存"%>
 						</button>
@@ -95,17 +103,18 @@
 								<%=(book.getOnShelf() == 1) ? "checked" : ""%>
 								<%=(book.getOnShelf() == 2) ? "disabled" : ""%>> <span
 								class="slider"></span>
-							</label> <span class="status-label"> <%
- 							int status = book.getOnShelf();
- 							if (status == 1) {
- 								out.print("上架中");
- 							} else if (status == 2) {
- 								out.print("已封存");
-							 } else {
- 								out.print("下架中");
-							 }
-								 %>
-							</span>
+							</label><span class="status-label"> 
+    <%
+    Integer currentShelfStatus = book.getOnShelf();
+    if (currentShelfStatus != null && currentShelfStatus == 1) {
+        out.print("上架中");
+    } else if (currentShelfStatus != null && currentShelfStatus == 2) {
+        out.print("已封存");
+    } else {
+        out.print("下架中");
+    }
+    %>
+</span>
 						</div>
 					</td>
 				</tr>
@@ -130,7 +139,7 @@
 		<a href="/books/booksIndex" class="back-to-index-button"><button class="menu-button">書籍資料處理</button></a>
 		 -->
 		<form method="get" action="/books/booksIndex">
-		<input type="submit" class="back-to-index-button"  value="返回書籍首頁">
+			<input type="submit" class="back-to-index-button" value="返回書籍首頁">
 		</form>
 
 	</div>
@@ -209,7 +218,7 @@ window.onload = function() {
 
 $(document).on('click', '.archive-btn', function() {
     const btn = $(this);
-    const bookId = btn.data('bookId');
+    const bookId = btn.data('bookid');
     const status = btn.data('status');
     const isArchived = (status == 2);
     const actionText = isArchived ? "解封" : "封存";

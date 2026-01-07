@@ -73,7 +73,7 @@ public class BooksBean {
 	private String press; // 出版社
 
 	@Column(name = "on_shelf")
-	private Integer onShelf; // 上下架狀態
+	private Integer onShelf =0; // 上下架狀態
 
 	
 	@ManyToOne(fetch = FetchType.EAGER)

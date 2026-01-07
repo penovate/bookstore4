@@ -335,3 +335,16 @@ input:disabled + .slider {
     color: #999;
     font-style: italic;
 }
+/* 禁用按鈕的樣式 */
+.btn-disabled {
+    background-color: #cccccc !important; /* 灰色 */
+    color: #666666 !important;            /* 深灰文字 */
+    border: 1px solid #999999 !important;
+    cursor: not-allowed !important;       /* 滑鼠鼠標變成禁止符號 */
+    opacity: 0.6;
+}
+
+/* 確保原本的 hover 效果在禁用時不生效 */
+.btn-disabled:hover {
+    background-color: #cccccc !important;
+}

@@ -40,7 +40,7 @@ public class BookController {
 	}
 
 	@GetMapping("/getBook")
-	public String selectBookById(@RequestParam("id") String idStr, Model model) {
+	public String selectBookById(@RequestParam("bookId") String idStr, Model model) {
 		if (idStr == null || !idStr.matches("^\\d+$")) {
 			throw new BusinessException(400, "格式錯誤:ID必須為數字");
 		}
@@ -73,11 +73,11 @@ public class BookController {
 	}
 
 	@GetMapping("/updatePage")
-	public String updatePage(@RequestParam("id") Integer id, Model model) {
+	public String updatePage(@RequestParam("bookId") Integer bookId, Model model) {
 		List<GenreBean> genreList = bookService.getAllGenres();
 		model.addAttribute("genreList", genreList);
 
-		BooksBean book = bookService.selectBookByIdS(id);
+		BooksBean book = bookService.selectBookByIdS(bookId);
 		model.addAttribute("book", book);
 		return "books/UpdateBook";
 	}
@@ -92,14 +92,14 @@ public class BookController {
 	}
 
 	@PostMapping("/updateStatus")
-	public String updateOnShelf(@RequestParam("id") Integer id, @RequestParam("status") boolean status) {
-		bookService.updateOnShelfStatus(id, status);
+	public String updateOnShelf(@RequestParam("bookId") Integer bookId, @RequestParam("status") boolean status) {
+		bookService.updateOnShelfStatus(bookId, status);
 		return "redirect:/books/getAllBooks";
 	}
 
 	@PostMapping("/delete")
-	public String deleteBook(@RequestParam("id") Integer id, RedirectAttributes ra) {
-		bookService.deleteBookById(id);
+	public String deleteBook(@RequestParam("bookId") Integer bookId, RedirectAttributes ra) {
+		bookService.deleteBookById(bookId);
 		ra.addFlashAttribute("status", "success");
 		ra.addFlashAttribute("msg", "書籍已成功刪除");
 		return "redirect:/books/getAllBooks";

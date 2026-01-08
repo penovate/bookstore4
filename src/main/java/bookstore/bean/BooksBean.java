@@ -3,7 +3,10 @@ package bookstore.bean;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
@@ -19,15 +22,21 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "books")
 @DynamicInsert
 @DynamicUpdate
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "reviews"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "reviews" })
+@NoArgsConstructor
+@AllArgsConstructor
 public class BooksBean {
 
 	@Id
@@ -73,12 +82,12 @@ public class BooksBean {
 	private String press; // 出版社
 
 	@Column(name = "on_shelf")
-	private Integer onShelf =0; // 上下架狀態
+	private Integer onShelf = 0; // 上下架狀態
 
-	
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "genre_id")
-	private GenreBean genreBean;
+	@ManyToMany
+	@JoinTable(name = "book_genre_map", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "genre_id"))
+	@JsonIgnoreProperties("books")
+	private Set<GenreBean> genres = new HashSet<GenreBean>();
 
 	@OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
 	@JsonIgnore
@@ -94,9 +103,6 @@ public class BooksBean {
 	}
 
 	// -------Constructor--------
-	public BooksBean() {
-
-	}
 
 	public BooksBean(Integer bookId, String bookName, String author, String translator, BigDecimal price, Integer stock,
 			String shortDesc, LocalDateTime createdAt, String press, String isbn, Integer onShelf) {
@@ -126,7 +132,6 @@ public class BooksBean {
 		this.shortDesc = shortDesc;
 		this.press = press;
 		this.onShelf = onShelf;
-		this.genreBean = genreBean;
 	}
 
 	public BooksBean(Integer bookId, String bookName, String author, String translator, BigDecimal price, String isbn,
@@ -141,7 +146,6 @@ public class BooksBean {
 		this.stock = stock;
 		this.shortDesc = shortDesc;
 		this.press = press;
-		this.genreBean = genreBean;
 	}
 
 	// --------getter/setter-------
@@ -233,14 +237,6 @@ public class BooksBean {
 		this.onShelf = onShelf;
 	}
 
-	public GenreBean getGenreBean() {
-		return genreBean;
-	}
-
-	public void setGenreBean(GenreBean genreBean) {
-		this.genreBean = genreBean;
-	}
-
 	public List<ReviewBean> getReviews() {
 		return reviews;
 	}
@@ -249,11 +245,26 @@ public class BooksBean {
 		this.reviews = reviews;
 	}
 
-	@Override
-	public String toString() {
-		return "BooksBean [bookId=" + bookId + ", bookName=" + bookName + ", author=" + author + ", translator="
-				+ translator + ", price=" + price + ", isbn=" + isbn + ", stock=" + stock + ", shortDesc=" + shortDesc
-				+ ", createdAt=" + createdAt + ", press=" + press + ", onShelf=" + onShelf + "]";
+	public Set<GenreBean> getGenres() {
+		return genres;
 	}
 
+	public void setGenres(Set<GenreBean> genres) {
+		this.genres = genres;
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		if (this == object)
+			return true;
+		if (object == null || getClass() != object.getClass())
+			return false;
+		BooksBean that = (BooksBean) object;
+		return Objects.equals(bookId, that.bookId);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(bookId);
+	}
 }

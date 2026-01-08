@@ -1,6 +1,7 @@
 package bookstore.bean;
 
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -52,9 +53,19 @@ public class GenreBean {
 		this.genreName = genreName;
 	}
 
+	
 	@Override
-	public String toString() {
-		return "GenreBean [genreId=" + genreId + ", genreName=" + genreName + "]";
-	}
+	public boolean equals(Object object) {
+		if (this == object)
+			return true;
+		if (object == null || getClass() != object.getClass())
+			return false;
+		GenreBean that = (GenreBean) object;
+		return Objects.equals(genreId, that.genreId);
 
+	}
+	@Override
+	public int hashCode() {
+		return Objects.hash(genreId);
+	}
 }

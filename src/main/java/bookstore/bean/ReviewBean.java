@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,6 +22,7 @@ import jakarta.persistence.Transient;
 @Entity
 @Table(name = "reviews")
 @Component
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user", "book"})
 public class ReviewBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -40,6 +42,7 @@ public class ReviewBean implements Serializable {
 //
 	@ManyToOne(fetch = FetchType.LAZY )
 	@JoinColumn(name = "book_id", nullable = false)
+	@JsonIgnore
 	private BooksBean book;
 
 	@Column(name = "user_id", nullable = false)

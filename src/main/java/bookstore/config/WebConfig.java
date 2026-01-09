@@ -30,7 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(loginInterceptor)
 				.addPathPatterns("/users/**")
-				.addPathPatterns("/books/**")
+//				.addPathPatterns("/books/**")
 				.excludePathPatterns("/login", "/api/login")
 				.excludePathPatterns("/api/**")
 				.excludePathPatterns("/logout")

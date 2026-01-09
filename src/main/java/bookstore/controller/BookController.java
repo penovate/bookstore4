@@ -77,7 +77,7 @@ public class BookController {
 		model.addAttribute("book", book);
 		return "books/UpdateBook";
 	}
-
+/*
 	@PostMapping("/update")
 	public String updateBook(@ModelAttribute BooksBean book, @RequestParam(required = false) Integer genreId,
 			RedirectAttributes ra) {
@@ -86,7 +86,7 @@ public class BookController {
 		ra.addFlashAttribute("msg", "資料更新成功");
 		return "redirect:/books/getAllBooks";
 	}
-
+*/
 	@PostMapping("/updateStatus")
 	public String updateOnShelf(@RequestParam("bookId") Integer bookId, @RequestParam("status") boolean status) {
 		bookService.updateOnShelfStatus(bookId, status);
@@ -94,11 +94,12 @@ public class BookController {
 	}
 
 	@PostMapping("/delete")
+	@ResponseBody
 	public String deleteBook(@RequestParam("bookId") Integer bookId, RedirectAttributes ra) {
 		bookService.deleteBookById(bookId);
 		ra.addFlashAttribute("status", "success");
 		ra.addFlashAttribute("msg", "書籍已成功刪除");
-		return "redirect:/books/getAllBooks";
+		return "success";
 	}
 
 	@ResponseBody

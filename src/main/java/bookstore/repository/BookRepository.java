@@ -11,8 +11,7 @@ import bookstore.bean.BooksBean;
 public interface BookRepository extends JpaRepository<BooksBean, Integer> {
 
 	Optional<BooksBean> findByIsbn(String isbn);
-	@Query("SELECT b FROM BooksBean b WHERE b.genreBean.genreId = :genreId")
-	List<BooksBean> findGenreBean_GenreId(Integer genreId);
+	List<BooksBean> findByGenres_GenreId(Integer genreId);
 
 	//新增加--
 	List<BooksBean> findByOnShelf(Integer onShelf);

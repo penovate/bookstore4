@@ -97,6 +97,7 @@ public class bookService {
 	}
 
 	// select by genre
+	/*
 	@Transactional
 	public List<BooksBean> selectByGenre(Integer genreId) {
 		List<BooksBean> bookList = bookRepo.findGenreBean_GenreId(genreId);
@@ -108,6 +109,7 @@ public class bookService {
 			throw new BusinessException(404, "無該類型相關書籍資料");
 		}
 	}
+	*/
 
 	// select by onShelf
 	@Transactional
@@ -126,6 +128,7 @@ public class bookService {
 
 	// insertbook
 	@Transactional
+	@
 	public BooksBean insertBook(BooksBean book, MultipartFile file) {
 		String isbnRegex = "^\\d{13}$";
 		Optional<BooksBean> insertBook = bookRepo.findByIsbn(book.getIsbn());

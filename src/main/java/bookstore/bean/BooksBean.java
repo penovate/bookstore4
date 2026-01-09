@@ -104,49 +104,6 @@ public class BooksBean {
 
 	// -------Constructor--------
 
-	public BooksBean(Integer bookId, String bookName, String author, String translator, BigDecimal price, Integer stock,
-			String shortDesc, LocalDateTime createdAt, String press, String isbn, Integer onShelf) {
-		super();
-		this.bookId = bookId;
-		this.bookName = bookName;
-		this.author = author;
-		this.translator = translator;
-		this.price = price;
-		this.stock = stock;
-		this.shortDesc = shortDesc;
-		this.createdAt = createdAt;
-		this.press = press;
-		this.isbn = isbn;
-		this.onShelf = onShelf;
-	}
-
-	public BooksBean(String bookName, String author, String translator, BigDecimal price, String isbn, Integer stock,
-			String shortDesc, String press, Integer onShelf, GenreBean genreBean) {
-		super();
-		this.bookName = bookName;
-		this.author = author;
-		this.translator = translator;
-		this.price = price;
-		this.isbn = isbn;
-		this.stock = stock;
-		this.shortDesc = shortDesc;
-		this.press = press;
-		this.onShelf = onShelf;
-	}
-
-	public BooksBean(Integer bookId, String bookName, String author, String translator, BigDecimal price, String isbn,
-			Integer stock, String shortDesc, String press, GenreBean genreBean) {
-		super();
-		this.bookId = bookId;
-		this.bookName = bookName;
-		this.author = author;
-		this.translator = translator;
-		this.price = price;
-		this.isbn = isbn;
-		this.stock = stock;
-		this.shortDesc = shortDesc;
-		this.press = press;
-	}
 
 	// --------getter/setter-------
 	public Integer getBookId() {

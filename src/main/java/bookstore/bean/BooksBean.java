@@ -26,6 +26,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -93,14 +94,10 @@ public class BooksBean {
 	@JsonIgnore
 	private List<ReviewBean> reviews;
 
-	@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
-	private List<BookImageBean> imageList = new ArrayList<BookImageBean>();
+	private BookImageBean bookImageBean;
 
-	public void addImage(BookImageBean image) {
-		imageList.add(image);
-		image.setBook(this);
-	}
 
 	// -------Constructor--------
 
@@ -210,6 +207,14 @@ public class BooksBean {
 		this.genres = genres;
 	}
 
+	public BookImageBean getBookImageBean() {
+		return bookImageBean;
+	}
+
+	public void setBookImageBean(BookImageBean bookImageBean) {
+		this.bookImageBean = bookImageBean;
+	}
+
 	@Override
 	public boolean equals(Object object) {
 		if (this == object)
@@ -224,4 +229,5 @@ public class BooksBean {
 	public int hashCode() {
 		return Objects.hash(bookId);
 	}
+
 }

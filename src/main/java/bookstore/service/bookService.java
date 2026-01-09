@@ -3,6 +3,9 @@ package bookstore.service;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -22,7 +25,6 @@ import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
 import bookstore.bean.ReviewBean;
 import bookstore.exceptionCenter.BusinessException;
-import bookstore.exceptionCenter.GlobalExceptionHandler;
 import bookstore.repository.BookRepository;
 import bookstore.repository.GenreRepository;
 import bookstore.repository.OrderItemRepository;
@@ -32,24 +34,15 @@ import jakarta.transaction.Transactional;
 @Service
 public class bookService {
 
-	private final GlobalExceptionHandler globalExceptionHandler;
-
 	private static final Logger log = LoggerFactory.getLogger(bookService.class);
 	@Autowired
 	private BookRepository bookRepo;
 
 	@Autowired
 	private GenreRepository genreRepo;
-	@Autowired
-	private OrderItemRepository orderItemRepo;
-	@Autowired
-	private ReviewRepository reviewRepo;
+
 	@Value("${file.upload.dir:C:/uploads/book-images/}")
 	private String uploadDir;
-
-	bookService(GlobalExceptionHandler globalExceptionHandler) {
-		this.globalExceptionHandler = globalExceptionHandler;
-	}
 
 	// ------select all books-----------
 	@Transactional
@@ -98,18 +91,13 @@ public class bookService {
 
 	// select by genre
 	/*
-	@Transactional
-	public List<BooksBean> selectByGenre(Integer genreId) {
-		List<BooksBean> bookList = bookRepo.findGenreBean_GenreId(genreId);
-		if (bookList != null && !bookList.isEmpty()) {
-			log.info("查詢成功 - 書籍數量:{}筆 - 類型ID:{}", bookList.size(), genreId);
-			return bookList;
-		} else {
-			log.warn("查詢失敗 - 無該類型相關書籍資料");
-			throw new BusinessException(404, "無該類型相關書籍資料");
-		}
-	}
-	*/
+	 * @Transactional public List<BooksBean> selectByGenre(Integer genreId) {
+	 * List<BooksBean> bookList = bookRepo.findGenreBean_GenreId(genreId); if
+	 * (bookList != null && !bookList.isEmpty()) {
+	 * log.info("查詢成功 - 書籍數量:{}筆 - 類型ID:{}", bookList.size(), genreId); return
+	 * bookList; } else { log.warn("查詢失敗 - 無該類型相關書籍資料"); throw new
+	 * BusinessException(404, "無該類型相關書籍資料"); } }
+	 */
 
 	// select by onShelf
 	@Transactional
@@ -128,77 +116,80 @@ public class bookService {
 
 	// insertbook
 	@Transactional
-	@
-	public BooksBean insertBook(BooksBean book, MultipartFile file) {
-		String isbnRegex = "^\\d{13}$";
-		Optional<BooksBean> insertBook = bookRepo.findByIsbn(book.getIsbn());
-		if (insertBook.isPresent()) {
-			log.warn("新增失敗 - 已存在相同ISBN書籍資料 - ISBN:{}", book.getIsbn());
-			throw new BusinessException(409, "新增失敗 - 已存在相同ISBN書籍資料");
-		}
-		if (book.getBookName() == null || book.getBookName().trim().isEmpty()) {
-			log.warn("格式驗證失敗 - 書名不可為空白");
-			throw new BusinessException(400, "新增失敗，書名不可為空白");
-		}
-		if (book.getIsbn() == null || !book.getIsbn().matches(isbnRegex)) {
-			log.warn("格式驗證失敗 - ISBN只能為13位數字 ISBN:{}", book.getIsbn());
-			throw new BusinessException(400, "格式驗證失敗 - ISBN只能為13位數字");
-		}
-		if (book.getPrice() == null || book.getPrice().compareTo(BigDecimal.ZERO) <= 0
-				|| book.getPrice().remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
-			log.warn("格式驗證失敗 - 價格必須為正整數: {}", book.getPrice());
-			throw new BusinessException(400, "新增失敗，價格必須為正整數");
-		}
-		if (book.getStock() < 0) {
-			log.warn("格式驗證失敗 - 庫存量不可小於0");
-			throw new BusinessException(400, "格式驗證失敗，庫存量不可小於0");
-		}
+	public BooksBean insertBook(BooksBean book, MultipartFile file) throws IOException {
+	    
+	    
+	    // 書名檢查
+	    if (book.getBookName() == null || book.getBookName().trim().isEmpty()) {
+	        throw new BusinessException(400, "新增失敗：書名不可為空白");
+	    }
 
-		if (file != null && !file.isEmpty()) {
-			try {
-				String fileName = file.getOriginalFilename();
-				String savePath = uploadDir + fileName;
+	    // ISBN 格式與唯一性檢查
+	    String isbnRegex = "^\\d{13}$";
+	    if (book.getIsbn() == null || !book.getIsbn().matches(isbnRegex)) {
+	        throw new BusinessException(400, "新增失敗：ISBN 格式錯誤，必須為 13 位數字");
+	    }
+	    
+	    Optional<BooksBean> isbnCheck = bookRepo.findByIsbn(book.getIsbn());
+	    if (isbnCheck.isPresent()) {
+	        throw new BusinessException(409, "新增失敗：已存在相同 ISBN 的書籍");
+	    }
 
-				File dest = new File(savePath);
-				if (!dest.getParentFile().exists()) {
-					dest.getParentFile().mkdir();
-				}
+	    // 價格檢查
+	    if (book.getPrice() == null || book.getPrice().compareTo(BigDecimal.ZERO) <= 0 
+	            || book.getPrice().remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+	        throw new BusinessException(400, "新增失敗：價格必須為正整數");
+	    }
 
-				file.transferTo(dest);
-				BookImageBean imageBean = new BookImageBean();
-				imageBean.setImageUrl("/upload-images/" + fileName);
-				imageBean.setIsMain(true);
-				book.addImage(imageBean);
+	    // 庫存檢查
+	    if (book.getStock() == null || book.getStock() < 0) {
+	        throw new BusinessException(400, "新增失敗：庫存量不可小於 0");
+	    }
 
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw new BusinessException(500, "圖片上傳失敗");
-			}
-		}
+	    // --- 2. 處理 Genre (多對多關聯) ---
+	    if (book.getGenres() != null && !book.getGenres().isEmpty()) {
+	        Set<GenreBean> managedGenres = new HashSet<>();
+	        for (GenreBean genre : book.getGenres()) {
+	            Optional<GenreBean> genreOpt = genreRepo.findById(genre.getGenreId());
+	            if (genreOpt.isPresent()) {
+	                managedGenres.add(genreOpt.get());
+	            } else {
+	                throw new BusinessException(404, "新增失敗：找不到指定的類型 ID: " + genre.getGenreId());
+	            }
+	        }
+	        book.setGenres(managedGenres);
+	    }
 
-		if (book.getGenres() != null && !book.getGenres().isEmpty()) {
-			Set<GenreBean> manageGenres = new HashSet<GenreBean>();
+	    // --- 3. 處理圖片上傳 (OneToOne) ---
+	    if (file != null && !file.isEmpty()) {
+	        // 產生唯一檔名
+	        String originalFilename = file.getOriginalFilename();
+	        String ext = (originalFilename != null && originalFilename.contains(".")) 
+	                     ? originalFilename.substring(originalFilename.lastIndexOf(".")) 
+	                     : ".jpg";
+	        String newFilename = UUID.randomUUID().toString() + ext;
 
-			for (GenreBean genre : book.getGenres()) {
-				Optional<GenreBean> genreOpt = genreRepo.findById(genre.getGenreId());
-				if (genreOpt.isPresent()) {
-					manageGenres.add(genreOpt.get());
-				} else {
-					log.warn("新增失敗 - 找不到指定的類型ID:{}", genre.getGenreId());
-					throw new BusinessException(404, "新增失敗 - 指不到指定的類型ID:" + genre.getGenreId());
-				}
+	        // 建立目錄與存檔
+	        File destFile = new File(uploadDir, newFilename);
+	        if (!destFile.getParentFile().exists()) {
+	            destFile.getParentFile().mkdirs();
+	        }
+	        file.transferTo(destFile); // 存入硬碟
 
-			}
-			book.setGenres(manageGenres);
-		}
+	        // 建立圖片物件並設定關聯
+	        BookImageBean imageBean = new BookImageBean();
+	        imageBean.setImageUrl(newFilename); // 建議只存檔名，路徑由前端或設定檔決定
+	        
+	        // 雙向關聯設定 (重要)
+	        imageBean.setBook(book);      // 設定 FK
+	        book.setBookImageBean(imageBean); // 設定主體關聯
+	    }
 
-		BooksBean booksBean = bookRepo.save(book);
-		log.info("新增成功 - 書籍ID:{} - 書籍名稱:{}", book.getBookId(), book.getBookName());
-		return booksBean;
-
+	    // --- 4. 儲存 ---
+	    return bookRepo.save(book);
 	}
 
-	//update Check
+	// update Check
 	private void updateBasicFields(BooksBean existing, BooksBean incoming) {
 		// 書名
 
@@ -236,7 +227,7 @@ public class bookService {
 				throw new BusinessException(400, "ISBN 格式錯誤，必須為 13 位數字");
 			}
 			Optional<BooksBean> isbnCheck = bookRepo.findByIsbn(incoming.getIsbn());
-			if (isbnCheck.isPresent() && !isbnCheck.get().getBookId().equals(incoming.getBookId())) {
+			if (isbnCheck.isPresent() && !isbnCheck.get().getBookId().equals(existing.getBookId())) {
 				throw new BusinessException(409, "此 ISBN 已被其他書籍使用");
 			}
 			existing.setIsbn(incoming.getIsbn());
@@ -260,45 +251,36 @@ public class bookService {
 		if (incoming.getShortDesc() != null)
 			existing.setShortDesc(incoming.getShortDesc());
 	}
-	
-	
-	private void processImageUpload(BooksBean book,MultipartFile file) {
-		if (file!=null&&!file.isEmpty()) {
-			try {
-				String originalFileName = file.getOriginalFilename();
-				String extension = "";
-				if (originalFileName!=null&&originalFileName.contains(".")) {
-					extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-				}
-				String fileName = UUID.randomUUID().toString()+extension;
-				String savePath = uploadDir+fileName;
-				
-				File dest = new File(savePath);
-				if (!dest.getParentFile().exists()) {
-					dest.getParentFile().mkdir();
-				}
-				
-				file.transferTo(dest);
-				
-				if(book.get) {
-					
-				}
-			} catch (Exception e) {
-			}
+
+	private void updateBookImage(BooksBean book, MultipartFile file) throws IllegalStateException, IOException {
+		String originalName = file.getOriginalFilename();
+		String ext = (originalName != null && originalName.contains("."))
+				? originalName.substring(originalName.lastIndexOf("."))
+				: ".jpg";
+
+		String newFileName = UUID.randomUUID().toString() + ext;
+
+		File destFile = new File(uploadDir, newFileName);
+
+		file.transferTo(destFile);
+
+		BookImageBean img = book.getBookImageBean();
+		if (img == null) {
+			img = new BookImageBean();
+			img.setBook(book);
+			book.setBookImageBean(img);
 		}
+		img.setImageUrl(newFileName);
 	}
-	
 
 	// UpDate Book-----------------
 	@Transactional
-	public BooksBean updateBook(BooksBean book, MultipartFile file) {
-		if (book.getBookId() == null) {
-			throw new BusinessException(400, "修改失敗：必須提供書籍 ID");
-		}
+	public BooksBean updateBook(Integer bookId, BooksBean book, MultipartFile file)
+			throws IllegalStateException, IOException {
 
-		Optional<BooksBean> opt = bookRepo.findById(book.getBookId());
+		Optional<BooksBean> opt = bookRepo.findById(bookId);
 		if (opt.isEmpty()) {
-			throw new BusinessException(404, "修改失敗：找不到 ID 為 " + book.getBookId() + " 的書籍");
+			throw new BusinessException(404, "修改失敗：找不到 ID 為 " + bookId + " 的書籍");
 		}
 
 		BooksBean existingBook = opt.get();
@@ -321,6 +303,10 @@ public class bookService {
 			}
 			existingBook.setGenres(newManagedGenres);
 		}
+		if (file != null && !file.isEmpty()) {
+			updateBookImage(existingBook, file);
+		}
+		return bookRepo.save(existingBook);
 
 	}
 
@@ -373,7 +359,8 @@ public class bookService {
 			log.info("書籍 ID:{}已成功封存", bookId);
 		}
 	}
-	//unarchive book
+
+	// unarchive book
 	@Transactional
 	public void unarchiveBook(Integer bookId) {
 		Optional<BooksBean> opt = bookRepo.findById(bookId);
@@ -386,8 +373,8 @@ public class bookService {
 			log.info("書籍ID:{}已成功解封", bookId);
 		}
 	}
-	
-	//封存檢查(訂單/評價)
+
+	// 封存檢查(訂單/評價)
 	@Transactional
 	public boolean isBookAvailable(Integer bookId) {
 		Optional<BooksBean> opt = bookRepo.findById(bookId);
@@ -402,8 +389,6 @@ public class bookService {
 		}
 		return true;
 	}
-
-	
 
 	@Transactional
 	public List<GenreBean> getAllGenres() {

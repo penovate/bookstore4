@@ -39,47 +39,38 @@ public class BookController {
 	}
 
 	@GetMapping("/getAllBooks")
-	public String getAllBooks(Model model) {
+	public ResponseEntity<List<BooksBean>> getAllBooks(Model model) {
 		List<BooksBean> bookList = bookService.selectAllBooks();
-		model.addAttribute("bookList", bookList);
-		return "books/GetAllBooks";
+		return ResponseEntity.ok(bookList);
 	}
+	
+	
 
-	@GetMapping("/getBook")
-	public String selectBookById(@RequestParam("bookId") String idStr, Model model) {
-		if (idStr == null || !idStr.matches("^\\d+$")) {
-			throw new BusinessException(400, "格式錯誤:ID必須為數字");
+	@GetMapping("/getBook/{bookId}")
+	public ResponseEntity<BooksBean> selectBookById(@PathVariable("bookId") Integer bookId) {
+		if (bookId == null) {
+			throw new BusinessException(400, "格式錯誤:ID不可為空白");
 		}
-		BooksBean book = bookService.selectBookByIdS(Integer.parseInt(idStr));
-		model.addAttribute("book", book);
-		return "books/GetBook";
+		BooksBean book = bookService.selectBookByIdS(bookId);
+		if (book != null) {
+			return ResponseEntity.ok(book);
+		}
+		return ResponseEntity.notFound().build();
 	}
 
-	@GetMapping("/insertPage")
-	public String InsertPage(Model model) {
-
+	@GetMapping("/genres")
+	public ResponseEntity<List<GenreBean>> InsertPage(Model model) {
 		List<GenreBean> genreList = bookService.getAllGenres();
-		model.addAttribute("genreList", genreList);
-
-		return "books/InsertBook";
+		return ResponseEntity.ok(genreList);
 	}
 
 	@PostMapping("/insert")
-	public ResponseEntity<BooksBean> insertBook(@RequestPart("book") BooksBean book,@RequestPart(value = "file"
-	,required = false)MultipartFile file) throws IOException {
+	public ResponseEntity<BooksBean> insertBook(@RequestPart("book") BooksBean book,
+			@RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
 		BooksBean newBook = bookService.insertBook(book, file);
 		return ResponseEntity.ok(newBook);
 	}
 
-	@GetMapping("/updatePage")
-	public String updatePage(@RequestParam("bookId") Integer bookId, Model model) {
-		List<GenreBean> genreList = bookService.getAllGenres();
-		model.addAttribute("genreList", genreList);
-
-		BooksBean book = bookService.selectBookByIdS(bookId);
-		model.addAttribute("book", book);
-		return "books/UpdateBook";
-	}
 
 	@PutMapping("/update/{bookId}")
 	public ResponseEntity<BooksBean> updateBook(@PathVariable Integer bookId, @RequestPart("book") BooksBean book,
@@ -89,50 +80,35 @@ public class BookController {
 		return ResponseEntity.ok(updateBook);
 	}
 
-	@PostMapping("/updateStatus")
-	public String updateOnShelf(@RequestParam("bookId") Integer bookId, @RequestParam("status") boolean status) {
-		bookService.updateOnShelfStatus(bookId, status);
-		return "redirect:/books/getAllBooks";
+	@PutMapping("/updateStatus/{bookId}/{newStatus}")
+	public ResponseEntity<BooksBean> updateOnShelf(@PathVariable Integer bookId, @PathVariable Integer newStatus) {
+	BooksBean book = bookService.updateOnShelfStatus(bookId, newStatus);
+		return ResponseEntity.ok(book);
 	}
 
 	@DeleteMapping("/delete/{bookId}")
 	public ResponseEntity<String> deleteBook(@PathVariable Integer bookId) {
 		bookService.deleteBookById(bookId);
-		return ResponseEntity.ok("書籍已成功刪除");
+		return ResponseEntity.noContent().build();
 	}
 
 	@ResponseBody
-	@PostMapping("/isbnCheck")
-	public String checkIsbn(@RequestParam("isbn") String isbn) {
-		boolean exists = bookService.existsByIsbn(isbn);
-		return String.valueOf(exists);
+	@GetMapping("/isbnCheck")
+	public ResponseEntity<Boolean> checkIsbn(@RequestParam("isbn") String isbn) {
+		Boolean exists = bookService.existsByIsbn(isbn);
+		return ResponseEntity.ok(exists);
 	}
 
-	@ResponseBody
-	@PostMapping("/updateOnShelfStatus")
-	public String updateOnShelfStatus(@RequestParam("bookId") Integer bookId, @RequestParam("status") boolean status) {
-		try {
-			bookService.updateOnShelfStatus(bookId, status);
-			return "success";
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "error";
-		}
 
+	@PutMapping("/archiveBook/{bookId}")
+	public ResponseEntity<BooksBean> archiveBook(@PathVariable("bookId") Integer bookId) {
+	BooksBean book=	bookService.archiveBook(bookId);
+		return ResponseEntity.ok(book);
 	}
 
-	@ResponseBody
-	@PostMapping("/archiveBook")
-	public String archiveBook(@RequestParam("bookId") Integer bookId) {
-		bookService.archiveBook(bookId);
-
-		return "success";
-	}
-
-	@ResponseBody
-	@PostMapping("/unarchiveBook")
-	public String unarchiveBook(@RequestParam("bookId") Integer bookId) {
-		bookService.unarchiveBook(bookId);
-		return "success";
+	@PutMapping("/unarchiveBook/{bookId}")
+	public ResponseEntity<BooksBean> unarchiveBook(@PathVariable("bookId") Integer bookId) {
+	BooksBean book=	bookService.unarchiveBook(bookId);
+		return ResponseEntity.ok(book);
 	}
 }

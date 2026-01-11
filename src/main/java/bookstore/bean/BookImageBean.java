@@ -1,5 +1,7 @@
 package bookstore.bean;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,6 +24,7 @@ public class BookImageBean {
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "book_id", nullable = false)
+	@JsonBackReference
 	private BooksBean book;
 
 	@Column(name = "image_url", length = 265)

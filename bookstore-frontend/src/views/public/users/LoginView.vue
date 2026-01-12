@@ -71,7 +71,12 @@ const handleLogin = async () => {
         router.push('/home')
       })
     } else {
-      errorMessage.value = response.data.message
+      Swal.fire({
+        icon: 'error',
+        title: '登入失敗',
+        text: response.data.message,
+        confirmButtonColor: '#b05252',
+      })
     }
   } catch (error) {
     console.error('連線失敗：', error)

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,16 +23,16 @@ import bookstore.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@RequiredArgsConstructor
 public class UserController {
 
-	@Autowired
-	private UsersService userService;
+	private final UsersService userService;
 	
-	@Autowired
-	private JwtUtil jwtUtil;
+	private final JwtUtil jwtUtil;
 	
 	@GetMapping("/login")
 	public String showLogin() {
@@ -62,6 +61,12 @@ public class UserController {
                 response.put("success", false);
                 response.put("message", "您的帳號已被停權，請聯繫管理員！");
                 return response;
+            }
+            
+            if (user.getUserType() != null && user.getUserType().equals(2)) {
+            	response.put("success", false);
+            	response.put("message", "您沒有權限進入後台管理系統，請使用管理員帳號登入！");
+            	return response;
             }
             
             String role;
@@ -191,7 +196,7 @@ public class UserController {
 	            System.out.println("找不到該會員！");
 	            return null;
 	        }
-	        return user; // 只要你在 Bean 加上了 @JsonIgnoreProperties，這裡直接回傳即可
+	        return user;
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        return null;
@@ -402,7 +407,6 @@ public class UserController {
 	            user.setUserPwd(existingUser.getUserPwd());
 	        }
 
-	        // 處理點數與狀態：如果前端沒傳，就維持原本資料庫的值 (防止被覆蓋成 null)
 	        if (user.getPoints() == null) {
 	            user.setPoints(existingUser.getPoints());
 	        }

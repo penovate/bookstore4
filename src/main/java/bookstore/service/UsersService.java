@@ -25,19 +25,12 @@ public class UsersService {
 		return userRepo.findAll();
 	}
 	
-	public List<UserBean> searchUsers(String name, Integer type) {
-		boolean hasName = (name != null && !name.trim().isEmpty());
-		boolean hasType = (type != null);
-		
-		if (hasName && hasType) {
-			return userRepo.findByUserNameContainingAndUserType(name, type);
-		} else if (hasName) {
-			return userRepo.findByUserNameContaining(name);
-		} else if (hasType) {
-			return userRepo.findByUserType(type);
-		} else {
-			return userRepo.findAll();
-		}
+	public List<UserBean> searchUsers(String keyword, Integer type) {
+	    if ((keyword == null || keyword.trim().isEmpty()) && type == null) {
+	        return userRepo.findAll();
+	    }
+	    
+	    return userRepo.searchUsersGlobal(keyword, type);
 	}
 	
 	public UserBean findById(Integer id) {

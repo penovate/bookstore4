@@ -20,6 +20,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import bookstore.bean.UserBean;
 import bookstore.service.UsersService;
+import bookstore.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
@@ -30,6 +32,9 @@ public class UserController {
 	@Autowired
 	private UsersService userService;
 	
+	@Autowired
+	private JwtUtil jwtUtil;
+	
 	@GetMapping("/login")
 	public String showLogin() {
 		return "users/login";
@@ -38,7 +43,7 @@ public class UserController {
 	// Vue 版本登入
 	@PostMapping("/api/login")
     @ResponseBody 
-    public Map<String, Object> doLoginApi(@RequestBody Map<String, String> loginData, HttpSession session) {
+    public Map<String, Object> doLoginApi(@RequestBody Map<String, String> loginData) {
         
         String email = loginData.get("email");
         String password = loginData.get("password");
@@ -58,15 +63,33 @@ public class UserController {
                 response.put("message", "您的帳號已被停權，請聯繫管理員！");
                 return response;
             }
-            if (user.getUserType() == null || !user.getUserType().equals(0)) {
-                response.put("success", false);
-                response.put("message", "您沒有管理員權限！");
-                return response;
+            
+            String role;
+            Integer type = user.getUserType();
+            
+            if (type == 0) {
+            	role = "SUPER_ADMIN";
+            } else if (type == 1) {
+            	role = "ADMIN";
+            } else {
+            	role = "USER";
             }
             
-            session.setAttribute("user", user);
+            String token = "";
+			try {
+				token = jwtUtil.generateToken(user.getUserId().toString(), role);
+			} catch (Exception e) {
+				e.printStackTrace();
+				response.put("success", false);
+				response.put("message", "系統生成證件失敗！");
+				return response;
+			}
             response.put("success", true);
             response.put("message", "登入成功！");
+            response.put("token", token);
+            response.put("role", role);
+            response.put("userName", user.getUserName());
+            response.put("userId", user.getUserId());
             return response;
         } else {
             response.put("success", false);
@@ -129,14 +152,14 @@ public class UserController {
 	@GetMapping("/api/data/list")
 	@ResponseBody 
 	public List<UserBean> getUsersListApi(
-	        @RequestParam(required = false) String searchName, 
+	        @RequestParam(required = false) String keyword,
 	        @RequestParam(required = false) Integer userTypeFilter) {
 	    
 	    try {
 	        System.out.println("====== API 成功觸發 ======");
-	        String name = (searchName != null && !searchName.trim().isEmpty()) ? searchName : null;
+	        String cleanKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword : null;
 	        
-	        List<UserBean> users = userService.searchUsers(name, userTypeFilter);
+	        List<UserBean> users = userService.searchUsers(cleanKeyword, userTypeFilter);
 	        System.out.println("成功查詢到 " + (users != null ? users.size() : 0) + " 筆資料");
 	        return users;
 	    } catch (Exception e) {
@@ -146,16 +169,16 @@ public class UserController {
 	    }
 	}
 	
-	@GetMapping("/users/list")
-	public String listUsers(@RequestParam(required = false) String searchName, @RequestParam(required = false) Integer userTypeFilter, Model model) {
-		List<UserBean> users = userService.searchUsers(searchName, userTypeFilter);
-		
-		model.addAttribute("users", users);
-		model.addAttribute("currentSearchName", searchName);
-		model.addAttribute("currentUserTypeFilter", userTypeFilter);
-		
-		return "users/UserList";
-	}
+//	@GetMapping("/users/list")
+//	public String listUsers(@RequestParam(required = false) String searchName, @RequestParam(required = false) Integer userTypeFilter, Model model) {
+//		List<UserBean> users = userService.searchUsers(searchName, userTypeFilter);
+//		
+//		model.addAttribute("users", users);
+//		model.addAttribute("currentSearchName", searchName);
+//		model.addAttribute("currentUserTypeFilter", userTypeFilter);
+//		
+//		return "users/UserList";
+//	}
 	
 	// Vue 版本查詢單筆
 	@GetMapping("/api/data/get/{id}")
@@ -195,6 +218,16 @@ public class UserController {
 	        response.put("message", "新增失敗！信箱、密碼與姓名必須填入！");
 	        return response;
 	    }
+	    
+	    if (user.getUserType() != null && user.getUserType() == 2) {
+	        response.put("success", false);
+	        response.put("message", "新增失敗！後台系統禁止直接建立一般會員，請引導使用者至前台註冊。");
+	        return response;
+	    }
+
+	    if (user.getUserType() == null) {
+	        user.setUserType(1); 
+	    }
 
 	    user.setStatus(1);
 	    user.setPoints(0);
@@ -206,7 +239,7 @@ public class UserController {
 	        userService.saveUser(user);
 	        response.put("success", true);
 	        response.put("message", "新增會員資料成功！");
-	        response.put("user", user); // 回傳存好的資料讓 Vue 顯示
+	        response.put("user", user);
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        response.put("success", false);
@@ -257,10 +290,21 @@ public class UserController {
 	// Vue 版本軟刪除（啟用/停權）
 	@PutMapping("/api/data/status/{id}")
 	@ResponseBody
-	public Map<String, Object> toggleUserStatus(@PathVariable("id") Integer id, @RequestBody Map<String, Integer> payload) {
+	public Map<String, Object> toggleUserStatus(@PathVariable("id") Integer id, @RequestBody Map<String, Integer> payload, HttpServletRequest request) {
 		Map<String, Object> response = new HashMap<>();
 		try {
 			Integer newStatus = payload.get("status");
+			
+			String authHeader = request.getHeader("Authorization");
+			String token = authHeader.substring(7);
+			String currentOperUserId = jwtUtil.getMemberId(token);
+			
+			if (id.toString().equals(currentOperUserId) && newStatus != null && newStatus == 2) {
+	            response.put("success", false);
+	            response.put("message", "更新失敗：您無法停權自己的帳號！");
+	            return response;
+	        }
+			
 			if (newStatus == null) {
 				response.put("success", false);
 				response.put("message", "狀態碼不可為空！");
@@ -316,17 +360,65 @@ public class UserController {
 	// Vue 版修改
 	@PutMapping("/api/data/update")
 	@ResponseBody
-	public Map<String, Object> processUpdateApi(@RequestBody UserBean user) {
+	public Map<String, Object> processUpdateApi(@RequestBody UserBean user, HttpServletRequest request) {
 	    Map<String, Object> response = new HashMap<>();
+	    
 	    try {
-	        // saveUser 在 Hibernate 裡通常是 saveOrUpdate，有 ID 就會跑更新
+			String authHeader = request.getHeader("Authorization");
+			String token = authHeader.substring(7);
+			String currentUserId = jwtUtil.getMemberId(token);
+			String currentRole = jwtUtil.getRole(token);
+			
+			UserBean existingUser = userService.findById(user.getUserId());
+	        if (existingUser == null) {
+	            response.put("success", false);
+	            response.put("message", "更新失敗：找不到該會員！");
+	            return response;
+	        }
+			
+	        if ("ADMIN".equals(currentRole)) {
+	        	if ((existingUser.getUserType() == 0 || existingUser.getUserType() == 1) 
+	                    && !existingUser.getUserId().toString().equals(currentUserId)) {
+	                    response.put("success", false);
+	                    response.put("message", "權限不足：您無法修改其他管理員的資料！");
+	                    return response;
+	                }
+
+	        	if (user.getUserType() != null && user.getUserType() != existingUser.getUserType()) {
+	                if (existingUser.getUserType() == 2 && (user.getUserType() == 0 || user.getUserType() == 1)) {
+	                    response.put("success", false);
+	                    response.put("message", "權限不足：一般管理員無法提升會員權限！");
+	                    return response;
+	                }
+	                if ((existingUser.getUserType() == 0 || existingUser.getUserType() == 1) && user.getUserType() == 2) {
+	                    response.put("success", false);
+	                    response.put("message", "權限不足：您無法將管理員降級為一般會員！");
+	                    return response;
+	                }
+	            }
+	        }
+	            
+	        if (user.getUserPwd() == null || user.getUserPwd().trim().isEmpty()) {
+	            user.setUserPwd(existingUser.getUserPwd());
+	        }
+
+	        // 處理點數與狀態：如果前端沒傳，就維持原本資料庫的值 (防止被覆蓋成 null)
+	        if (user.getPoints() == null) {
+	            user.setPoints(existingUser.getPoints());
+	        }
+	        if (user.getStatus() == null) {
+	            user.setStatus(existingUser.getStatus());
+	        }
+
 	        userService.saveUser(user);
+	        
 	        response.put("success", true);
-	        response.put("message", "會員資料更新成功！");
+	        response.put("message", "會員資料更新成功！");    
+	            
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        response.put("success", false);
-	        response.put("message", "更新失敗：資料格式不正確或資料庫錯誤！");
+	        response.put("message", "更新失敗：伺服器發生錯誤！");
 	    }
 	    return response;
 	}

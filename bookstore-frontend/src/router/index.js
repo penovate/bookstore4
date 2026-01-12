@@ -5,8 +5,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'login',
-      component: () => import('../views/public/users/LoginView.vue'),
+      redirect: '/login',
     },
     {
       path: '/login',
@@ -44,6 +43,30 @@ const router = createRouter({
       component: () => import('../views/admin/users/UserUpdate.vue'),
     },
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('userToken')
+  const role = localStorage.getItem('userRole')
+
+  if (to.name !== 'login') {
+    if (!token) {
+      next({ name: 'login' })
+    } else {
+      if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
+        next()
+      } else {
+        Swal.fire('權限不足', '您沒有進入後台管理系統的權限', 'error')
+        next({ name: 'login' })
+      }
+    }
+  } else {
+    if (token && (role === 'SUPER_ADMIN' || role === 'ADMIN')) {
+      next({ name: 'home' })
+    } else {
+      next()
+    }
+  }
 })
 
 export default router

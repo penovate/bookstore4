@@ -40,9 +40,11 @@ const handleLogout = async () => {
     cancelButtonText: '取消',
   }).then(async (result) => {
     if (result.isConfirmed) {
+      localStorage.removeItem('userToken')
+      localStorage.removeItem('userRole')
+      localStorage.removeItem('userName')
       try {
         await axios.get('http://localhost:8080/api/logout', { withCredentials: true })
-
         router.push('/login?logout=true')
       } catch (error) {
         console.error('登出失敗', error)

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,6 +39,7 @@ public class UserBean implements java.io.Serializable {
 	@Column(name = "email")
 	private String email;
 	@Column(name = "user_pwd")
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private String userPwd;
 	@Column(name = "user_name")
 	private String userName;

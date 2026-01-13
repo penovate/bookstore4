@@ -34,7 +34,7 @@
         <tr>
           <td>權限等級</td>
           <td>
-            <input type="text" disabled :value="user.userType === 0 ? '管理員' : '一般會員'" />
+            <input type="text" disabled :value="formatUserType(user.userType)" />
           </td>
         </tr>
       </table>
@@ -71,20 +71,27 @@ const formatDate = (dateValue) => {
   return `${y}-${m}-${d}`
 }
 
+const formatUserType = (type) => {
+  if (type === 0) return '超級管理員'
+  if (type === 1) return '一般管理員'
+  if (type === 2) return '一般會員'
+  return '未知'
+}
+
 const fetchUserDetail = async () => {
   try {
     const userId = route.params.id
     const url = `http://localhost:8080/api/data/get/${userId}`
-    console.log('正在請求網址：', url)
 
-    const response = await axios.get(url, {
-      withCredentials: true,
-    })
-    console.log('獲取的資料：', response.data)
+    const response = await axios.get(url)
     user.value = response.data
   } catch (error) {
     console.error('取得詳細資料失敗', error.response || error)
-    alert('無法取得會員資料，請檢查後端 Console')
+    Swal.fire({
+      icon: 'error',
+      title: '讀取失敗',
+      text: '無法取得會員詳細資料',
+    })
   }
 }
 

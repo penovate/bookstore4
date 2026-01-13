@@ -48,18 +48,17 @@ const handleLogin = async () => {
   errorMessage.value = ''
 
   try {
-    const response = await axios.post(
-      'http://localhost:8080/api/login',
-      {
-        email: loginForm.email,
-        password: loginForm.password,
-      },
-      {
-        withCredentials: true,
-      },
-    )
+    const response = await axios.post('http://localhost:8080/api/login', {
+      email: loginForm.email,
+      password: loginForm.password,
+    })
 
     if (response.data.success) {
+      localStorage.setItem('userToken', response.data.token)
+      localStorage.setItem('userRole', response.data.role)
+      localStorage.setItem('userName', response.data.userName || '')
+      localStorage.setItem('userId', response.data.userId)
+
       Swal.fire({
         icon: 'success',
         title: '登入成功',
@@ -72,22 +71,39 @@ const handleLogin = async () => {
         router.push('/home')
       })
     } else {
-      errorMessage.value = response.data.message
+      Swal.fire({
+        icon: 'error',
+        title: '登入失敗',
+        text: response.data.message,
+        confirmButtonColor: '#b05252',
+      })
     }
   } catch (error) {
     console.error('連線失敗：', error)
     Swal.fire({
       icon: 'error',
       title: '連線失敗',
-      text: '請檢查 Spring Boot 後端伺服器是否啟動',
+      text: '請檢查伺服器狀態',
       confirmButtonColor: '#b05252',
     })
   }
 }
 
 onMounted(() => {
+  const token = localStorage.getItem('userToken')
+  const role = localStorage.getItem('userRole')
+
+  if (token && (role === 'SUPER_ADMIN' || role === 'ADMIN')) {
+    router.push('/home')
+    return
+  }
+
   const urlParams = new URLSearchParams(window.location.search)
   if (urlParams.has('logout')) {
+    localStorage.removeItem('userToken')
+    localStorage.removeItem('userRole')
+    localStorage.removeItem('userName')
+
     Swal.fire({
       icon: 'info',
       title: '您已登出',

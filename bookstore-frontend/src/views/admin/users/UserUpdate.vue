@@ -7,7 +7,7 @@
         <strong>{{ message }}</strong>
       </div>
 
-      <form @submit.prevent="handleUpdate" v-if="formData">
+      <form @submit.prevent="handleUpdate" v-if="formData.userId">
         <table>
           <tr>
             <td><label>會員編號 (ID):</label></td>
@@ -19,7 +19,14 @@
           </tr>
           <tr>
             <td><label for="password">密碼:</label></td>
-            <td><input type="password" id="password" v-model="formData.userPwd" /></td>
+            <td>
+              <input
+                type="password"
+                id="password"
+                v-model="formData.userPwd"
+                placeholder="若不修改請留空"
+              />
+            </td>
           </tr>
           <tr>
             <td><label for="name">姓名:</label></td>
@@ -47,13 +54,14 @@
             <td><label for="address">地址:</label></td>
             <td><input type="text" id="address" v-model="formData.address" /></td>
           </tr>
-          <tr>
+          <tr v-if="currentUserRole === 'SUPER_ADMIN'">
             <td><label for="userType">權限等級:</label></td>
             <td>
               <select id="userType" v-model="formData.userType">
+                <option v-if="formData.userType === 2" :value="2" disabled hidden>一般會員</option>
                 <option value="">請選擇</option>
-                <option value="0">管理員</option>
-                <option value="1">一般會員</option>
+                <option value="0">超級管理員</option>
+                <option value="1">一般管理員</option>
               </select>
             </td>
           </tr>
@@ -81,6 +89,9 @@ const route = useRoute()
 const router = useRouter()
 const message = ref('')
 
+const currentUserRole = localStorage.getItem('userRole')
+const currentUserId = localStorage.getItem('userId')
+
 const formData = ref({
   userId: null,
   email: '',
@@ -98,11 +109,26 @@ const formData = ref({
 const fetchUser = async () => {
   try {
     const userId = route.params.id
-    const response = await axios.get(`http://localhost:8080/api/data/get/${userId}`, {
-      withCredentials: true,
-    })
+    const response = await axios.get(`http://localhost:8080/api/data/get/${userId}`)
     if (response.data) {
-      formData.value = response.data
+      const userData = response.data
+      if (
+        currentUserRole === 'ADMIN' &&
+        (userData.userType === 0 || userData.userType === 1) &&
+        String(userData.userId) !== currentUserId
+      ) {
+        Swal.fire({
+          icon: 'error',
+          title: '權限不足',
+          text: '您無權修改管理員等級的資料！',
+          confirmButtonColor: '#b05252',
+        }).then(() => {
+          router.push('/users/list')
+        })
+        return
+      }
+
+      formData.value = userData
       if (formData.value.birth) {
         formData.value.birth = new Date(formData.value.birth).toISOString().split('T')[0]
       }
@@ -114,9 +140,7 @@ const fetchUser = async () => {
 
 const handleUpdate = async () => {
   try {
-    const response = await axios.put('http://localhost:8080/api/data/update', formData.value, {
-      withCredentials: true,
-    })
+    const response = await axios.put('http://localhost:8080/api/data/update', formData.value)
 
     if (response.data.success) {
       Swal.fire({
@@ -132,7 +156,7 @@ const handleUpdate = async () => {
       Swal.fire('更新失敗', response.data.message, 'error')
     }
   } catch (error) {
-    Swal.fire('錯誤', '更新失敗，請檢查資料格式', 'error')
+    Swal.fire('錯誤', '更新失敗，請檢查權限或資料格式', 'error')
   }
 }
 

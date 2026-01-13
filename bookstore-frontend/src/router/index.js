@@ -5,45 +5,68 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'login',
-      component: () => import('../apps/users/LoginView.vue'),
+      redirect: '/login',
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('../apps/users/LoginView.vue'),
+      component: () => import('../views/public/users/LoginView.vue'),
     },
     {
       path: '/home',
       name: 'home',
-      component: () => import('../apps/Home.vue'),
+      component: () => import('../views/admin/Home.vue'),
     },
     {
       path: '/users',
       name: 'usersHome',
-      component: () => import('../apps/users/UsersHome.vue'),
+      component: () => import('../views/admin/users/UsersHome.vue'),
     },
     {
       path: '/users/list',
       name: 'userList',
-      component: () => import('../apps/users/UserList.vue'),
+      component: () => import('../views/admin/users/UserList.vue'),
     },
     {
       path: '/users/get/:id',
       name: 'userDetail',
-      component: () => import('../apps/users/GetUser.vue'),
+      component: () => import('../views/admin/users/GetUser.vue'),
     },
     {
       path: '/users/insert',
       name: 'userInsert',
-      component: () => import('../apps/users/UserInsert.vue'),
+      component: () => import('../views/admin/users/UserInsert.vue'),
     },
     {
       path: '/users/update/:id',
       name: 'userUpdate',
-      component: () => import('../apps/users/UserUpdate.vue'),
+      component: () => import('../views/admin/users/UserUpdate.vue'),
     },
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('userToken')
+  const role = localStorage.getItem('userRole')
+
+  if (to.name !== 'login') {
+    if (!token) {
+      next({ name: 'login' })
+    } else {
+      if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
+        next()
+      } else {
+        Swal.fire('權限不足', '您沒有進入後台管理系統的權限', 'error')
+        next({ name: 'login' })
+      }
+    }
+  } else {
+    if (token && (role === 'SUPER_ADMIN' || role === 'ADMIN')) {
+      next({ name: 'home' })
+    } else {
+      next()
+    }
+  }
 })
 
 export default router

@@ -8,11 +8,13 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import bookstore.util.JwtInterceptor;
+
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
 	@Autowired
-	private LoginInterceptor loginInterceptor;
+	private JwtInterceptor jwtInterceptor;
 
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -28,12 +30,11 @@ public class WebConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(loginInterceptor)
-				.addPathPatterns("/users/**")
-				.excludePathPatterns("/login", "/api/login")
-				.excludePathPatterns("/api/**")
-				.excludePathPatterns("/logout")
-				.excludePathPatterns("/static/**", "/css/**", "/js/**", "/images/**");
+		registry.addInterceptor(jwtInterceptor)
+				.addPathPatterns("/api/**")
+				.excludePathPatterns("/api/login")
+				.excludePathPatterns("/api/public/**")
+				.excludePathPatterns("/static/**", "/css/**", "/js/**", "/images/**", "/upload-images/**");
 	}
 
 	@Override

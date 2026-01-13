@@ -86,8 +86,8 @@
             <td>
               <select id="userType" v-model="formData.userType" :disabled="isSuccess">
                 <option value="">請選擇</option>
-                <option value="0">管理員</option>
-                <option value="1">一般會員</option>
+                <option value="0">超級管理員</option>
+                <option value="1">一般管理員</option>
               </select>
             </td>
           </tr>
@@ -131,10 +131,13 @@ const handleSubmit = async () => {
     return
   }
 
+  if (formData.userType === '') {
+    message.value = '新增失敗！請選擇權限等級！'
+    return
+  }
+
   try {
-    const response = await axios.post('http://localhost:8080/api/users/insert', formData, {
-      withCredentials: true,
-    })
+    const response = await axios.post('http://localhost:8080/api/users/insert', formData)
 
     if (response.data.success) {
       Swal.fire({

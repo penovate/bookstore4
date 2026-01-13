@@ -55,6 +55,36 @@ const handleFileUpdate = (files) => {
     }
 };
 
+
+const generateRandomBook = () => {
+    const randomSuffix = Math.floor(Math.random() * 10000);
+
+    // Generate random ISBN 13 (starts with 978)
+    let isbn = '978';
+    for (let i = 0; i < 10; i++) {
+        isbn += Math.floor(Math.random() * 10);
+    }
+
+    book.value = {
+        bookName: `書籍 ${randomSuffix}`,
+        author: `作者 ${randomSuffix}`,
+        translator: `譯者 ${randomSuffix}`,
+        press: `出版社 ${randomSuffix}`,
+        price: Math.floor(Math.random() * 901) + 100, // 100-1000
+        isbn: isbn,
+        stock: Math.floor(Math.random() * 91) + 10, // 10-100
+        shortDesc: `這是一本隨機生成的書籍介紹 ${randomSuffix}。內容豐富，值得一讀。`,
+        onShelf: 0
+    };
+
+    // Randomly select 1-3 genres if available
+    if (genres.value.length > 0) {
+        const numGenres = Math.floor(Math.random() * 3) + 1;
+        const shuffled = [...genres.value].sort(() => 0.5 - Math.random());
+        selectedGenreIds.value = shuffled.slice(0, numGenres).map(g => g.genreId);
+    }
+};
+
 const submit = async () => {
     const { valid } = await form.value.validate();
     if (!valid) return;
@@ -187,10 +217,15 @@ const submit = async () => {
 
                         </v-row>
 
-                        <div class="d-flex justify-end mt-4">
-                            <v-btn variant="text" class="mr-2" @click="router.back()">取消</v-btn>
-                            <v-btn type="submit" color="primary" :loading="loading" elevation="2"
-                                size="large">確認新增</v-btn>
+                        <div class="d-flex justify-space-between mt-4">
+                            <v-btn color="info" variant="tonal" prepend-icon="mdi-flash" @click="generateRandomBook">
+                                一鍵輸入
+                            </v-btn>
+                            <div>
+                                <v-btn variant="text" class="mr-2" @click="router.back()">取消</v-btn>
+                                <v-btn type="submit" color="primary" :loading="loading" elevation="2"
+                                    size="large">確認新增</v-btn>
+                            </div>
                         </div>
                     </v-col>
                 </v-row>

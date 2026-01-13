@@ -43,6 +43,24 @@ const router = createRouter({
       name: 'userUpdate',
       component: () => import('../apps/users/UserUpdate.vue'),
     },
+    {
+      //平行測試路由
+      path: '/dev/admin',
+      component: () => import('../views/Layout/AdminLayout.vue'),
+      // meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'books',
+          name: 'admin-books',
+          component: () => import('../views/admin/books/BooksHome.vue'), // 您的書籍列表頁
+        },
+        {
+          path: 'orders',
+          name: 'admin-orders',
+          component: () => import('../views/admin/orders/OrdersHome.vue'),
+        }
+      ]
+    },
   ],
 })
 

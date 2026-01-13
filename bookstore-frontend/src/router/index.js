@@ -4,11 +4,6 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'login',
-      component: () => import('../views/public/users/LoginView.vue'),
-    },
-    {
       path: '/login',
       name: 'login',
       component: () => import('../views/public/users/LoginView.vue'),
@@ -57,7 +52,7 @@ const router = createRouter({
         {
           path: 'orders',
           name: 'admin-orders',
-          component: () => import('../views/admin/orders/OrdersHome.vue'),
+          // component: () => import('../views/admin/orders/OrdersHome.vue'),
         }
       ]
     },

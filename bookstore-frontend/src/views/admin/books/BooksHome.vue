@@ -128,6 +128,10 @@ onMounted(() => {
         <v-row class="mb-4" align="center">
             <v-col cols="12" md="4">
                 <h2 class="text-h4 font-weight-bold text-primary">書籍管理列表</h2>
+                <v-btn color="primary" class="mt-2" prepend-icon="mdi-plus"
+                    @click="router.push('/dev/admin/books/insert')">
+                    新增書籍
+                </v-btn>
             </v-col>
             <v-col cols="12" md="4" offset-md="4">
                 <v-text-field v-model="search" label="搜尋書籍..." prepend-inner-icon="mdi-magnify" variant="outlined"

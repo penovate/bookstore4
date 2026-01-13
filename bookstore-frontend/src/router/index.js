@@ -50,6 +50,11 @@ const router = createRouter({
           component: () => import('../views/admin/books/BooksHome.vue'), // 您的書籍列表頁
         },
         {
+          path: 'books/insert',
+          name: 'admin-books-insert',
+          component: () => import('../views/admin/books/insertBook.vue'),
+        },
+        {
           path: 'orders',
           name: 'admin-orders',
           // component: () => import('../views/admin/orders/OrdersHome.vue'),

@@ -1,33 +1,72 @@
 <template>
-  <div class="login-body">
-    <div class="container login-container">
-      <h1 class="main-title">網路書店後台系統</h1>
-      <h2 class="sub-title">管理員登入</h2>
+  <v-app>
+    <v-main class="login-bg">
+      <v-container class="fill-height d-flex justify-center align-center" fluid>
+        <v-hover v-slot="{ isHovering, props }">
+          <v-card
+            v-bind="props"
+            width="100%"
+            max-width="420"
+            :elevation="isHovering ? 12 : 4"
+            class="pa-8 rounded-lg transition-swing"
+          >
+            <v-card-item class="text-center">
+              <v-icon
+                icon="mdi-library-shelves"
+                size="x-large"
+                color="brown-darken-1"
+                class="mb-4"
+              ></v-icon>
+              <v-card-title class="text-h5 font-weight-bold text-brown-darken-3">
+                網路書店後台系統
+              </v-card-title>
+              <v-card-subtitle class="text-subtitle-1 mt-1">管理員登入</v-card-subtitle>
+            </v-card-item>
 
-      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+            <v-divider class="my-6"></v-divider>
 
-      <form @submit.prevent="handleLogin" class="login-form">
-        <div class="form-group">
-          <label for="email" class="form-label">帳號（信箱）:</label>
-          <input type="email" id="email" v-model="loginForm.email" required class="form-input" />
-        </div>
-        <div class="form-group">
-          <label for="password" class="form-label">密碼:</label>
-          <input
-            type="password"
-            id="password"
-            v-model="loginForm.password"
-            required
-            class="form-input"
-          />
-        </div>
-        <div class="form-action">
-          <button type="submit" class="submit-button">登入</button>
-        </div>
-      </form>
-      <hr class="divider" />
-    </div>
-  </div>
+            <v-form @submit.prevent="handleLogin">
+              <v-text-field
+                v-model="loginForm.email"
+                label="帳號 (Email)"
+                prepend-inner-icon="mdi-email-outline"
+                variant="outlined"
+                color="brown"
+                class="mb-3"
+                :rules="[(v) => !!v || '請輸入信箱']"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="loginForm.password"
+                label="密碼"
+                prepend-inner-icon="mdi-lock-outline"
+                type="password"
+                variant="outlined"
+                color="brown"
+                class="mb-6"
+                :rules="[(v) => !!v || '請輸入密碼']"
+              ></v-text-field>
+
+              <v-btn
+                type="submit"
+                block
+                height="50"
+                color="brown-darken-1"
+                class="text-h6 font-weight-bold elevation-2"
+                rounded="md"
+              >
+                立即登入
+              </v-btn>
+            </v-form>
+
+            <v-divider class="my-8"></v-divider>
+
+            <div class="text-center text-caption text-grey">© 2026 網路書店系統管理後台</div>
+          </v-card>
+        </v-hover>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script setup>
@@ -36,17 +75,13 @@ import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 
-const errorMessage = ref('')
 const router = useRouter()
-
 const loginForm = reactive({
   email: '',
   password: '',
 })
 
 const handleLogin = async () => {
-  errorMessage.value = ''
-
   try {
     const response = await axios.post('http://localhost:8080/api/login', {
       email: loginForm.email,
@@ -62,29 +97,28 @@ const handleLogin = async () => {
       Swal.fire({
         icon: 'success',
         title: '登入成功',
-        text: '歡迎進入網路書店後台系統',
-        confirmButtonColor: '#a5886d',
-        confirmButtonText: '進入系統',
+        text: '歡迎進入系統',
+        confirmButtonColor: '#7B5E47',
         timer: 1500,
         timerProgressBar: true,
       }).then(() => {
         router.push('/home')
       })
     } else {
+      // 💡 這裡會正確接收到你後端寫的「權限不足」、「停權」等資訊
       Swal.fire({
         icon: 'error',
         title: '登入失敗',
         text: response.data.message,
-        confirmButtonColor: '#b05252',
+        confirmButtonColor: '#B05252',
       })
     }
   } catch (error) {
-    console.error('連線失敗：', error)
     Swal.fire({
       icon: 'error',
       title: '連線失敗',
-      text: '請檢查伺服器狀態',
-      confirmButtonColor: '#b05252',
+      text: '請檢查伺服器連線狀態',
+      confirmButtonColor: '#B05252',
     })
   }
 }
@@ -93,140 +127,43 @@ onMounted(() => {
   const token = localStorage.getItem('userToken')
   const role = localStorage.getItem('userRole')
 
+  // 若已登入則直接跳轉
   if (token && (role === 'SUPER_ADMIN' || role === 'ADMIN')) {
     router.push('/home')
     return
   }
 
+  // 處理登入頁面的登出訊息
   const urlParams = new URLSearchParams(window.location.search)
   if (urlParams.has('logout')) {
-    localStorage.removeItem('userToken')
-    localStorage.removeItem('userRole')
-    localStorage.removeItem('userName')
-
+    localStorage.clear() // 清空所有登入資訊
     Swal.fire({
       icon: 'info',
       title: '您已登出',
-      confirmButtonColor: '#a5886d',
-      confirmButtonText: '確定',
+      confirmButtonColor: '#7B5E47',
     })
-
     window.history.replaceState({}, document.title, window.location.pathname)
   }
 })
 </script>
 
 <style scoped>
-.login-body {
-  font-family: '微軟正黑體', 'Arial', sans-serif;
-  background-color: #fcf8f0;
-  color: #4a4a4a;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+.login-bg {
+  /* 使用溫暖的紙張/木質調漸層 */
+  background: linear-gradient(135deg, #fcf8f0 0%, #ede0d4 100%);
 }
 
-.login-container {
-  width: 380px;
-  max-width: 90%;
-  padding: 35px 45px;
-  border: 1px solid #dcd5c7;
-  border-radius: 6px;
-  background-color: #ffffff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+.text-brown-darken-3 {
+  color: #3e2723 !important;
+  letter-spacing: 2px;
 }
 
-.main-title {
-  color: #7b5e47;
-  font-size: 26px;
-  text-align: center;
-  margin-bottom: 5px;
-  border-bottom: 1px solid #e0d9c9;
-  padding-bottom: 15px;
-  letter-spacing: 1px;
+/* 微調卡片過渡動畫 */
+.transition-swing {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
 
-.sub-title {
-  color: #9c8470;
-  font-size: 19px;
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 30px;
-  font-weight: normal;
-}
-
-.error-message {
-  color: #b05252;
-  background-color: #ffeaea;
-  padding: 12px;
-  border: 1px dashed #e7c0c0;
-  margin-bottom: 25px;
-  text-align: center;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-label {
-  font-weight: 500;
-  color: #6d6d6d;
-  display: block;
-  margin-bottom: 8px;
-  font-size: 15px;
-}
-
-.form-input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d0c8b9;
-  border-radius: 4px;
-  box-sizing: border-box;
-  background-color: #fefcf9;
-  transition:
-    border-color 0.3s,
-    box-shadow 0.3s;
-}
-
-.form-input:focus {
-  border-color: #9fb89e;
-  outline: none;
-  box-shadow: 0 0 8px rgba(159, 184, 158, 0.4);
-}
-
-.submit-button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 15px;
-  background-color: #a5886d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 17px;
-  transition:
-    background-color 0.3s,
-    transform 0.1s;
-  letter-spacing: 1.5px;
-}
-
-.submit-button:hover {
-  background-color: #92755e;
-}
-
-.submit-button:active {
-  transform: translateY(1px);
-}
-
-.divider {
-  border: 0;
-  height: 1px;
-  background-color: #e0d9c9;
-  margin-top: 35px;
+.v-btn {
+  letter-spacing: 2px;
 }
 </style>

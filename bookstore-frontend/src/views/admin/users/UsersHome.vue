@@ -1,19 +1,65 @@
 <template>
-  <div class="center-body">
-    <div class="container center-container">
-      <h1 class="main-title">網路書店後台系統</h1>
-      <h2 class="sub-title">會員中心</h2>
-      <div class="button-group">
-        <button class="menu-button-small" @click="router.push('/users/list')">
-          查詢所有會員資料
-        </button>
-        <button class="menu-button-small back-button" @click="router.push('/home')">
-          返回首頁
-        </button>
-      </div>
-      <hr class="divider" />
-    </div>
-  </div>
+  <v-app>
+    <v-main class="bg-grey-lighten-4">
+      <v-container class="fill-height d-flex justify-center" fluid>
+        <v-card width="100%" max-width="500" class="pa-8 elevation-10" rounded="lg">
+          <v-card-item class="text-center">
+            <v-card-title class="text-h4 font-weight-bold text-brown-darken-2 mb-2">
+              網路書店後台系統
+            </v-card-title>
+            <v-card-subtitle class="text-h6 text-brown-lighten-1"> 會員管理中心 </v-card-subtitle>
+          </v-card-item>
+
+          <v-divider class="my-6"></v-divider>
+
+          <v-card-text>
+            <v-row dense>
+              <v-col cols="12">
+                <v-hover v-slot="{ isHovering, props }">
+                  <v-btn
+                    v-bind="props"
+                    block
+                    height="70"
+                    color="brown"
+                    :elevation="isHovering ? 8 : 2"
+                    class="text-h6 font-weight-bold rounded-lg mb-4"
+                    prepend-icon="mdi-account-search"
+                    @click="router.push('/users/list')"
+                  >
+                    查詢所有會員資料
+                  </v-btn>
+                </v-hover>
+              </v-col>
+
+              <v-col cols="12">
+                <v-hover v-slot="{ isHovering, props }">
+                  <v-btn
+                    v-bind="props"
+                    block
+                    height="60"
+                    variant="outlined"
+                    color="brown-darken-1"
+                    :elevation="isHovering ? 4 : 0"
+                    class="text-subtitle-1 rounded-lg"
+                    prepend-icon="mdi-home"
+                    @click="router.push('/home')"
+                  >
+                    返回系統首頁
+                  </v-btn>
+                </v-hover>
+              </v-col>
+            </v-row>
+          </v-card-text>
+
+          <v-divider class="mt-6 mb-2"></v-divider>
+
+          <v-card-actions class="justify-center">
+            <span class="text-caption text-grey">請點選上方按鈕開始操作系統</span>
+          </v-card-actions>
+        </v-card>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script setup>
@@ -23,90 +69,23 @@ const router = useRouter()
 </script>
 
 <style scoped>
-.center-body {
-  font-family: '微軟正黑體', 'Arial', sans-serif;
-  background-color: #fcf8f0;
-  color: #4a4a4a;
-  margin: 0;
-  padding: 40px 0;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
+.fill-height {
+  /* 使用與登入頁一致的漸層背景 */
+  background: linear-gradient(135deg, #fcf8f0 0%, #ede0d4 100%);
 }
 
-.center-container {
-  width: 450px;
-  max-width: 90%;
-  padding: 35px 45px;
-  border: 1px solid #dcd5c7;
-  border-radius: 6px;
-  background-color: #ffffff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  box-sizing: border-box;
+.text-brown-darken-2 {
+  color: #5d4037 !important;
+  letter-spacing: 2px !important;
 }
 
-.main-title {
-  color: #7b5e47;
-  font-size: 24px;
-  margin-bottom: 5px;
-  border-bottom: 1px solid #e0d9c9;
-  padding-bottom: 15px;
-  letter-spacing: 1px;
+.v-btn {
+  /* 增加一點按鈕內的文字間距 */
+  letter-spacing: 1.5px;
+  transition: transform 0.2s ease-in-out;
 }
 
-.sub-title {
-  color: #9c8470;
-  font-size: 19px;
-  margin-top: 0;
-  margin-bottom: 30px;
-  font-weight: normal;
-}
-
-.divider {
-  border: 0;
-  height: 1px;
-  background-color: #e0d9c9;
-  margin-top: 35px;
-}
-
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.menu-button-small {
-  width: 100%;
-  height: 55px;
-  padding: 10px 15px;
-  background-color: #a07d58;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease-in-out;
-}
-
-.menu-button-small:hover {
-  background-color: #926f4e;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.back-button {
-  background-color: #e8e4dc;
-  color: #4a4a4a;
-  font-weight: normal;
-}
-
-.back-button:hover {
-  background-color: #dcd5c7;
+.v-btn:hover {
+  transform: scale(1.02); /* 滑鼠移入輕微放大 */
 }
 </style>

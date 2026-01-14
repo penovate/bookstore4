@@ -1,97 +1,123 @@
 <template>
-  <div class="center-body">
-    <div class="detail-container">
-      <h2>會員詳細資料</h2>
-      <table v-if="user">
-        <tr>
-          <td>會員編號 (ID)</td>
-          <td><input type="text" disabled :value="user.userId" /></td>
-        </tr>
-        <tr>
-          <td>Email 帳號</td>
-          <td><input type="text" disabled :value="user.email" /></td>
-        </tr>
-        <tr>
-          <td>會員姓名</td>
-          <td><input type="text" disabled :value="user.userName" /></td>
-        </tr>
-        <tr>
-          <td>性別</td>
-          <td><input type="text" disabled :value="formatGender(user.gender)" /></td>
-        </tr>
-        <tr>
-          <td>生日</td>
-          <td><input type="text" disabled :value="formatDate(user.birth)" /></td>
-        </tr>
-        <tr>
-          <td>聯絡電話</td>
-          <td><input type="text" disabled :value="user.phoneNum" /></td>
-        </tr>
-        <tr>
-          <td>地址</td>
-          <td><input type="text" disabled :value="user.address" /></td>
-        </tr>
-        <tr>
-          <td>權限等級</td>
-          <td>
-            <input type="text" disabled :value="formatUserType(user.userType)" />
-          </td>
-        </tr>
-      </table>
-      <div v-else style="text-align: center; padding: 20px">載入中...</div>
+  <v-app>
+    <v-main class="bg-grey-lighten-4">
+      <v-container class="fill-height d-flex justify-center" fluid>
+        <v-card width="100%" max-width="600" class="pa-6 elevation-8" rounded="lg">
+          <v-card-item class="text-center">
+            <v-icon icon="mdi-account-details" size="large" color="brown" class="mb-2"></v-icon>
+            <v-card-title class="text-h5 font-weight-bold text-brown-darken-2">
+              會員詳細資料
+            </v-card-title>
+          </v-card-item>
 
-      <div class="button-area">
-        <button @click="router.push('/users/list')">回到所有會員資料</button>
-      </div>
-    </div>
-  </div>
+          <v-divider class="mb-6"></v-divider>
+
+          <v-card-text v-if="user">
+            <v-row v-for="(field, index) in displayFields" :key="index" class="mb-2" align="center">
+              <v-col
+                cols="4"
+                class="text-right text-subtitle-1 font-weight-bold text-grey-darken-2"
+              >
+                {{ field.label }}
+              </v-col>
+              <v-col cols="8">
+                <v-text-field
+                  :model-value="field.value"
+                  readonly
+                  variant="filled"
+                  density="compact"
+                  hide-details
+                  bg-color="grey-lighten-4"
+                  color="brown"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </v-card-text>
+
+          <v-card-text v-else class="text-center pa-10">
+            <v-progress-circular indeterminate color="brown"></v-progress-circular>
+            <div class="mt-4 text-grey">正在取得會員資料...</div>
+          </v-card-text>
+
+          <v-divider class="my-6"></v-divider>
+
+          <v-card-actions class="justify-center pb-4">
+            <v-btn
+              v-if="user && canEdit(user)"
+              color="brown-darken-1"
+              variant="elevated"
+              prepend-icon="mdi-pencil"
+              size="large"
+              class="px-6 mr-4"
+              @click="router.push(`/users/update/${user.userId}`)"
+            >
+              修改資料
+            </v-btn>
+
+            <v-btn
+              variant="outlined"
+              color="grey-darken-1"
+              prepend-icon="mdi-arrow-left"
+              size="large"
+              class="px-6"
+              @click="router.push('/users/list')"
+            >
+              返回列表
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 const route = useRoute()
 const router = useRouter()
 const user = ref(null)
 
-const formatGender = (code) => {
-  if (code === 'M') return '男'
-  if (code === 'F') return '女'
-  return code || ''
+const currentUserRole = localStorage.getItem('userRole')
+const currentUserId = localStorage.getItem('userId')
+
+// 💡 定義要顯示的欄位映射 (自動處理格式化)
+const displayFields = computed(() => {
+  if (!user.value) return []
+  return [
+    { label: '會員編號', value: user.value.userId },
+    { label: 'Email 帳號', value: user.value.email },
+    { label: '會員姓名', value: user.value.userName },
+    { label: '性別', value: formatGender(user.value.gender) },
+    { label: '生日', value: formatDate(user.value.birth) },
+    { label: '聯絡電話', value: user.value.phoneNum },
+    { label: '地址', value: user.value.address },
+    { label: '權限等級', value: formatUserType(user.value.userType) },
+  ]
+})
+
+const canEdit = (u) => {
+  return (
+    currentUserRole === 'SUPER_ADMIN' ||
+    (currentUserRole === 'ADMIN' && (u.userType === 2 || String(u.userId) === currentUserId))
+  )
 }
 
-const formatDate = (dateValue) => {
-  if (!dateValue) return ''
-  const date = new Date(dateValue)
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
-
-const formatUserType = (type) => {
-  if (type === 0) return '超級管理員'
-  if (type === 1) return '一般管理員'
-  if (type === 2) return '一般會員'
-  return '未知'
-}
+const formatGender = (code) => (code === 'M' ? '男' : code === 'F' ? '女' : '未設定')
+const formatDate = (val) => (val ? new Date(val).toISOString().split('T')[0] : '未設定')
+const formatUserType = (type) =>
+  ({ 0: '超級管理員', 1: '一般管理員', 2: '一般會員' })[type] || '未知'
 
 const fetchUserDetail = async () => {
   try {
     const userId = route.params.id
-    const url = `http://localhost:8080/api/data/get/${userId}`
-
-    const response = await axios.get(url)
+    const response = await axios.get(`http://localhost:8080/api/data/get/${userId}`)
     user.value = response.data
   } catch (error) {
-    console.error('取得詳細資料失敗', error.response || error)
-    Swal.fire({
-      icon: 'error',
-      title: '讀取失敗',
-      text: '無法取得會員詳細資料',
-    })
+    Swal.fire({ icon: 'error', title: '讀取失敗', text: '無法取得會員詳細資料' })
   }
 }
 
@@ -99,76 +125,19 @@ onMounted(fetchUserDetail)
 </script>
 
 <style scoped>
-.center-body {
-  font-family: '微軟正黑體';
-  background-color: #fcf8f0;
-  display: flex;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 40px 0;
+.fill-height {
+  background-image: linear-gradient(135deg, #fcf8f0 0%, #f3e9dc 100%);
 }
-.detail-container {
-  width: 90%;
-  max-width: 550px;
-  padding: 35px 45px;
-  border: 1px solid #dcd5c7;
-  border-radius: 6px;
-  background-color: #ffffff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  box-sizing: border-box;
+
+/* 確保唯讀欄位的文字顏色依然清晰 */
+:deep(.v-field--disabled),
+:deep(.v-field--readonly) {
+  opacity: 1 !important;
+  color: rgba(0, 0, 0, 0.87) !important;
 }
-h2 {
-  color: #7b5e47;
-  text-align: center;
-  border-bottom: 1px solid #e0d9c9;
-  padding-bottom: 10px;
-  margin-top: 0;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-}
-tr {
-  border-bottom: 1px dashed #e0d9c9;
-}
-td {
-  padding: 12px 0;
-  font-size: 15px;
-}
-td:first-child {
-  width: 35%;
-  text-align: right;
-  padding-right: 20px;
-  color: #5d5d5d;
-  font-weight: 500;
-}
-input[type='text'][disabled] {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #dcd5c7;
-  border-radius: 4px;
-  background-color: #f7f3e8;
-  color: #4a4a4a;
-  box-sizing: border-box;
-}
-.button-area {
-  text-align: center;
-}
-button {
-  height: 40px;
-  padding: 10px 20px;
-  background-color: #e8e4dc;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-button:hover {
-  background-color: #dcd5c7;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+
+/* 強制標題文字不換行 */
+.text-brown-darken-2 {
+  color: #5d4037 !important;
 }
 </style>

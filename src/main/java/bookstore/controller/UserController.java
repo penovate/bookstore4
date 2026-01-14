@@ -65,7 +65,7 @@ public class UserController {
             
             if (user.getUserType() != null && user.getUserType().equals(2)) {
             	response.put("success", false);
-            	response.put("message", "您沒有權限進入後台管理系統，請使用管理員帳號登入！");
+            	response.put("message", "您沒有權限進入後台管理系統！");
             	return response;
             }
             
@@ -120,7 +120,7 @@ public class UserController {
             }
             
             if (user.getUserType() == null || !user.getUserType().equals(0)) {
-                model.addAttribute("loginMessage", "您沒有權限進入後台管理系統，請使用管理員帳號登入！");
+                model.addAttribute("loginMessage", "您沒有權限進入後台管理系統！");
                 return "users/login";
             }
 			session.setAttribute("user", user);

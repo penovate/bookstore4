@@ -129,10 +129,16 @@ const roleOptions = [
 ]
 
 const headers = [
-  { title: '編號', key: 'userId', sortable: true, width: '80px' },
-  { title: '姓名', key: 'userName', sortable: true },
-  { title: 'Email', key: 'email' },
-  { title: '電話', key: 'phoneNum' },
+  {
+    title: '編號',
+    key: 'userId',
+    sortable: true,
+    width: '100px',
+    align: 'center',
+  },
+  { title: '姓名', key: 'userName', sortable: true, align: 'center' },
+  { title: 'Email', key: 'email', align: 'center' },
+  { title: '電話', key: 'phoneNum', align: 'center' },
   { title: '權限等級', key: 'userType', align: 'center' },
   { title: '修改', key: 'action', sortable: false, align: 'center' },
   { title: '帳號狀態', key: 'status', sortable: false, align: 'center' },
@@ -186,7 +192,9 @@ const handleToggleStatus = (user) => {
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: actionText,
+    cancelButtonText: '取消',
     confirmButtonColor: newStatus === 2 ? '#d33' : '#9fb89e',
+    cancelButtonColor: '#aaa',
   }).then(async (result) => {
     if (result.isConfirmed) {
       const res = await axios.put(`http://localhost:8080/api/data/status/${user.userId}`, {

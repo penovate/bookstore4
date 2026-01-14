@@ -182,6 +182,14 @@ onMounted(() => {
                     </div>
                 </template>
 
+                <!-- 書籍名稱超連結 -->
+                <template v-slot:item.bookName="{ item }">
+                    <router-link :to="`/dev/admin/books/get/${item.bookId}`"
+                        class="text-decoration-none text-primary font-weight-bold" style="cursor: pointer;">
+                        {{ item.bookName }}
+                    </router-link>
+                </template>
+
                 <!-- [修正] 類型顯示 Slot (處理陣列) -->
                 <template v-slot:item.genres="{ item }">
                     <div class="text-caption">

@@ -3,15 +3,7 @@ package bookstore.service;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import bookstore.bean.BookImageBean;
-import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
 import bookstore.bean.ReviewBean;
 import bookstore.exceptionCenter.BusinessException;
@@ -87,7 +78,7 @@ public class bookService {
 
 	// isbn for Ajax
 	public Boolean existsByIsbn(String isbnStr) {
-		if (isbnStr.trim().length()!=13) {
+		if (isbnStr.trim().length() != 13) {
 			throw new BusinessException(400, "ISBN必須為13位數字");
 		}
 		return bookRepo.findByIsbn(isbnStr).isPresent();
@@ -346,8 +337,6 @@ public class bookService {
 		book.setOnShelf(newStatus);
 		return book;
 	}
-
-	
 
 	// archive book
 	@Transactional

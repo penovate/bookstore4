@@ -15,7 +15,7 @@ const zoomPosition = ref({ x: 0, y: 0 });
 
 // 定義表格欄位
 const headers = [
-    { title: '圖片', key: 'bookImage', sortable: false, align: 'center', width: '80px' },
+    // { title: '圖片', key: 'bookImage', sortable: false, align: 'center', width: '80px' }, 
     { title: '書籍名稱', key: 'bookName', sortable: true, align: 'start', width: '20%' },
     { title: '作者', key: 'author', sortable: true, align: 'center' },
     { title: '譯者', key: 'translator', sortable: true, align: 'center' },
@@ -34,7 +34,7 @@ const loadBooks = async () => {
     loading.value = true;
     try {
         const response = await bookService.getAllBooks();
-        console.log('API Response:', response);
+        // console.log('API Response:', response); // 移除 console.log 避免卡頓
         books.value = response.data;
     } catch (error) {
         console.error('讀取失敗:', error);
@@ -44,43 +44,72 @@ const loadBooks = async () => {
 };
 
 // 狀態切換處理 (上架/下架)
-const toggleStatus = async (item) => {
-    const newStatus = item.onShelf === 1 ? 0 : 1;
+// 狀態切換處理 (上架/下架)
+const toggleStatus = async (item, newValue) => {
+    // 判斷動作名稱
+    const actionName = newValue === 1 ? '上架' : '下架';
+
     try {
-        await bookService.updateStatus(item.bookId, newStatus);
-        item.onShelf = newStatus;
+        const result = await Swal.fire({
+            title: `確定要${actionName}嗎？`,
+            text: `書籍狀態將變更為${actionName}`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2E5C43',
+            cancelButtonColor: '#d33',
+            confirmButtonText: `是，${actionName}！`,
+            cancelButtonText: '取消'
+        });
+
+        if (result.isConfirmed) {
+            await bookService.updateStatus(item.bookId, newValue);
+            item.onShelf = newValue;
+            // 根據需求：確認後直接執行，不顯示成功 alert
+        }
     } catch (error) {
         console.error('狀態更新失敗:', error);
-        // 若需要回滾: item.onShelf = item.onShelf === 1 ? 0 : 1;
+        Swal.fire('錯誤', `${actionName}失敗`, 'error');
     }
 };
 
 // 跳轉到修改頁面
 const handleEdit = (item) => {
-    router.push(`/dev/admin/books/edit/${item.bookId}`);
+    router.push(`/dev/admin/books/update/${item.bookId}`);
 };
 
 // 執行封存
+// 執行封存/解封
 const handleArchive = async (item) => {
+    // 判斷當前是否為封存狀態 (2)
+    const isArchived = item.onShelf === 2;
+    const actionText = isArchived ? '解封' : '封存';
+    const confirmButtonText = isArchived ? '是，解封！' : '是，封存！';
+    const successTitle = isArchived ? '已解封' : '已封存';
+
+    // 如果是解封，API 不同
+    const apiCall = isArchived
+        ? () => bookService.unarchiveBook(item.bookId)
+        : () => bookService.archiveBook(item.bookId);
+
     try {
         const result = await Swal.fire({
-            title: '確定要封存嗎？',
-            text: "封存後書籍將不出現在前台",
+            title: `確定要${actionText}嗎？`,
+            text: isArchived ? "解封後書籍將回到下架狀態" : "封存後書籍將不出現在前台",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#2E5C43',
             cancelButtonColor: '#d33',
-            confirmButtonText: '是，封存！'
+            confirmButtonText: confirmButtonText
         });
 
         if (result.isConfirmed) {
-            await bookService.archiveBook(item.bookId);
-            await loadBooks();
-            Swal.fire('已封存', '書籍狀態已更新', 'success');
+            await apiCall();
+            await loadBooks(); // 重新載入以更新狀態
+            Swal.fire(successTitle, '書籍狀態已更新', 'success');
         }
     } catch (error) {
         console.error(error);
-        Swal.fire('錯誤', '封存失敗', 'error');
+        Swal.fire('錯誤', `${actionText}失敗`, 'error');
     }
 };
 
@@ -140,26 +169,17 @@ onMounted(() => {
         <!-- 書籍列表區 -->
         <v-card class="rounded-lg elevation-2 border-t-4 border-primary">
             <v-data-table :headers="headers" :items="books" :loading="loading" :search="search" class="forest-table"
-                hover>
+                item-value="bookId" hover>
 
                 <!-- [新增] 圖片顯示 Slot -->
                 <template v-slot:item.bookImage="{ item }">
-                    <v-img :src="getImageUrl(item.bookImageBean)" aspect-ratio="1" cover
-                        class="bg-grey-lighten-2 rounded my-1" style="width: 50px; height: 50px; cursor: pointer;"
-                        @click="showZoom($event, item.bookImageBean)">
-                        <!-- 圖片載入失敗 Placeholder -->
-                        <template v-slot:placeholder>
-                            <div class="d-flex align-center justify-center fill-height">
-                                <v-icon icon="mdi-image-off" color="grey"></v-icon>
-                            </div>
-                        </template>
-                        <!-- 圖片載入錯誤 Error -->
-                        <template v-slot:error>
-                            <div class="d-flex align-center justify-center fill-height">
-                                <v-icon icon="mdi-image-broken" color="grey"></v-icon>
-                            </div>
-                        </template>
-                    </v-img>
+                    <div style="width: 50px; height: 50px; cursor: pointer;"
+                        class="bg-grey-lighten-2 rounded my-1 overflow-hidden d-flex align-center justify-center">
+                        <img v-if="getImageUrl(item.bookImageBean)" :src="getImageUrl(item.bookImageBean)"
+                            style="width: 100%; height: 100%; object-fit: cover;"
+                            @click="showZoom($event, item.bookImageBean)" alt="Book Image" />
+                        <v-icon v-else icon="mdi-image-off" color="grey"></v-icon>
+                    </div>
                 </template>
 
                 <!-- [修正] 類型顯示 Slot (處理陣列) -->
@@ -169,27 +189,35 @@ onMounted(() => {
                     </div>
                 </template>
 
-                <!-- 修改按鈕 -->
+                <!-- 修改按鈕 (上架中或已封存不可用) -->
                 <template v-slot:item.actions_edit="{ item }">
-                    <v-btn color="primary" class="text-white" size="small" elevation="1" @click="handleEdit(item)">
+                    <v-btn :color="(item.onShelf === 1 || item.onShelf === 2) ? 'grey-lighten-1' : 'primary'"
+                        :class="{ 'text-white': (item.onShelf !== 1 && item.onShelf !== 2), 'cursor-not-allowed': (item.onShelf === 1 || item.onShelf === 2) }"
+                        size="small" elevation="1" :disabled="item.onShelf === 1 || item.onShelf === 2"
+                        :style="(item.onShelf === 1 || item.onShelf === 2) ? { cursor: 'not-allowed', pointerEvents: 'auto' } : {}"
+                        @click="(item.onShelf !== 1 && item.onShelf !== 2) && handleEdit(item)">
                         修改
                     </v-btn>
                 </template>
 
-                <!-- 封存按鈕 -->
+                <!-- 封存/解封按鈕 -->
                 <template v-slot:item.actions_archive="{ item }">
-                    <v-btn color="secondary" class="text-white" size="small" elevation="1" @click="handleArchive(item)">
-                        封存
+                    <v-btn :color="item.onShelf === 2 ? 'info' : 'secondary'" class="text-white" size="small"
+                        elevation="1" @click="handleArchive(item)">
+                        {{ item.onShelf === 2 ? '解封' : '封存' }}
                     </v-btn>
                 </template>
 
-                <!-- 銷售狀態開關 -->
+                <!-- 銷售狀態開關 (封存狀態下不可用) -->
                 <template v-slot:item.onShelf="{ item }">
-                    <div class="d-flex flex-column align-center">
-                        <v-switch v-model="item.onShelf" color="success" hide-details density="compact" :true-value="1"
-                            :false-value="0" @update:model-value="toggleStatus(item)" class="ms-2"></v-switch>
+                    <div class="d-flex flex-column align-center"
+                        :style="item.onShelf === 2 ? { cursor: 'not-allowed' } : {}">
+                        <v-switch :model-value="item.onShelf" color="success" hide-details density="compact"
+                            :true-value="1" :false-value="0" :disabled="item.onShelf === 2"
+                            @update:model-value="(val) => toggleStatus(item, val)" class="ms-2"
+                            :class="{ 'opacity-50': item.onShelf === 2 }"></v-switch>
                         <span class="text-caption text-grey-darken-1" style="line-height: 1;">
-                            {{ item.onShelf === 1 ? '上架中' : '下架中' }}
+                            {{ item.onShelf === 1 ? '上架中' : (item.onShelf === 2 ? '已封存' : '下架中') }}
                         </span>
                     </div>
                 </template>

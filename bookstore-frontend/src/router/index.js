@@ -56,6 +56,11 @@ const router = createRouter({
           component: () => import('../views/admin/books/insertBook.vue'),
         },
         {
+          path: 'books/update/:id',
+          name: 'admin-books-update',
+          component: () => import('../views/admin/books/updateBook.vue'),
+        },
+        {
           path: 'orders',
           name: 'admin-orders',
           // component: () => import('../views/admin/orders/OrdersHome.vue'),

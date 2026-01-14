@@ -1,12 +1,15 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import bookService from '@/api/bookService.js';
 import Swal from 'sweetalert2';
 
+const route = useRoute();
 const router = useRouter();
 const genres = ref([]);
 const loading = ref(false);
+const bookId = route.params.id;
+
 // Form data
 const book = ref({
     bookName: '',
@@ -17,12 +20,14 @@ const book = ref({
     isbn: '',
     stock: null,
     shortDesc: '',
-    onShelf: 0 // Default off or on? Default 0 (off)
+    onShelf: 0,
+    genres: []
 });
 
 const selectedGenreIds = ref([]);
-const imageFile = ref(null); // File object
-const imagePreview = ref(null); // URL for preview
+const imageFile = ref(null);
+const imagePreview = ref(null);
+const originalIsbn = ref(''); // 儲存原始 ISBN 用於比對
 
 // Rules
 const rules = {
@@ -30,11 +35,12 @@ const rules = {
     positive: value => value >= 0 || '數值必須大於等於 0',
     isbnFormat: value => /^\d{13}$/.test(value) || 'ISBN 必須為 13 位數字',
     isbnUnique: async (value) => {
-        if (!value || !/^\d{13}$/.test(value)) return true; // 格式錯誤交由其他規則處理
+        if (!value || !/^\d{13}$/.test(value)) return true;
+        // 如果 ISBN 沒有變更，則不視為重複 (視為有效)
+        if (value === originalIsbn.value) return true;
+
         try {
             const response = await bookService.checkIsbn(value);
-            // 假設後端回傳 true 代表存在 (重複)，false 代表可用
-            // 原有API邏輯: checkIsbn -> bookService.existsByIsbn -> Returns true if exists
             return response.data === false || '此 ISBN 已存在，請檢查是否重複輸入';
         } catch (error) {
             console.error('ISBN 驗證失敗:', error);
@@ -46,72 +52,48 @@ const rules = {
 const form = ref(null);
 
 onMounted(async () => {
+    loading.value = true;
     try {
-        const response = await bookService.getGenres();
-        genres.value = response.data;
+        // 1. 取得所有分類
+        const genresResponse = await bookService.getGenres();
+        genres.value = genresResponse.data;
+
+        // 2. 取得書籍資料
+        const bookResponse = await bookService.getBook(bookId);
+        const bookData = bookResponse.data;
+
+        // 填入表單
+        book.value = { ...bookData };
+        originalIsbn.value = bookData.isbn; // 紀錄原始 ISBN
+
+        // 處理分類回填
+        if (bookData.genres) {
+            selectedGenreIds.value = bookData.genres.map(g => g.genreId);
+        }
+
+        // 處理圖片預覽
+        if (bookData.bookImageBean && bookData.bookImageBean.imageUrl) {
+            imagePreview.value = `http://localhost:8080/upload-images/${bookData.bookImageBean.imageUrl}`;
+        }
+
     } catch (error) {
-        console.error('Failed to load genres:', error);
+        console.error('資料載入失敗:', error);
+        Swal.fire('錯誤', '無法載入書籍資料', 'error');
+        router.back();
+    } finally {
+        loading.value = false;
     }
 });
 
 const handleFileUpdate = (files) => {
-    // Vuetify v-file-input v-model is an array or single? 
-    // Usually array in V3.
     const file = Array.isArray(files) ? files[0] : files;
     if (file) {
         imageFile.value = file;
         imagePreview.value = URL.createObjectURL(file);
-    } else {
-        imageFile.value = null;
-        imagePreview.value = null;
     }
-};
-
-
-const generateRandomBook = () => {
-    const randomSuffix = Math.floor(Math.random() * 10000);
-
-    // Generate random ISBN 13 (starts with 978)
-    let isbn = '978';
-    for (let i = 0; i < 10; i++) {
-        isbn += Math.floor(Math.random() * 10);
-    }
-
-    book.value = {
-        bookName: `書籍 ${randomSuffix}`,
-        author: `作者 ${randomSuffix}`,
-        translator: `譯者 ${randomSuffix}`,
-        press: `出版社 ${randomSuffix}`,
-        price: Math.floor(Math.random() * 901) + 100, // 100-1000
-        isbn: isbn,
-        stock: Math.floor(Math.random() * 91) + 10, // 10-100
-        shortDesc: `這是一本隨機生成的書籍介紹 ${randomSuffix}。內容豐富，值得一讀。`,
-        onShelf: 0
-    };
-
-    // Randomly select 1-3 genres if available
-    if (genres.value.length > 0) {
-        const numGenres = Math.floor(Math.random() * 3) + 1;
-        const shuffled = [...genres.value].sort(() => 0.5 - Math.random());
-        selectedGenreIds.value = shuffled.slice(0, numGenres).map(g => g.genreId);
-    }
-};
-
-const clearForm = () => {
-    book.value = {
-        bookName: '',
-        author: '',
-        translator: '',
-        press: '',
-        price: null,
-        isbn: '',
-        stock: null,
-        shortDesc: '',
-        onShelf: 0
-    };
-    selectedGenreIds.value = [];
-    imageFile.value = null;
-    imagePreview.value = null;
+    // 注意：若使用者未選擇新檔案，不應清空 imagePreview (因為可能原本就有圖)
+    // 但如果使用者明確清除檔案... Vuetify file input 行為需注意
+    // 這裡簡單處理：如果有選檔案就更新預覽
 };
 
 const submit = async () => {
@@ -125,42 +107,13 @@ const submit = async () => {
     book.value.genres = selectedGenreIds.value.map(id => ({ genreId: id }));
 
     try {
-        const response = await bookService.createBook(book.value, imageFile.value);
-        const newBook = response.data;
-
-        // Custom SweetAlert
-        const displayImage = imagePreview.value || 'https://via.placeholder.com/150?text=No+Image';
-
-        const htmlContent = `
-            <div style="display: flex; align-items: flex-start; gap: 20px; text-align: left; padding: 10px;">
-                <div style="flex-shrink: 0;">
-                    <img src="${displayImage}" style="width: 120px; height: auto; border-radius: 4px; border: 1px solid #ddd; object-fit: cover;">
-                </div>
-                <div style="flex-grow: 1; font-size: 0.95rem; line-height: 1.6;">
-                    <div style="margin-bottom: 4px;"><strong style="color: #2E5C43;">書名：</strong> ${newBook.bookName}</div>
-                    <div style="margin-bottom: 4px;"><strong>作者：</strong> ${newBook.author}</div>
-                    <div style="margin-bottom: 4px;"><strong>出版社：</strong> ${newBook.press}</div>
-                    <div style="margin-bottom: 4px;"><strong>定價：</strong> $${newBook.price}</div>
-                    <div style="margin-bottom: 4px;"><strong>庫存：</strong> ${newBook.stock}</div>
-                    <div><strong>ISBN：</strong> ${newBook.isbn}</div>
-                </div>
-            </div>
-        `;
+        const response = await bookService.updateBook(bookId, book.value, imageFile.value);
 
         await Swal.fire({
-            title: '<h3 style="color: #2E5C43; margin: 0;">新增成功！</h3>',
-            html: htmlContent,
+            title: '修改成功！',
             icon: 'success',
             confirmButtonText: '確定',
-            confirmButtonColor: '#2E5C43',
-            width: '600px',
-            padding: '2em',
-            background: '#fff url(/images/trees.png)', // Optional theme touch? Keep simple
-            backdrop: `
-                rgba(0,0,123,0.1)
-                left top
-                no-repeat
-            `
+            confirmButtonColor: '#2E5C43'
         });
 
         router.push('/dev/admin/books');
@@ -169,8 +122,8 @@ const submit = async () => {
         console.error(error);
         Swal.fire({
             icon: 'error',
-            title: '新增失敗',
-            text: '發生錯誤，請稍後再試。',
+            title: '修改失敗',
+            text: error.response?.data?.message || '發生錯誤，請稍後再試。',
             confirmButtonColor: '#d33'
         });
     } finally {
@@ -181,9 +134,9 @@ const submit = async () => {
 
 <template>
     <div class="pa-4">
-        <h2 class="text-h4 font-weight-bold text-primary mb-6">新增書籍資料</h2>
+        <h2 class="text-h4 font-weight-bold text-primary mb-6">修改書籍資料</h2>
 
-        <v-card class="rounded-lg elevation-2 pa-6">
+        <v-card class="rounded-lg elevation-2 pa-6" :loading="loading">
             <v-form ref="form" @submit.prevent="submit">
                 <v-row>
                     <!-- Left Column: Image Upload -->
@@ -196,8 +149,9 @@ const submit = async () => {
                                 <div>預覽圖片</div>
                             </div>
                         </v-card>
-                        <v-file-input label="上傳封面圖片" accept="image/*" prepend-icon="mdi-camera" variant="outlined"
-                            density="compact" @update:model-value="handleFileUpdate" show-size></v-file-input>
+                        <v-file-input label="更換封面圖片" accept="image/*" prepend-icon="mdi-camera" variant="outlined"
+                            density="compact" @update:model-value="handleFileUpdate"
+                            show-sizeHint="若不修改圖片請留空"></v-file-input>
                     </v-col>
 
                     <!-- Right Column: Details -->
@@ -246,22 +200,10 @@ const submit = async () => {
 
                         </v-row>
 
-                        <div class="d-flex justify-space-between mt-4">
-                            <div class="d-flex gap-2">
-                                <v-btn color="info" variant="tonal" prepend-icon="mdi-flash"
-                                    @click="generateRandomBook">
-                                    一鍵輸入
-                                </v-btn>
-                                <v-btn color="error" variant="tonal" prepend-icon="mdi-delete-sweep" class="ml-2"
-                                    @click="clearForm">
-                                    清空欄位
-                                </v-btn>
-                            </div>
-                            <div>
-                                <v-btn variant="text" class="mr-2" @click="router.back()">取消</v-btn>
-                                <v-btn type="submit" color="primary" :loading="loading" elevation="2"
-                                    size="large">確認新增</v-btn>
-                            </div>
+                        <div class="d-flex justify-end mt-4">
+                            <v-btn variant="text" class="mr-2" @click="router.back()">取消</v-btn>
+                            <v-btn type="submit" color="primary" :loading="loading" elevation="2"
+                                size="large">確認修改</v-btn>
                         </div>
                     </v-col>
                 </v-row>

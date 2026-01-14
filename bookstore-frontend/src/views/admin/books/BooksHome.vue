@@ -15,13 +15,11 @@ const zoomPosition = ref({ x: 0, y: 0 });
 
 // 定義表格欄位
 const headers = [
-    // [修正] 移除書籍序號，新增圖片 (置於第一欄)
     { title: '圖片', key: 'bookImage', sortable: false, align: 'center', width: '80px' },
     { title: '書籍名稱', key: 'bookName', sortable: true, align: 'start', width: '20%' },
     { title: '作者', key: 'author', sortable: true, align: 'center' },
     { title: '譯者', key: 'translator', sortable: true, align: 'center' },
     { title: '出版社', key: 'press', sortable: true, align: 'center' },
-    // [修正] key 改為 genres
     { title: '類型', key: 'genres', sortable: false, align: 'center' },
     { title: '價錢', key: 'price', sortable: true, align: 'center' },
     { title: 'ISBN', key: 'isbn', sortable: true, align: 'center' },

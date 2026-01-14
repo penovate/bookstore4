@@ -42,15 +42,10 @@ const items = ref([
 </script>
 <template>
     <v-layout class="rounded rounded-md">
-        <!-- 
-      1. v-navigation-drawer (側邊欄)
-      - v-model: 綁定 drawer 變數，控制顯示/隱藏
-      - color="primary": 使用我們設定的「森林綠」(#2E5C43)
-      - theme="dark": 因為背景是深綠色，將文字與圖標自動轉為白色，提高對比度
-    -->
+  
         <v-navigation-drawer v-model="drawer" color="primary">
             <!-- 列表頂部的標題區域 -->
-            <v-list-item title="綠色讀書會" subtitle="後台管理系統" class="py-4">
+            <v-list-item title="BookStore" subtitle="後台管理系統" class="py-4">
                 <template v-slot:prepend>
                     <!-- 這裡可以放 Logo 圖片 -->
                     <v-icon icon="mdi-leaf" class="me-2"></v-icon>
@@ -61,10 +56,7 @@ const items = ref([
             <v-list density="compact" nav>
                 <v-list-item v-for="(item, i) in items" :key="i" :value="item" :to="item.to" :prepend-icon="item.icon"
                     color="accent">
-                    <!-- 
-             color="accent": 當項目被選中(Active)時，
-             使用我們設定的「嫩葉綠」作為高亮色
-          -->
+                  
                     <v-list-item-title v-text="item.title"></v-list-item-title>
                 </v-list-item>
             </v-list>
@@ -78,12 +70,7 @@ const items = ref([
                 </div>
             </template>
         </v-navigation-drawer>
-        <!-- 
-      2. v-app-bar (頂部導航列)
-      - elevation="0": 移除陰影，讓設計更扁平清爽
-      - class="bg-background": 使用米色背景 (#F5F5DC)
-      - color="primary": 設定文字與圖標的主要色調為森林綠
-    -->
+  
         <v-app-bar elevation="0" class="bg-background" density="compact">
             <!--漢堡選單按鈕：點擊切換側邊欄 -->
             <v-app-bar-nav-icon variant="text" color="primary" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
@@ -94,10 +81,7 @@ const items = ref([
                 <span class="text-white text-caption">Admin</span>
             </v-avatar>
         </v-app-bar>
-        <!-- 
-      3. v-main (主要內容區)
-      - class="bg-background": 確保整個內容區域都是米色 (#F5F5DC)
-    -->
+      
         <v-main class="bg-background" style="min-height: 100vh;">
             <v-container fluid class="pa-6">
                 <!-- 路由插槽：Home.vue 或其他頁面會顯示在這裡 -->

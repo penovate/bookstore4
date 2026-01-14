@@ -5,7 +5,7 @@
       <h2 class="sub-title">功能選單</h2>
       <div class="button-group">
         <button class="menu-button" @click="goTo('/users')">會員中心</button>
-        <button class="menu-button" @click="goTo('/books')">書籍資料處理</button>
+        <button class="menu-button" @click="goTo('/dev/admin/books')">書籍資料處理</button>
         <button class="menu-button" @click="goTo('/orders')">訂單與購物車系統</button>
         <button class="menu-button" @click="goTo('/reviews')">評價管理</button>
       </div>

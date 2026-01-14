@@ -215,12 +215,6 @@ input[type="submit"]:active {
 				</td>
 			</tr>
 			<tr>
-				<td class="field-label">類型：</td>
-				<td class="field-value"><input type="text"
-					class="readonly-input" disabled value="<%=book.getGenreBean().getGenreName()%>">
-				</td>
-			</tr>
-			<tr>
 				<td class="field-label">出版社：</td>
 				<td class="field-value"><input type="text"
 					class="readonly-input" disabled value="<%=book.getPress()%>">

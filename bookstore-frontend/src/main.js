@@ -1,5 +1,5 @@
 // import '@/assets/styles/settings.scss'
-import { forestTheme } from '@/assets/styles/theme.js'
+import { forestTheme, userTheme } from '@/assets/styles/theme.js'
 import '@mdi/font/css/materialdesignicons.css'
 
 import { createApp } from 'vue'
@@ -23,6 +23,7 @@ const vuetify = createVuetify({
         defaultTheme: 'forestTheme',
         themes: {
             forestTheme,
+            userTheme,
         },
     },
 })

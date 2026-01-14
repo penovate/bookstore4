@@ -38,6 +38,7 @@ const router = createRouter({
       name: 'userUpdate',
       component: () => import('../views/admin/users/UserUpdate.vue'),
     },
+
     {
       //平行測試路由
       path: '/dev/admin',
@@ -58,8 +59,12 @@ const router = createRouter({
           path: 'orders',
           name: 'admin-orders',
           // component: () => import('../views/admin/orders/OrdersHome.vue'),
-        }
-      ]
+        },
+      ],
+    },
+    {
+      path: '/dev/user',
+      component: () => import('../views/Layout/UserLayout.vue'),
     },
   ],
 })

@@ -84,7 +84,6 @@ const user = ref(null)
 const currentUserRole = localStorage.getItem('userRole')
 const currentUserId = localStorage.getItem('userId')
 
-// 💡 定義要顯示的欄位映射 (自動處理格式化)
 const displayFields = computed(() => {
   if (!user.value) return []
   return [
@@ -129,14 +128,12 @@ onMounted(fetchUserDetail)
   background-image: linear-gradient(135deg, #fcf8f0 0%, #f3e9dc 100%);
 }
 
-/* 確保唯讀欄位的文字顏色依然清晰 */
 :deep(.v-field--disabled),
 :deep(.v-field--readonly) {
   opacity: 1 !important;
   color: rgba(0, 0, 0, 0.87) !important;
 }
 
-/* 強制標題文字不換行 */
 .text-brown-darken-2 {
   color: #5d4037 !important;
 }

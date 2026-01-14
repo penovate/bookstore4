@@ -152,7 +152,7 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 
 const router = useRouter()
-const insertForm = ref(null) // 用於觸發 v-form 的驗證
+const insertForm = ref(null)
 
 const formData = reactive({
   email: '',
@@ -166,10 +166,9 @@ const formData = reactive({
 })
 
 const handleSubmit = async () => {
-  // 💡 執行 Vuetify 表單驗證
   const { valid } = await insertForm.value.validate()
 
-  if (!valid) return // 如果驗證沒過，直接停止
+  if (!valid) return
 
   try {
     const response = await axios.post('http://localhost:8080/api/users/insert', formData)
@@ -202,7 +201,6 @@ const handleSubmit = async () => {
   color: #5d4037 !important;
 }
 
-/* 讓必填星號顯示更清楚 */
 :deep(.v-label.v-field-label--floating) {
   color: #7b5e47 !important;
 }

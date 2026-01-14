@@ -105,7 +105,6 @@ const handleLogin = async () => {
         router.push('/home')
       })
     } else {
-      // 💡 這裡會正確接收到你後端寫的「權限不足」、「停權」等資訊
       Swal.fire({
         icon: 'error',
         title: '登入失敗',
@@ -127,16 +126,14 @@ onMounted(() => {
   const token = localStorage.getItem('userToken')
   const role = localStorage.getItem('userRole')
 
-  // 若已登入則直接跳轉
   if (token && (role === 'SUPER_ADMIN' || role === 'ADMIN')) {
     router.push('/home')
     return
   }
 
-  // 處理登入頁面的登出訊息
   const urlParams = new URLSearchParams(window.location.search)
   if (urlParams.has('logout')) {
-    localStorage.clear() // 清空所有登入資訊
+    localStorage.clear()
     Swal.fire({
       icon: 'info',
       title: '您已登出',
@@ -149,7 +146,6 @@ onMounted(() => {
 
 <style scoped>
 .login-bg {
-  /* 使用溫暖的紙張/木質調漸層 */
   background: linear-gradient(135deg, #fcf8f0 0%, #ede0d4 100%);
 }
 
@@ -158,7 +154,6 @@ onMounted(() => {
   letter-spacing: 2px;
 }
 
-/* 微調卡片過渡動畫 */
 .transition-swing {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }

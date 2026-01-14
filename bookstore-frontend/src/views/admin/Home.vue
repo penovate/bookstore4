@@ -68,7 +68,6 @@ import Swal from 'sweetalert2'
 
 const router = useRouter()
 
-// 💡 定義功能清單與對應圖示
 const menuItems = [
   { title: '會員中心', icon: 'mdi-account-group', path: '/users' },
   { title: '書籍資料處理', icon: 'mdi-book-open-page-variant', path: '/books' },
@@ -88,7 +87,6 @@ const handleLogout = () => {
     cancelButtonText: '取消',
   }).then(async (result) => {
     if (result.isConfirmed) {
-      // 💡 清空前端身分證件
       localStorage.clear()
       try {
         await axios.get('http://localhost:8080/api/logout', { withCredentials: true })

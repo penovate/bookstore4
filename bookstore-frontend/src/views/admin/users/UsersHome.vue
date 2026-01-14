@@ -70,7 +70,6 @@ const router = useRouter()
 
 <style scoped>
 .fill-height {
-  /* 使用與登入頁一致的漸層背景 */
   background: linear-gradient(135deg, #fcf8f0 0%, #ede0d4 100%);
 }
 
@@ -80,12 +79,11 @@ const router = useRouter()
 }
 
 .v-btn {
-  /* 增加一點按鈕內的文字間距 */
   letter-spacing: 1.5px;
   transition: transform 0.2s ease-in-out;
 }
 
 .v-btn:hover {
-  transform: scale(1.02); /* 滑鼠移入輕微放大 */
+  transform: scale(1.02);
 }
 </style>

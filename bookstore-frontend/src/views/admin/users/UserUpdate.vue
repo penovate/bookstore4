@@ -150,7 +150,7 @@ import Swal from 'sweetalert2'
 
 const route = useRoute()
 const router = useRouter()
-const updateForm = ref(null) // 用於觸發 v-form 驗證
+const updateForm = ref(null)
 
 const currentUserRole = localStorage.getItem('userRole')
 const currentUserId = localStorage.getItem('userId')
@@ -169,14 +169,11 @@ const formData = ref({
   points: null,
 })
 
-// 💡 權限選項邏輯
 const roleSelectOptions = computed(() => {
   const options = [
     { title: '超級管理員', value: 0 },
     { title: '一般管理員', value: 1 },
   ]
-  // 如果原本是 2 (一般會員)，要保留這個選項但禁止修改回會員以外？
-  // 這裡維持你原本的邏輯
   if (formData.value.userType === 2) {
     options.push({ title: '一般會員 (禁止修改權限)', value: 2, props: { disabled: true } })
   }
@@ -190,7 +187,6 @@ const fetchUser = async () => {
     if (response.data) {
       const userData = response.data
 
-      // 權限攔截邏輯保持不變
       if (
         currentUserRole === 'ADMIN' &&
         (userData.userType === 0 || userData.userType === 1) &&
@@ -212,7 +208,6 @@ const fetchUser = async () => {
 }
 
 const handleUpdate = async () => {
-  // 執行 Vuetify 表單驗證
   const { valid } = await updateForm.value.validate()
   if (!valid) return
 
@@ -241,7 +236,6 @@ onMounted(fetchUser)
 .fill-height {
   background: linear-gradient(135deg, #fcf8f0 0%, #ede0d4 100%);
 }
-/* 讓 Readonly 欄位看起來跟一般欄位有區分但文字依然清晰 */
 :deep(.v-field--disabled) {
   background-color: #f5f5f5 !important;
 }

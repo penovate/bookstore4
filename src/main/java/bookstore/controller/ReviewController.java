@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import bookstore.bean.BooksBean;
 import bookstore.bean.ReviewBean;
-import bookstore.dao.impl.ReviewsDAOImpl;
+import bookstore.service.ReviewsService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -21,7 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class ReviewController {
 
     @Autowired
-    private ReviewsDAOImpl dao;
+    private ReviewsService reviewsService;
 
     // =================================================
     // 【原 GetAllReviews.java】
@@ -29,7 +29,7 @@ public class ReviewController {
     @GetMapping("/GetAllReviews")
     public String getAllReviews(Model model) {
 
-        List<ReviewBean> reviews = dao.selectAllReviews();
+        List<ReviewBean> reviews = reviewsService.findAllReviews();
         model.addAttribute("reviews", reviews);
 
         return "reviews/ReviewList";
@@ -49,7 +49,7 @@ public class ReviewController {
         String reviewIdStr = request.getParameter("reviewId");
         Integer reviewId = Integer.valueOf(reviewIdStr);
 
-        ReviewBean review = dao.selectReviewById(reviewId);
+        ReviewBean review = reviewsService.findById(reviewId);
         model.addAttribute("review", review);
 
         return "reviews/GetReview";
@@ -117,18 +117,12 @@ public class ReviewController {
         review.setComment(comment);
         review.setCreatedAt(LocalDateTime.now());
 
-        int result = dao.insertReview(review);
+        reviewsService.save(review);
 
-        if (result > 0) {
-            message = "新增書籍評論成功！";
-            model.addAttribute("review", review);
-            model.addAttribute("message", message);
-            return "reviews/ReviewInsertFinish";
-        } else {
-            message = "新增失敗！請稍後再試。";
-            model.addAttribute("message", message);
-            return "reviews/ReviewInsert";
-        }
+        message = "新增書籍評論成功！";
+        model.addAttribute("review", review);
+        model.addAttribute("message", message);
+        return "reviews/ReviewInsertFinish";
     }
 
     // =================================================
@@ -149,7 +143,7 @@ public class ReviewController {
         }
 
         Integer reviewId = Integer.valueOf(reviewIdStr);
-        ReviewBean review = dao.selectReviewById(reviewId);
+        ReviewBean review = reviewsService.findById(reviewId);
 
         if (review != null) {
             model.addAttribute("review", review);
@@ -193,7 +187,7 @@ public class ReviewController {
         review.setRating(rating);
         review.setComment(comment);
 
-        dao.updateReview(review);
+        reviewsService.save(review);
 
         message = "評價更新成功！";
         response.sendRedirect(
@@ -220,13 +214,9 @@ public class ReviewController {
         } else {
             try {
                 Integer reviewId = Integer.valueOf(reviewIdStr);
-                int count = dao.deleteReview(reviewId);
-
-                if (count > 0) {
-                    message = "評價資料刪除成功！";
-                } else {
-                    message = "刪除失敗：找不到該評價資料！";
-                }
+                reviewsService.delete(reviewId);
+                message = "評價資料刪除成功！";
+                
             } catch (NumberFormatException e) {
                 message = "刪除失敗：評價ID格式錯誤！";
             }

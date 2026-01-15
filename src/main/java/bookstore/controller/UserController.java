@@ -3,26 +3,23 @@ package bookstore.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import bookstore.bean.UserBean;
+import bookstore.service.UserLogService;
 import bookstore.service.UsersService;
 import bookstore.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -31,15 +28,9 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
 	private final UsersService userService;
-	
 	private final JwtUtil jwtUtil;
+	private final UserLogService userLogService;
 	
-	@GetMapping("/login")
-	public String showLogin() {
-		return "users/login";
-	}
-	
-	// Vue 版本登入
 	@PostMapping("/api/login")
     @ResponseBody 
     public Map<String, Object> doLoginApi(@RequestBody Map<String, String> loginData) {
@@ -103,57 +94,6 @@ public class UserController {
         }
     }
 	
-	@PostMapping("/login")
-	public String doLogin(@RequestParam String email, @RequestParam String password, HttpSession session, Model model) {
-		
-		if (email == null || email.isEmpty() || password == null || password.isEmpty()) {
-			model.addAttribute("loginMessage", "信箱和密碼欄位皆不可為空！");
-			return "users/login";
-		}
-		
-		UserBean user = userService.login(email, password);
-		
-		if (user != null) {
-			if (user.getStatus() != null && user.getStatus().equals(2)) {
-                model.addAttribute("loginMessage", "您的帳號已被停權，請聯繫管理員！");
-                return "users/login";
-            }
-            
-            if (user.getUserType() == null || !user.getUserType().equals(0)) {
-                model.addAttribute("loginMessage", "您沒有權限進入後台管理系統！");
-                return "users/login";
-            }
-			session.setAttribute("user", user);
-			return "redirect:/users/home.jsp";
-		} else {
-			model.addAttribute("loginMessage", "帳號或密碼錯誤！");
-			return "users/login";
-		}
-	}
-	
-	@GetMapping("/logout")
-	public String doLogout(HttpSession session) {
-		
-		if (session != null) {
-			session.invalidate();
-		}
-		
-		return "redirect:/login?logout=true";
-	}
-	
-	@GetMapping("users/home.jsp")
-	public String showHome(HttpSession session, HttpServletResponse response) {
-		response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-		response.setHeader("Pragma", "no-cache");
-		response.setDateHeader("Expires", 0);
-		
-		if (session.getAttribute("user") == null) {
-			return "redirect:/login";
-		}
-		return "users/home";
-	}
-	
-	// Vue 版本查詢全部
 	@GetMapping("/api/data/list")
 	@ResponseBody 
 	public List<UserBean> getUsersListApi(
@@ -174,18 +114,6 @@ public class UserController {
 	    }
 	}
 	
-//	@GetMapping("/users/list")
-//	public String listUsers(@RequestParam(required = false) String searchName, @RequestParam(required = false) Integer userTypeFilter, Model model) {
-//		List<UserBean> users = userService.searchUsers(searchName, userTypeFilter);
-//		
-//		model.addAttribute("users", users);
-//		model.addAttribute("currentSearchName", searchName);
-//		model.addAttribute("currentUserTypeFilter", userTypeFilter);
-//		
-//		return "users/UserList";
-//	}
-	
-	// Vue 版本查詢單筆
 	@GetMapping("/api/data/get/{id}")
 	@ResponseBody
 	public UserBean getUserDetailApi(@PathVariable("id") Integer id) {
@@ -203,17 +131,14 @@ public class UserController {
 	    }
 	}
 	
-	@GetMapping("/users/get")
-	public String getUserById(@RequestParam("userId") Integer userId, Model model) {
-		UserBean user = userService.findById(userId);
-		model.addAttribute("user", user);
-		return "users/GetUser";
-	}
-	
-	// Vue 版本新增
 	@PostMapping("/api/users/insert")
 	@ResponseBody
-	public Map<String, Object> processInsertApi(@RequestBody UserBean user) {
+	public Map<String, Object> processInsertApi(@RequestBody UserBean user, HttpServletRequest request) {
+		Map<String, Object> uniqueCheck = userService.checkUserUnique(null, user.getEmail(), user.getPhoneNum());
+		if (!(boolean) uniqueCheck.get("success")) {
+			return uniqueCheck;
+		}
+		
 	    Map<String, Object> response = new HashMap<>();
 	    
 	    if (user.getEmail() == null || user.getEmail().isEmpty() || 
@@ -242,6 +167,14 @@ public class UserController {
 
 	    try {
 	        userService.saveUser(user);
+	        
+	        String authHeader = request.getHeader("Authorization");
+	        String token = authHeader.substring(7);
+	        String adminId = jwtUtil.getMemberId(token);
+	        UserBean adminOperator = userService.findById(Integer.parseInt(adminId));
+	        
+	        userLogService.recordAction(adminOperator, "新增會員: " + user.getUserName(), user.getUserId().toString());
+	        
 	        response.put("success", true);
 	        response.put("message", "新增會員資料成功！");
 	        response.put("user", user);
@@ -253,46 +186,14 @@ public class UserController {
 	    return response;
 	}
 	
-	
-	@PostMapping("/users/insert")
-	public String processInsert(@ModelAttribute UserBean user, Model model) {
-		
-		if (user.getEmail() == null || user.getEmail().isEmpty() || user.getUserPwd() == null || user.getUserPwd().isEmpty() || user.getUserName() == null || user.getUserName().isEmpty()) {
-			model.addAttribute("message", "新增失敗！信箱、密碼與姓名必須填入！");
-			return "users/UserInsert";
-		}
-		
-		if (user.getPhoneNum() != null && !user.getPhoneNum().trim().isEmpty()) {
-			if (!user.getPhoneNum().matches("09\\d{8}")) {
-				model.addAttribute("message", "新增失敗！電話號碼必須是以 09 開頭的 10 個數字！");
-				return "users/UserInsert";
-			}
-		}
-		
-		user.setStatus(1);
-		user.setPoints(0);
-		if (user.getUserType() == null) {
-			user.setUserType(1);
-		}
-		
-		try {
-			userService.saveUser(user);
-			model.addAttribute("user", user);
-			model.addAttribute("message", "新增會員資料成功！");
-			return "users/UserInsertFinish";
-		} catch (Exception e) {
-			e.printStackTrace();
-			model.addAttribute("message", "新增失敗！資料庫寫入錯誤，請檢察 Email 是否重複！");
-			return "users/UserInsert";
-		}
+	@GetMapping("/api/users/check-unique")
+	@ResponseBody
+	public Map<String, Object> checkUniqueApi(@RequestParam(required = false) Integer userId, 
+			@RequestParam(required = false) String email, @RequestParam(required = false) String phoneNum) {
+		return userService.checkUserUnique(userId, email, phoneNum);
 	}
 	
-	@GetMapping("/users/insert")
-	public String showInsertForm() {
-	    return "users/UserInsert";
-	}
 	
-	// Vue 版本軟刪除（啟用/停權）
 	@PutMapping("/api/data/status/{id}")
 	@ResponseBody
 	public Map<String, Object> toggleUserStatus(@PathVariable("id") Integer id, @RequestBody Map<String, Integer> payload, HttpServletRequest request) {
@@ -316,6 +217,20 @@ public class UserController {
 				return response;
 			}
 			userService.updateStatus(id, newStatus);
+			
+			try {
+	            UserBean adminOperator = userService.findById(Integer.parseInt(currentOperUserId));
+	            
+	            UserBean targetUser = userService.findById(id);
+	            
+	            String actionVerb = (newStatus == 2) ? "停權會員" : "啟用會員";
+	            String logAction = String.format("%s: %s", actionVerb, targetUser.getUserName());
+	            
+	            userLogService.recordAction(adminOperator, logAction, id.toString());
+	        } catch (Exception logEx) {
+	            System.err.println("狀態變更日誌紀錄失敗: " + logEx.getMessage());
+	        }
+			
 			response.put("success", true);
 			String action = (newStatus == 2) ? "停權" : "啟用";
 			response.put("message", "已成功將會員" + action + "！");
@@ -328,45 +243,15 @@ public class UserController {
 	}
 	
 	
-	@GetMapping("/users/delete")
-	public String deleteUser(@RequestParam("userId") Integer userId, RedirectAttributes ra) {
-		String message = "";
-		
-		try {
-			userService.deleteUser(userId);
-			message = "會員資料刪除成功！";
-		} catch (org.springframework.dao.EmptyResultDataAccessException e) {
-	        message = "刪除失敗！查無此會員。";
-	    } catch (org.springframework.dao.DataIntegrityViolationException e) {
-	        message = "刪除失敗！此會員目前仍有訂單或評價等資料紀錄，無法刪除！";
-	    } catch (Exception e) {
-	        message = "刪除失敗：系統發生錯誤！";
-	        e.printStackTrace();
-	    }
-		
-		ra.addAttribute("status", "success");
-	    ra.addAttribute("msg", message);
-	    
-	    return "redirect:/users/list";
-	}
-
-	@GetMapping("/users/update")
-	public String showUpdatePage(@RequestParam("userId") Integer userId, Model model) {
-		UserBean user = userService.findById(userId);
-		
-		if (user != null) {
-			model.addAttribute("user", user);
-			return "users/UserUpdate";
-		} else {
-			return "redirect:/users/list?status=error&msg=找不到該會員資料！";
-		}
-	}
-	
-	// Vue 版修改
 	@PutMapping("/api/data/update")
 	@ResponseBody
 	public Map<String, Object> processUpdateApi(@RequestBody UserBean user, HttpServletRequest request) {
 	    Map<String, Object> response = new HashMap<>();
+	    
+	    Map<String, Object> uniqueCheck = userService.checkUserUnique(user.getUserId(), user.getEmail(), user.getPhoneNum());
+	    if (!(boolean) uniqueCheck.get("success")) {
+	        return uniqueCheck;
+	    }
 	    
 	    try {
 			String authHeader = request.getHeader("Authorization");
@@ -402,11 +287,48 @@ public class UserController {
 	                }
 	            }
 	        }
-	            
-	        if (user.getUserPwd() == null || user.getUserPwd().trim().isEmpty()) {
-	            user.setUserPwd(existingUser.getUserPwd());
+	        
+	        StringBuilder diff = new StringBuilder();
+	        
+	        if (!Objects.equals(existingUser.getEmail(), user.getEmail())) {
+	            diff.append(String.format("[Email: %s -> %s] ", existingUser.getEmail(), user.getEmail()));
 	        }
-
+	        
+	        if(user.getUserPwd() != null && !user.getUserPwd().trim().isEmpty()) {
+	        	diff.append("[修改了密碼] ");
+	        } else {
+	        	user.setUserPwd(existingUser.getUserPwd());
+	        }
+	        
+	        if(!Objects.equals(existingUser.getUserName(), user.getUserName())) {
+	        	diff.append(String.format("[姓名: %s -> %s] ", existingUser.getUserName(), user.getUserName()));
+	        }
+	        
+	        if (!Objects.equals(existingUser.getGender(), user.getGender())) {
+	            String oldG = "M".equals(existingUser.getGender()) ? "男" : "女";
+	            String newG = "M".equals(user.getGender()) ? "男" : "女";
+	            diff.append(String.format("[性別: %s -> %s] ", oldG, newG));
+	        }
+	        
+	        if (!Objects.equals(existingUser.getBirth(), user.getBirth())) {
+	            diff.append(String.format("[生日: %s -> %s] ", existingUser.getBirth(), user.getBirth()));
+	        }
+	        
+	        if (!Objects.equals(existingUser.getPhoneNum(), user.getPhoneNum())) {
+	            diff.append(String.format("[聯絡電話: %s -> %s] ", existingUser.getPhoneNum(), user.getPhoneNum()));
+	        }
+	        
+	        if (!Objects.equals(existingUser.getAddress(), user.getAddress())) {
+	            diff.append(String.format("[地址: %s -> %s] ", existingUser.getAddress(), user.getAddress()));
+	        }
+	        
+	        if (!Objects.equals(existingUser.getUserType(), user.getUserType())) {
+	            String[] roles = {"超級管理員", "一般管理員", "一般會員"};
+	            String oldR = roles[existingUser.getUserType()];
+	            String newR = roles[user.getUserType()];
+	            diff.append(String.format("[權限: %s -> %s] ", oldR, newR));
+	        }
+	            
 	        if (user.getPoints() == null) {
 	            user.setPoints(existingUser.getPoints());
 	        }
@@ -415,6 +337,14 @@ public class UserController {
 	        }
 
 	        userService.saveUser(user);
+	        
+	        try {
+	            UserBean adminOperator = userService.findById(Integer.parseInt(currentUserId));
+	            String logAction = diff.length() > 0 ? "修改資料: " + diff.toString() : "檢查並儲存 (未更動內容)";
+	            userLogService.recordAction(adminOperator, logAction, user.getUserId().toString());
+	        } catch (Exception logEx) {
+	            System.err.println("日誌紀錄失敗: " + logEx.getMessage());
+	        }
 	        
 	        response.put("success", true);
 	        response.put("message", "會員資料更新成功！");    
@@ -427,20 +357,4 @@ public class UserController {
 	    return response;
 	}
 	
-	@PostMapping("/users/update")
-	public String processUpdate(@ModelAttribute UserBean user, RedirectAttributes ra) {
-		String message = "";
-		
-		try {
-			userService.saveUser(user);
-			message = "會員資料更新成功！";
-		} catch (Exception e) {
-			e.printStackTrace();
-			message = "更新失敗：資料格式不正確或資料庫錯誤！";
-		}
-		
-		ra.addAttribute("status", "success");
-	    ra.addAttribute("msg", message);
-	    return "redirect:/users/list";
-	}
 }

@@ -1,26 +1,21 @@
 <template>
   <v-app>
-    <v-main class="login-bg">
+    <v-main class="forest-login-bg">
       <v-container class="fill-height d-flex justify-center align-center" fluid>
         <v-hover v-slot="{ isHovering, props }">
           <v-card
             v-bind="props"
             width="100%"
-            max-width="420"
+            max-width="520"
             :elevation="isHovering ? 12 : 4"
-            class="pa-8 rounded-lg transition-swing"
+            class="pa-8 rounded-xl transition-swing forest-card-border"
           >
             <v-card-item class="text-center">
-              <v-icon
-                icon="mdi-library-shelves"
-                size="x-large"
-                color="brown-darken-1"
-                class="mb-4"
-              ></v-icon>
-              <v-card-title class="text-h5 font-weight-bold text-brown-darken-3">
-                網路書店後台系統
+              <v-icon icon="mdi-leaf" size="x-large" color="primary" class="mb-4"></v-icon>
+              <v-card-title class="text-h4 font-weight-bold text-primary mb-1">
+                BookStore
               </v-card-title>
-              <v-card-subtitle class="text-subtitle-1 mt-1">管理員登入</v-card-subtitle>
+              <v-card-subtitle class="text-subtitle-1">後台管理系統</v-card-subtitle>
             </v-card-item>
 
             <v-divider class="my-6"></v-divider>
@@ -28,40 +23,99 @@
             <v-form @submit.prevent="handleLogin">
               <v-text-field
                 v-model="loginForm.email"
-                label="帳號 (Email)"
-                prepend-inner-icon="mdi-email-outline"
+                label="管理員帳號"
+                prepend-inner-icon="mdi-account-circle-outline"
                 variant="outlined"
-                color="brown"
+                color="primary"
                 class="mb-3"
-                :rules="[(v) => !!v || '請輸入信箱']"
+                hide-details="auto"
               ></v-text-field>
 
               <v-text-field
                 v-model="loginForm.password"
                 label="密碼"
-                prepend-inner-icon="mdi-lock-outline"
+                prepend-inner-icon="mdi-lock-open-outline"
                 type="password"
                 variant="outlined"
-                color="brown"
+                color="primary"
                 class="mb-6"
-                :rules="[(v) => !!v || '請輸入密碼']"
+                hide-details="auto"
               ></v-text-field>
 
               <v-btn
                 type="submit"
                 block
                 height="50"
-                color="brown-darken-1"
-                class="text-h6 font-weight-bold elevation-2"
-                rounded="md"
+                color="primary"
+                class="text-h6 font-weight-bold elevation-2 rounded-lg"
               >
-                立即登入
+                登入系統
               </v-btn>
             </v-form>
 
             <v-divider class="my-8"></v-divider>
 
-            <div class="text-center text-caption text-grey">© 2026 網路書店系統管理後台</div>
+            <div class="text-subtitle-2 text-grey-darken-1 mb-5 text-center font-weight-bold">
+              測試帳號快選
+            </div>
+
+            <v-row dense class="px-2">
+              <v-col cols="3">
+                <v-btn
+                  block
+                  variant="outlined"
+                  color="primary"
+                  class="quick-login-btn rounded-lg"
+                  @click="quickLogin('SUPER_ADMIN')"
+                >
+                  <v-icon icon="mdi-shield-check" size="small"></v-icon>
+                  <span class="btn-label">超管</span>
+                </v-btn>
+              </v-col>
+
+              <v-col cols="3">
+                <v-btn
+                  block
+                  variant="outlined"
+                  color="secondary"
+                  class="quick-login-btn rounded-lg"
+                  @click="quickLogin('ADMIN')"
+                >
+                  <v-icon icon="mdi-account-cog" size="small"></v-icon>
+                  <span class="btn-label">管理員</span>
+                </v-btn>
+              </v-col>
+
+              <v-col cols="3">
+                <v-btn
+                  block
+                  variant="outlined"
+                  color="grey-darken-1"
+                  class="quick-login-btn rounded-lg"
+                  @click="quickLogin('USER')"
+                >
+                  <v-icon icon="mdi-account" size="small"></v-icon>
+                  <span class="btn-label">會員</span>
+                </v-btn>
+              </v-col>
+
+              <v-col cols="3">
+                <v-btn
+                  block
+                  variant="outlined"
+                  color="error"
+                  class="quick-login-btn rounded-lg"
+                  @click="quickLogin('BANNED')"
+                >
+                  <v-icon icon="mdi-account-off" size="small"></v-icon>
+                  <span class="btn-label">停權</span>
+                </v-btn>
+              </v-col>
+            </v-row>
+
+            <div class="text-center text-caption text-grey-lighten-1 mt-8">
+              © 2026 網路書店系統管理後台
+            </div>
           </v-card>
         </v-hover>
       </v-container>
@@ -70,7 +124,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { reactive, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
@@ -81,7 +135,20 @@ const loginForm = reactive({
   password: '',
 })
 
+const quickLogin = (type) => {
+  const accounts = {
+    SUPER_ADMIN: { email: 'pen@bookstore.com', pass: '12345' },
+    ADMIN: { email: 'alice.lee@mail.com', pass: '123456' },
+    USER: { email: 'vip.reader@test.com', pass: 'vip777' },
+    BANNED: { email: 'super@bookstore.com', pass: '123' },
+  }
+  loginForm.email = accounts[type].email
+  loginForm.password = accounts[type].pass
+}
+
 const handleLogin = async () => {
+  if (!loginForm.email || !loginForm.password) return
+
   try {
     const response = await axios.post('http://localhost:8080/api/login', {
       email: loginForm.email,
@@ -97,8 +164,8 @@ const handleLogin = async () => {
       Swal.fire({
         icon: 'success',
         title: '登入成功',
-        text: '歡迎進入系統',
-        confirmButtonColor: '#7B5E47',
+        text: `歡迎回來，${response.data.userName || '管理員'}`,
+        confirmButtonColor: '#2E5C43',
         timer: 1500,
         timerProgressBar: true,
       }).then(() => {
@@ -137,28 +204,70 @@ onMounted(() => {
     Swal.fire({
       icon: 'info',
       title: '您已登出',
-      confirmButtonColor: '#7B5E47',
+      confirmButtonColor: '#2E5C43',
+      timer: 1500,
+      timerProgressBar: true,
+      showConfirmButton: true,
     })
     window.history.replaceState({}, document.title, window.location.pathname)
   }
 })
 </script>
 
-<style scoped>
-.login-bg {
+<style scoped lang="scss">
+.forest-login-bg {
   background: linear-gradient(135deg, #fcf8f0 0%, #ede0d4 100%);
 }
 
-.text-brown-darken-3 {
-  color: #3e2723 !important;
-  letter-spacing: 2px;
+.forest-card-border {
+  border-top: 6px solid #2e5c43 !important;
 }
 
-.transition-swing {
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+.text-primary {
+  color: #2e5c43 !important;
 }
 
-.v-btn {
-  letter-spacing: 2px;
+.quick-login-btn {
+  height: 68px !important;
+  padding: 8px 0 !important;
+  border-width: 1px !important;
+
+  :deep(.v-btn__content) {
+    flex-direction: column !important;
+    font-size: 0.75rem;
+  }
+
+  .btn-label {
+    margin-top: 4px;
+    font-weight: 700;
+    white-space: nowrap;
+    letter-spacing: 0;
+  }
+}
+
+:deep(.v-btn) {
+  text-transform: none !important;
+}
+
+.quick-login-btn {
+  height: 72px !important;
+  padding: 12px 0 !important;
+  border-width: 1.5px !important;
+
+  :deep(.v-btn__content) {
+    flex-direction: column !important;
+    font-size: 0.85rem;
+  }
+
+  .btn-label {
+    margin-top: 4px;
+    font-weight: 700;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+}
+
+:deep(.v-btn) {
+  text-transform: none !important;
 }
 </style>

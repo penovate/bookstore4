@@ -1,74 +1,79 @@
 <template>
-  <v-app>
-    <v-main class="bg-grey-lighten-4">
-      <v-container class="fill-height d-flex justify-center" fluid>
-        <v-card width="100%" max-width="600" class="pa-6 elevation-8" rounded="lg">
-          <v-card-item class="text-center">
-            <v-icon icon="mdi-account-details" size="large" color="brown" class="mb-2"></v-icon>
-            <v-card-title class="text-h5 font-weight-bold text-brown-darken-2">
-              會員詳細資料
-            </v-card-title>
-          </v-card-item>
+  <div class="detail-page-wrapper">
+    <div class="header-section mb-6">
+      <h2 class="forest-main-title">會員詳細資料</h2>
+    </div>
 
-          <v-divider class="mb-6"></v-divider>
+    <v-card
+      width="100%"
+      max-width="800"
+      class="pa-8 forest-card-border elevation-2 mx-auto rounded-xl"
+    >
+      <v-card-item class="text-center mb-4">
+        <v-icon
+          icon="mdi-account-details-outline"
+          size="large"
+          color="primary"
+          class="mb-2"
+        ></v-icon>
+        <v-card-title class="text-h5 font-weight-bold text-primary"> 基本資料檢視 </v-card-title>
+      </v-card-item>
 
-          <v-card-text v-if="user">
-            <v-row v-for="(field, index) in displayFields" :key="index" class="mb-2" align="center">
-              <v-col
-                cols="4"
-                class="text-right text-subtitle-1 font-weight-bold text-grey-darken-2"
-              >
-                {{ field.label }}
-              </v-col>
-              <v-col cols="8">
-                <v-text-field
-                  :model-value="field.value"
-                  readonly
-                  variant="filled"
-                  density="compact"
-                  hide-details
-                  bg-color="grey-lighten-4"
-                  color="brown"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </v-card-text>
+      <v-divider class="mb-8"></v-divider>
 
-          <v-card-text v-else class="text-center pa-10">
-            <v-progress-circular indeterminate color="brown"></v-progress-circular>
-            <div class="mt-4 text-grey">正在取得會員資料...</div>
-          </v-card-text>
-
-          <v-divider class="my-6"></v-divider>
-
-          <v-card-actions class="justify-center pb-4">
-            <v-btn
-              v-if="user && canEdit(user)"
-              color="brown-darken-1"
-              variant="elevated"
-              prepend-icon="mdi-pencil"
-              size="large"
-              class="px-6 mr-4"
-              @click="router.push(`/dev/admin/users/update/${user.userId}`)"
-            >
-              修改資料
-            </v-btn>
-
-            <v-btn
+      <v-card-text v-if="user">
+        <v-row v-for="(field, index) in displayFields" :key="index" class="mb-4" align="center">
+          <v-col cols="4" class="text-right text-subtitle-1 font-weight-bold text-forest-label">
+            {{ field.label }}
+          </v-col>
+          <v-col cols="8">
+            <v-text-field
+              :model-value="field.value"
+              readonly
               variant="outlined"
-              color="grey-darken-1"
-              prepend-icon="mdi-arrow-left"
-              size="large"
-              class="px-6"
-              @click="router.push('/dev/admin/users')"
-            >
-              返回列表
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-container>
-    </v-main>
-  </v-app>
+              density="compact"
+              hide-details
+              bg-color="grey-lighten-5"
+              color="primary"
+              class="rounded-lg"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+      </v-card-text>
+
+      <v-card-text v-else class="text-center pa-10">
+        <v-progress-circular indeterminate color="primary"></v-progress-circular>
+        <div class="mt-4 text-grey">正在取得會員資料...</div>
+      </v-card-text>
+
+      <v-divider class="my-6"></v-divider>
+
+      <v-card-actions class="justify-center pb-4">
+        <v-btn
+          v-if="user && canEdit(user)"
+          color="primary"
+          variant="elevated"
+          prepend-icon="mdi-pencil"
+          size="large"
+          class="px-8 mr-4 rounded-lg font-weight-bold"
+          @click="router.push(`/dev/admin/users/update/${user.userId}`)"
+        >
+          修改資料
+        </v-btn>
+
+        <v-btn
+          variant="outlined"
+          color="primary"
+          prepend-icon="mdi-arrow-left"
+          size="large"
+          class="px-8 rounded-lg font-weight-bold"
+          @click="router.push('/dev/admin/users')"
+        >
+          返回列表
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </div>
 </template>
 
 <script setup>
@@ -123,18 +128,32 @@ const fetchUserDetail = async () => {
 onMounted(fetchUserDetail)
 </script>
 
-<style scoped>
-.fill-height {
-  background-image: linear-gradient(135deg, #fcf8f0 0%, #f3e9dc 100%);
+<style scoped lang="scss">
+.detail-page-wrapper {
+  width: 100%;
+}
+
+.forest-main-title {
+  color: #2e5c43;
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.text-forest-label {
+  color: #2e5c43 !important;
+}
+
+.forest-card-border {
+  border-top: 6px solid #2e5c43 !important;
+  background-color: white !important;
 }
 
 :deep(.v-field--disabled),
 :deep(.v-field--readonly) {
   opacity: 1 !important;
-  color: rgba(0, 0, 0, 0.87) !important;
-}
-
-.text-brown-darken-2 {
-  color: #5d4037 !important;
+  .v-field__outline {
+    --v-field-border-opacity: 0.15;
+  }
 }
 </style>

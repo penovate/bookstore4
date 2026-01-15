@@ -144,7 +144,7 @@
               ></v-text-field>
             </v-col>
 
-            <v-col cols="12" v-if="currentUserRole === 'SUPER_ADMIN'">
+            <v-col cols="12" v-if="currentUserRole === 'SUPER_ADMIN' && formData.userType !== 2">
               <v-select
                 v-model="formData.userType"
                 label="權限等級"
@@ -153,6 +153,18 @@
                 density="compact"
                 color="primary"
               ></v-select>
+            </v-col>
+
+            <v-col cols="12" v-else-if="formData.userType === 2">
+              <v-text-field
+                label="權限等級"
+                model-value="一般會員"
+                variant="filled"
+                density="compact"
+                readonly
+                disabled
+                bg-color="grey-lighten-4"
+              ></v-text-field>
             </v-col>
           </v-row>
         </v-container>
@@ -225,7 +237,7 @@ const roleSelectOptions = computed(() => {
     { title: '一般管理員', value: 1 },
   ]
   if (formData.value.userType === 2) {
-    options.push({ title: '一般會員 (禁止修改權限)', value: 2, props: { disabled: true } })
+    options.unshift({ title: '一般會員 (禁止修改權限)', value: 2, props: { disabled: true } })
   }
   return options
 })

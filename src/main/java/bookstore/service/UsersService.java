@@ -4,19 +4,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import bookstore.bean.UserBean;
 import bookstore.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UsersService {
 
-	@Autowired
-	private UserRepository userRepo;
+	private final UserRepository userRepo;
 	
 	public UserBean login(String email, String password) {
 		if (email == null || password == null) return null;
@@ -84,6 +84,5 @@ public class UsersService {
 		}
 		return result;
 	}
-	
 	
 }

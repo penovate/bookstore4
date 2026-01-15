@@ -63,6 +63,11 @@ const router = createRouter({
           name: 'userUpdate',
           component: () => import('../views/admin/users/UserUpdate.vue'),
         },
+        {
+          path: 'users/logs',
+          name: 'admin-operation-logs',
+          component: () => import('../views/admin/users/UserLogList.vue'),
+        },
       ],
     },
     {

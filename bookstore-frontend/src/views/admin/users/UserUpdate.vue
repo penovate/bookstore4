@@ -69,10 +69,15 @@
                 variant="outlined"
                 density="compact"
                 color="primary"
-                :disabled="!formData.userPwd"
+                :disabled="!formData.userPwd || formData.userPwd.trim() === ''"
                 :rules="[
-                  (v) => !formData.userPwd || !!v || '確認密碼必填',
-                  (v) => v === formData.userPwd || '兩次輸入的密碼不一致',
+                  (v) =>
+                    !formData.userPwd || formData.userPwd.trim() === '' || !!v || '確認密碼必填',
+                  (v) =>
+                    !formData.userPwd ||
+                    formData.userPwd.trim() === '' ||
+                    v === formData.userPwd ||
+                    '兩次輸入的密碼不一致',
                 ]"
               ></v-text-field>
             </v-col>
@@ -249,14 +254,16 @@ const handleUpdate = async () => {
   const { valid } = await updateForm.value.validate()
   if (!valid) return
 
-  if (formData.value.userPwd && formData.value.userPwd !== confirmPwd.value) {
-    Swal.fire({
-      icon: 'error',
-      title: '密碼不一致',
-      text: '請確認兩次輸入的新密碼是否相同！',
-      confirmButtonColor: '#2E5C43',
-    })
-    return
+  if (formData.value.userPwd && formData.value.userPwd.trim() !== '') {
+    if (formData.value.userPwd !== confirmPwd.value) {
+      Swal.fire({
+        icon: 'error',
+        title: '密碼不一致',
+        text: '請確認兩次輸入的新密碼是否相同！',
+        confirmButtonColor: '#2E5C43',
+      })
+      return
+    }
   }
 
   try {

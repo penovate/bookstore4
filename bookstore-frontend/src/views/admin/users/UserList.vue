@@ -17,6 +17,18 @@
           新增會員資料
         </v-btn>
       </v-col>
+      <v-col cols="auto">
+        <v-btn
+          color="secondary"
+          prepend-icon="mdi-clipboard-text-clock-outline"
+          elevation="2"
+          variant="elevated"
+          class="rounded-lg font-weight-bold"
+          @click="router.push('/dev/admin/users/logs')"
+        >
+          查看操作日誌
+        </v-btn>
+      </v-col>
 
       <v-spacer></v-spacer>
       <v-col cols="12" md="7" lg="6">

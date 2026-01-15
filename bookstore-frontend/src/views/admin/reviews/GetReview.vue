@@ -1,0 +1,183 @@
+<template>
+  <div class="admin-page">
+    <h1>評價詳細資料</h1>
+
+    <table class="table">
+      <tbody>
+        <tr>
+          <th>評價編號</th>
+          <td>{{ review.reviewId }}</td>
+        </tr>
+        <tr>
+          <th>會員編號</th>
+          <td>{{ review.userId }}</td>
+        </tr>
+        <tr>
+          <th>會員名稱</th>
+          <td>{{ review.userName }}</td>
+        </tr>
+        <tr>
+          <th>書本編號</th>
+          <td>{{ review.bookId }}</td>
+        </tr>
+        <tr>
+          <th>書本名稱</th>
+          <td>{{ review.bookName }}</td>
+        </tr>
+        <tr>
+          <th>評分</th>
+          <td>{{ review.rating }}</td>
+        </tr>
+        <tr>
+          <th>評論內容</th>
+          <td>{{ review.comment }}</td>
+        </tr>
+        <tr>
+          <th>建立時間</th>
+          <td>{{ review.createdAt }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ⭐ 你要求的按鈕 -->
+    <div style="margin-top: 20px">
+      <button class="system-button back-button" @click="goBack">回到所有評價資料</button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+
+const router = useRouter()
+const route = useRoute()
+
+// ✅ 固定使用你給的假資料
+const mockReviews = [
+  {
+    reviewId: 1,
+    userId: 101,
+    userName: '王小明',
+    bookId: 5001,
+    bookName: 'Java 入門',
+    rating: 5,
+    comment: '很好看',
+    createdAt: '2024-01-01 10:30:00',
+  },
+  {
+    reviewId: 2,
+    userId: 102,
+    userName: '陳小美',
+    bookId: 5002,
+    bookName: 'Spring Boot 實戰',
+    rating: 4,
+    comment: '內容扎實',
+    createdAt: '2024-01-02 14:20:00',
+  },
+]
+
+// ✅ 關鍵：從網址抓 id
+const reviewId = Number(route.params.id)
+
+// ✅ 根據 id 找資料
+const review = ref(mockReviews.find((r) => r.reviewId === reviewId))
+
+const goBack = () => {
+  router.push('/dev/admin/reviews')
+}
+</script>
+<style>
+/* ===== 整頁背景與版型 ===== */
+.admin-page {
+  font-family: '微軟正黑體', 'Arial', sans-serif;
+  background-color: #fcf8f0;
+  color: #4a4a4a;
+
+  min-height: 100vh;
+  padding: 40px 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ===== 標題 ===== */
+.admin-page h1 {
+  color: #7b5e47;
+  font-size: 24px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid #e0d9c9;
+  padding-bottom: 10px;
+  width: 90%;
+  max-width: 900px;
+}
+
+/* ===== 表格 ===== */
+.table {
+  width: 90%;
+  max-width: 900px;
+  border-collapse: collapse;
+  background-color: #ffffff;
+
+  border: 1px solid #dcd5c7;
+  border-radius: 6px;
+  overflow: hidden;
+
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.table th,
+.table td {
+  border: 1px solid #e0d9c9;
+  padding: 12px 10px;
+  text-align: left;
+  font-size: 15px;
+}
+
+.table th {
+  background-color: #e8e4dc;
+  color: #5d5d5d;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.table tr:nth-child(even) {
+  background-color: #f7f3f0;
+}
+
+/* ===== 按鈕區塊 ===== */
+.system-button {
+  margin-top: 25px;
+  width: 260px;
+  height: 44px;
+  border: none;
+  border-radius: 4px;
+
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+
+  transition:
+    background-color 0.3s,
+    transform 0.2s,
+    box-shadow 0.3s;
+}
+
+/* 回到列表 */
+.back-button {
+  background-color: #e8e4dc;
+  color: #4a4a4a;
+}
+
+.back-button:hover {
+  background-color: #dcd5c7;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.back-button:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+</style>

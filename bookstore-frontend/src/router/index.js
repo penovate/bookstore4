@@ -68,6 +68,18 @@ const router = createRouter({
         name: 'admin-reviews',
         component: () => import('../views/admin/reviews/ReviewList.vue'),
         },
+        // 暫用開始行
+        {
+        path: '/admin/reviews/:id',
+        name: 'review-detail',
+        component: () => import('../views/admin/reviews/GetReview.vue'),
+        },
+        {
+        path: '/admin/reviews/:id/edit',
+        name: 'review-edit',
+        component: { template: '<div>Review Edit Page</div>' },
+        },
+        // 暫用結束行
         {
           path: 'users/logs',
           name: 'admin-operation-logs',

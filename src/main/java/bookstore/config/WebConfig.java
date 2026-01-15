@@ -3,7 +3,7 @@ package bookstore.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry; // 新增這行
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -15,6 +15,9 @@ public class WebConfig implements WebMvcConfigurer {
 
 	@Autowired
 	private JwtInterceptor jwtInterceptor;
+	
+	@Autowired
+	private LoginInterceptor loginInterceptor;
 
 	@Value("${file.upload-dir}")
 	private String uploadDir;
@@ -35,6 +38,10 @@ public class WebConfig implements WebMvcConfigurer {
 				.excludePathPatterns("/api/login")
 				.excludePathPatterns("/api/public/**")
 				.excludePathPatterns("/static/**", "/css/**", "/js/**", "/images/**", "/upload-images/**");
+
+		registry.addInterceptor(loginInterceptor)
+				.addPathPatterns("/users/**")
+				.excludePathPatterns("/login", "/api/login", "/api/**", "/static/**", "/css/**", "/js/**");
 	}
 
 	@Override

@@ -1,3 +1,6 @@
+import { forestTheme, userTheme } from '@/assets/styles/theme.js'
+import '@mdi/font/css/materialdesignicons.css'
+
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import axios from 'axios'
@@ -7,7 +10,6 @@ import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
-import '@mdi/font/css/materialdesignicons.css'
 
 import App from './App.vue'
 import router from './router'
@@ -20,19 +22,14 @@ axios.interceptors.request.use(
     }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  },
+  (error) => Promise.reject(error),
 )
 
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('userToken')
-      localStorage.removeItem('userRole')
-      localStorage.removeItem('userName')
-
+      localStorage.clear()
       Swal.fire({
         icon: 'warning',
         title: '登入已過期',
@@ -50,7 +47,11 @@ const vuetify = createVuetify({
   components,
   directives,
   theme: {
-    defaultTheme: 'light',
+    defaultTheme: 'forestTheme',
+    themes: {
+      forestTheme,
+      userTheme,
+    },
   },
 })
 

@@ -61,11 +61,6 @@
 					<td style="text-align: center;"><%=book.getPress()%></td>
 					<td style="text-align: center;">
 						<%
-						if (book.getGenreBean() != null) {
-							out.print(book.getGenreBean().getGenreName());
-						} else {
-							out.print("未分類");
-						}
 						%>
 					</td>
 					<td style="text-align: center;"><%=book.getPrice().intValue()%></td>

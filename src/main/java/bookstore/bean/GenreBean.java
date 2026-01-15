@@ -1,13 +1,17 @@
 package bookstore.bean;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -21,8 +25,9 @@ public class GenreBean {
 	@Column(name = "genre_name")
 	private String genreName;
 
-	@OneToMany(mappedBy = "genreBean")
-	private List<BooksBean> books;
+	@ManyToMany(mappedBy = "genres")
+	@JsonIgnore
+	private Set<BooksBean> books = new HashSet<>();
 
 	// Constructor----
 	public GenreBean() {
@@ -53,8 +58,18 @@ public class GenreBean {
 	}
 
 	@Override
-	public String toString() {
-		return "GenreBean [genreId=" + genreId + ", genreName=" + genreName + "]";
+	public boolean equals(Object object) {
+		if (this == object)
+			return true;
+		if (object == null || getClass() != object.getClass())
+			return false;
+		GenreBean that = (GenreBean) object;
+		return Objects.equals(genreId, that.genreId);
+
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(genreId);
+	}
 }

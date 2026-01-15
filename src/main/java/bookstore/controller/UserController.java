@@ -1,5 +1,6 @@
 package bookstore.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -173,7 +174,7 @@ public class UserController {
 	        String adminId = jwtUtil.getMemberId(token);
 	        UserBean adminOperator = userService.findById(Integer.parseInt(adminId));
 	        
-	        userLogService.recordAction(adminOperator, "新增會員: " + user.getUserName(), user.getUserId().toString());
+	        userLogService.recordAction(adminOperator, "新增會員:「" + user.getUserName() + "」", user.getUserId().toString());
 	        
 	        response.put("success", true);
 	        response.put("message", "新增會員資料成功！");
@@ -224,7 +225,7 @@ public class UserController {
 	            UserBean targetUser = userService.findById(id);
 	            
 	            String actionVerb = (newStatus == 2) ? "停權會員" : "啟用會員";
-	            String logAction = String.format("%s: %s", actionVerb, targetUser.getUserName());
+	            String logAction = String.format("%s:「%s」", actionVerb, targetUser.getUserName());
 	            
 	            userLogService.recordAction(adminOperator, logAction, id.toString());
 	        } catch (Exception logEx) {
@@ -288,45 +289,51 @@ public class UserController {
 	            }
 	        }
 	        
+	        
+	        
 	        StringBuilder diff = new StringBuilder();
 	        
 	        if (!Objects.equals(existingUser.getEmail(), user.getEmail())) {
-	            diff.append(String.format("[Email: %s -> %s] ", existingUser.getEmail(), user.getEmail()));
+	            diff.append(String.format("Email 從『%s』變更為『%s』｜", existingUser.getEmail(), user.getEmail()));
 	        }
 	        
 	        if(user.getUserPwd() != null && !user.getUserPwd().trim().isEmpty()) {
-	        	diff.append("[修改了密碼] ");
+	        	diff.append("密碼變更｜");
 	        } else {
 	        	user.setUserPwd(existingUser.getUserPwd());
 	        }
 	        
 	        if(!Objects.equals(existingUser.getUserName(), user.getUserName())) {
-	        	diff.append(String.format("[姓名: %s -> %s] ", existingUser.getUserName(), user.getUserName()));
+	        	diff.append(String.format("姓名從『%s』變更為『%s』｜", existingUser.getUserName(), user.getUserName()));
 	        }
 	        
 	        if (!Objects.equals(existingUser.getGender(), user.getGender())) {
 	            String oldG = "M".equals(existingUser.getGender()) ? "男" : "女";
 	            String newG = "M".equals(user.getGender()) ? "男" : "女";
-	            diff.append(String.format("[性別: %s -> %s] ", oldG, newG));
+	            diff.append(String.format("性別從『%s』變更為『%s』｜", oldG, newG));
 	        }
 	        
-	        if (!Objects.equals(existingUser.getBirth(), user.getBirth())) {
-	            diff.append(String.format("[生日: %s -> %s] ", existingUser.getBirth(), user.getBirth()));
+	        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	        String oldBirthStr = (existingUser.getBirth() != null) ? sdf.format(existingUser.getBirth()) : "未填";
+	        String newBirthStr = (user.getBirth() != null) ? sdf.format(user.getBirth()) : "未填";
+	        
+	        if (!oldBirthStr.equals(newBirthStr)) {
+	            diff.append(String.format("生日從『%s』變更為『%s』｜", oldBirthStr, newBirthStr));
 	        }
 	        
 	        if (!Objects.equals(existingUser.getPhoneNum(), user.getPhoneNum())) {
-	            diff.append(String.format("[聯絡電話: %s -> %s] ", existingUser.getPhoneNum(), user.getPhoneNum()));
+	            diff.append(String.format("聯絡電話從『%s』變更為『%s』｜", existingUser.getPhoneNum(), user.getPhoneNum()));
 	        }
 	        
 	        if (!Objects.equals(existingUser.getAddress(), user.getAddress())) {
-	            diff.append(String.format("[地址: %s -> %s] ", existingUser.getAddress(), user.getAddress()));
+	            diff.append(String.format("地址從『%s』變更為『%s』｜", existingUser.getAddress(), user.getAddress()));
 	        }
 	        
 	        if (!Objects.equals(existingUser.getUserType(), user.getUserType())) {
 	            String[] roles = {"超級管理員", "一般管理員", "一般會員"};
 	            String oldR = roles[existingUser.getUserType()];
 	            String newR = roles[user.getUserType()];
-	            diff.append(String.format("[權限: %s -> %s] ", oldR, newR));
+	            diff.append(String.format("權限從『%s』變更為『%s』｜", oldR, newR));
 	        }
 	            
 	        if (user.getPoints() == null) {
@@ -339,8 +346,15 @@ public class UserController {
 	        userService.saveUser(user);
 	        
 	        try {
-	            UserBean adminOperator = userService.findById(Integer.parseInt(currentUserId));
-	            String logAction = diff.length() > 0 ? "修改資料: " + diff.toString() : "檢查並儲存 (未更動內容)";
+	        	UserBean adminOperator = userService.findById(Integer.parseInt(currentUserId));
+	            String logAction;
+	            
+	            if (diff.length() > 0) {
+	                logAction = String.format("將「%s」的 %s ", existingUser.getUserName(), diff.toString().trim());
+	            } else {
+	                logAction = String.format("查看並儲存會員: %s （內容未變動）", existingUser.getUserName());
+	            }
+	            
 	            userLogService.recordAction(adminOperator, logAction, user.getUserId().toString());
 	        } catch (Exception logEx) {
 	            System.err.println("日誌紀錄失敗: " + logEx.getMessage());

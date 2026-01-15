@@ -42,7 +42,7 @@ public class UserLogBean {
 	@NonNull
 	private String adminName;
 	
-	@Column(name="action")
+	@Column(name="action", columnDefinition = "NVARCHAR(MAX)")
 	@NonNull
 	private String action;
 	

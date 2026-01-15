@@ -88,6 +88,11 @@ const router = createRouter({
           name: 'userUpdate',
           component: () => import('../views/admin/users/UserUpdate.vue'),
         },
+        {
+        path: 'reviews',
+        name: 'admin-reviews',
+        component: () => import('../views/admin/reviews/ReviewList.vue'),
+        },
       ],
     },
     {

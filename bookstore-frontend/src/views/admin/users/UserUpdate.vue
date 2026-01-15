@@ -35,12 +35,14 @@
             <v-col cols="12" md="6">
               <v-text-field
                 v-model="formData.email"
-                label="帳號 (Email)"
+                label="帳號（Email）"
                 type="email"
                 variant="outlined"
                 density="compact"
                 color="primary"
-                :rules="[(v) => !!v || 'Email 必填']"
+                :rules="[(v) => !!v || 'Email 必填', () => !emailError || emailError]"
+                @blur="validateUnique('email')"
+                @input="emailError = ''"
                 required
               ></v-text-field>
             </v-col>
@@ -126,6 +128,9 @@
                 variant="outlined"
                 density="compact"
                 color="primary"
+                :rules="[() => !phoneError || phoneError]"
+                @blur="validateUnique('phone')"
+                @input="phoneError = ''"
               ></v-text-field>
             </v-col>
 
@@ -194,6 +199,8 @@ const route = useRoute()
 const router = useRouter()
 const updateForm = ref(null)
 const confirmPwd = ref('')
+const emailError = ref('')
+const phoneError = ref('')
 
 const currentUserRole = localStorage.getItem('userRole')
 const currentUserId = localStorage.getItem('userId')
@@ -252,7 +259,14 @@ const fetchUser = async () => {
 
 const handleUpdate = async () => {
   const { valid } = await updateForm.value.validate()
-  if (!valid) return
+  if (!valid || emailError.value || phoneError.value) {
+    Swal.fire({
+      icon: 'error',
+      title: '資料有誤',
+      text: emailError.value || phoneError.value || '請檢查輸入欄位',
+    })
+    return
+  }
 
   if (formData.value.userPwd && formData.value.userPwd.trim() !== '') {
     if (formData.value.userPwd !== confirmPwd.value) {
@@ -304,6 +318,28 @@ const handleUpdate = async () => {
     }
   } catch (error) {
     Swal.fire({ icon: 'error', title: '錯誤', text: '連線異常', confirmButtonColor: '#2E5C43' })
+  }
+}
+
+const validateUnique = async (type) => {
+  try {
+    const params = { userId: formData.value.userId }
+    if (type === 'email' && formData.value.email) params.email = formData.value.email
+    if (type === 'phone' && formData.value.phoneNum) params.phoneNum = formData.value.phoneNum
+
+    if ((type === 'email' && !params.email) || (type === 'phone' && !params.phoneNum)) return
+
+    const res = await axios.get('http://localhost:8080/api/users/check-unique', { params })
+
+    if (!res.data.success) {
+      if (type === 'email') emailError.value = res.data.message
+      if (type === 'phone') phoneError.value = res.data.message
+    } else {
+      if (type === 'email') emailError.value = ''
+      if (type === 'phone') phoneError.value = ''
+    }
+  } catch (error) {
+    console.error('唯一性檢查失敗', error)
   }
 }
 

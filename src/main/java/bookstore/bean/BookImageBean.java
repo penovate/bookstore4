@@ -1,5 +1,7 @@
 package bookstore.bean;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -7,7 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -19,33 +21,29 @@ public class BookImageBean {
 	@Column(name = "image_id")
 	private Integer imageId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "book_id", nullable = false)
+	@JsonBackReference
 	private BooksBean book;
 
 	@Column(name = "image_url", length = 265)
 	private String imageUrl;
 
-	@Column(name = "is_main")
-	private Boolean isMain;
-
 	public BookImageBean() {
 		super();
 	}
 
-	public BookImageBean(BooksBean book, String imageUrl, Boolean isMain) {
+	public BookImageBean(BooksBean book, String imageUrl) {
 		super();
 		this.book = book;
 		this.imageUrl = imageUrl;
-		this.isMain = isMain;
 	}
 
-	public BookImageBean(Integer imageId, BooksBean book, String imageUrl, Boolean isMain) {
+	public BookImageBean(Integer imageId, BooksBean book, String imageUrl) {
 		super();
 		this.imageId = imageId;
 		this.book = book;
 		this.imageUrl = imageUrl;
-		this.isMain = isMain;
 	}
 
 	public Integer getImageId() {
@@ -72,12 +70,5 @@ public class BookImageBean {
 		this.imageUrl = imageUrl;
 	}
 
-	public Boolean getIsMain() {
-		return isMain;
-	}
-
-	public void setIsMain(Boolean isMain) {
-		this.isMain = isMain;
-	}
 
 }

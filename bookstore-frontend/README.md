@@ -1,38 +1,59 @@
-# .
+# 書店專案前端 (Bookstore4 Frontend)
 
-This template should help get you started developing with Vue 3 in Vite.
+本專案為 Bookstore4 的前端部分，採用 Vue 3 與 Vite 建置，並針對繁體中文語系使用者進行最佳化。
 
-## Recommended IDE Setup
+## 推薦開發環境 (Recommended IDE Setup)
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- [VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (請停用 Vetur)。
 
-## Recommended Browser Setup
+## 推薦瀏覽器設定 (Recommended Browser Setup)
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+- **Chromium-based 瀏覽器 (Chrome, Edge, Brave 等):**
+  - 安裝 [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
+  - 在 Chrome DevTools 中開啟 [Custom Object Formatter](http://bit.ly/object-formatters) 以獲得更佳的除錯體驗。
+- **Firefox:**
+  - 安裝 [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
+  - 在 Firefox DevTools 中開啟 [Custom Object Formatter](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
 
-## Customize configuration
+## 專案設定與執行 (Project Setup)
 
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+### 安裝依賴套件 (Install Dependencies)
 
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### 啟動開發伺服器 (Start Development Server)
+
+包含熱重載 (Hot-Reload) 功能，適合開發時使用。
 
 ```sh
 npm run dev
 ```
 
-### Compile and Minify for Production
+### 建置生產版本 (Build for Production)
+
+編譯並壓縮程式碼，準備部署。
 
 ```sh
 npm run build
 ```
+
+### 程式碼格式化 (Format Code)
+
+```sh
+npm run format
+```
+
+## 技術堆疊 (Tech Stack)
+
+- **核心框架**: Vue 3
+- **建置工具**: Vite
+- **狀態管理**: Pinia
+- **路由管理**: Vue Router
+- **UI 元件**: Vuetify / Sass
+- **API 串接**: Axios
+
+## 自定義設定 (Customize Configuration)
+
+請參考 [Vite 配置指南](https://vite.dev/config/)。

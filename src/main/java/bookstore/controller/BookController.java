@@ -1,16 +1,23 @@
 package bookstore.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -19,124 +26,89 @@ import bookstore.bean.GenreBean;
 import bookstore.exceptionCenter.BusinessException;
 import bookstore.service.bookService;
 
-@Controller
+@RestController
 @RequestMapping("/books")
 public class BookController {
 
 	@Autowired
 	private bookService bookService;
-	
-	
+
 	@GetMapping("/booksIndex")
 	public String bookIndex(Model model) {
-		return"books/booksIndex";
+		return "books/booksIndex";
 	}
 
 	@GetMapping("/getAllBooks")
-	public String getAllBooks(Model model) {
+	public ResponseEntity<List<BooksBean>> getAllBooks(Model model) {
 		List<BooksBean> bookList = bookService.selectAllBooks();
-		model.addAttribute("bookList", bookList);
-		return "books/GetAllBooks";
+		return ResponseEntity.ok(bookList);
 	}
+	
+	
 
-	@GetMapping("/getBook")
-	public String selectBookById(@RequestParam("bookId") String idStr, Model model) {
-		if (idStr == null || !idStr.matches("^\\d+$")) {
-			throw new BusinessException(400, "格式錯誤:ID必須為數字");
+	@GetMapping("/getBook/{bookId}")
+	public ResponseEntity<BooksBean> selectBookById(@PathVariable("bookId") Integer bookId) {
+		if (bookId == null) {
+			throw new BusinessException(400, "格式錯誤:ID不可為空白");
 		}
-		BooksBean book = bookService.selectBookByIdS(Integer.parseInt(idStr));
-		model.addAttribute("book", book);
-		return "books/GetBook";
+		BooksBean book = bookService.selectBookByIdS(bookId);
+		if (book != null) {
+			return ResponseEntity.ok(book);
+		}
+		return ResponseEntity.notFound().build();
 	}
 
-	@GetMapping("/insertPage")
-	public String InsertPage(Model model) {
-
+	@GetMapping("/genres")
+	public ResponseEntity<List<GenreBean>> InsertPage(Model model) {
 		List<GenreBean> genreList = bookService.getAllGenres();
-		model.addAttribute("genreList", genreList);
-
-		return "books/InsertBook";
+		return ResponseEntity.ok(genreList);
 	}
 
 	@PostMapping("/insert")
-	public String insertBook(@ModelAttribute BooksBean book, RedirectAttributes ra,
-			@RequestParam("mainImage") MultipartFile file) {
-		BooksBean insertBook = bookService.insertBook(book, file);
-		ra.addFlashAttribute("insertBook", insertBook);
-		ra.addFlashAttribute("msg", "書籍新增成功!");
-		return "redirect:/books/getAllBooks";
+	public ResponseEntity<BooksBean> insertBook(@RequestPart("book") BooksBean book,
+			@RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
+		BooksBean newBook = bookService.insertBook(book, file);
+		return ResponseEntity.ok(newBook);
 	}
 
-	@GetMapping("/insertSuccess")
-	public String insertSuccess() {
-		return "books/InsertSuccess";
+
+	@PutMapping("/update/{bookId}")
+	public ResponseEntity<BooksBean> updateBook(@PathVariable Integer bookId, @RequestPart("book") BooksBean book,
+			@RequestPart(value = "file", required = false) MultipartFile file)
+			throws IllegalStateException, IOException {
+		BooksBean updateBook = bookService.updateBook(bookId, book, file);
+		return ResponseEntity.ok(updateBook);
 	}
 
-	@GetMapping("/updatePage")
-	public String updatePage(@RequestParam("bookId") Integer bookId, Model model) {
-		List<GenreBean> genreList = bookService.getAllGenres();
-		model.addAttribute("genreList", genreList);
-
-		BooksBean book = bookService.selectBookByIdS(bookId);
-		model.addAttribute("book", book);
-		return "books/UpdateBook";
+	@PutMapping("/updateStatus/{bookId}/{newStatus}")
+	public ResponseEntity<BooksBean> updateOnShelf(@PathVariable Integer bookId, @PathVariable Integer newStatus) {
+	BooksBean book = bookService.updateOnShelfStatus(bookId, newStatus);
+		return ResponseEntity.ok(book);
 	}
 
-	@PostMapping("/update")
-	public String updateBook(@ModelAttribute BooksBean book, @RequestParam(required = false) Integer genreId,
-			RedirectAttributes ra) {
-		bookService.updateBook(book, genreId);
-		ra.addFlashAttribute("status", "success");
-		ra.addFlashAttribute("msg", "資料更新成功");
-		return "redirect:/books/getAllBooks";
-	}
-
-	@PostMapping("/updateStatus")
-	public String updateOnShelf(@RequestParam("bookId") Integer bookId, @RequestParam("status") boolean status) {
-		bookService.updateOnShelfStatus(bookId, status);
-		return "redirect:/books/getAllBooks";
-	}
-
-	@PostMapping("/delete")
-	public String deleteBook(@RequestParam("bookId") Integer bookId, RedirectAttributes ra) {
+	@DeleteMapping("/delete/{bookId}")
+	public ResponseEntity<String> deleteBook(@PathVariable Integer bookId) {
 		bookService.deleteBookById(bookId);
-		ra.addFlashAttribute("status", "success");
-		ra.addFlashAttribute("msg", "書籍已成功刪除");
-		return "redirect:/books/getAllBooks";
+		return ResponseEntity.noContent().build();
 	}
 
 	@ResponseBody
-	@PostMapping("/isbnCheck")
-	public String checkIsbn(@RequestParam("isbn") String isbn) {
-		boolean exists = bookService.existsByIsbn(isbn);
-		return String.valueOf(exists);
+	@GetMapping("/isbnCheck")
+	public ResponseEntity<Boolean> checkIsbn(@RequestParam("isbn") String isbn) {
+		Boolean exists = bookService.existsByIsbn(isbn);
+		return ResponseEntity.ok(exists);
 	}
 
-	@ResponseBody
-	@PostMapping("/updateOnShelfStatus")
-	public String updateOnShelfStatus(@RequestParam("bookId") Integer bookId, @RequestParam("status") boolean status) {
-		try {
-			bookService.updateOnShelfStatus(bookId, status);
-			return "success";
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "error";
-		}
-		
+
+	@PutMapping("/archiveBook/{bookId}")
+	public ResponseEntity<BooksBean> archiveBook(@PathVariable("bookId") Integer bookId) {
+	BooksBean book=	bookService.archiveBook(bookId);
+		return ResponseEntity.ok(book);
 	}
 
-	@ResponseBody
-	@PostMapping("/archiveBook")
-	public String archiveBook(@RequestParam("bookId") Integer bookId) {
-		bookService.archiveBook(bookId);
-	
-		return "success";
-	}
-	
-	@ResponseBody
-	@PostMapping("/unarchiveBook")
-	public String unarchiveBook(@RequestParam("bookId") Integer bookId) {
-		bookService.unarchiveBook(bookId);
-		return "success";
+	@PutMapping("/unarchiveBook/{bookId}")
+	public ResponseEntity<BooksBean> unarchiveBook(@PathVariable("bookId") Integer bookId) {
+	BooksBean book=	bookService.unarchiveBook(bookId);
+		return ResponseEntity.ok(book);
 	}
 }

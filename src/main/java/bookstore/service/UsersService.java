@@ -1,6 +1,8 @@
 package bookstore.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +53,36 @@ public class UsersService {
 			user.setStatus(status);
 			userRepo.save(user);
 		}
+	}
+	
+	public Map<String, Object> checkUserUnique(Integer userId, String email, String phoneNum) {
+		Map<String, Object> result = new HashMap<>();
+		result.put("success", true);
+		
+		if (userId == null) {
+			if (userRepo.existsByEmail(email)) {
+				result.put("success", false);
+				result.put("message", "該 Email 已被註冊！");
+				return result;
+			}
+			if (phoneNum != null && !phoneNum.isEmpty() && userRepo.existsByPhoneNum(phoneNum)) {
+				result.put("success", false);
+				result.put("message", "該手機號碼已被使用！");
+				return result;
+			}
+		} else {
+			if (userRepo.existsByEmailAndUserIdNot(email, userId)) {
+				result.put("success", false);
+				result.put("message", "Email 已被其他會員使用！");
+				return result;
+			}
+			if (phoneNum != null && !phoneNum.isEmpty() && userRepo.existsByPhoneNumAndUserIdNot(phoneNum, userId)) {
+				result.put("success", false);
+				result.put("message", "手機號碼已被其他會員使用！");
+				return result;
+			}
+		}
+		return result;
 	}
 	
 	

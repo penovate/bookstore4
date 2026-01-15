@@ -214,6 +214,11 @@ public class UserController {
 	@PostMapping("/api/users/insert")
 	@ResponseBody
 	public Map<String, Object> processInsertApi(@RequestBody UserBean user) {
+		Map<String, Object> uniqueCheck = userService.checkUserUnique(null, user.getEmail(), user.getPhoneNum());
+		if (!(boolean) uniqueCheck.get("success")) {
+			return uniqueCheck;
+		}
+		
 	    Map<String, Object> response = new HashMap<>();
 	    
 	    if (user.getEmail() == null || user.getEmail().isEmpty() || 
@@ -251,6 +256,13 @@ public class UserController {
 	        response.put("message", "新增失敗！資料庫錯誤，請檢查 Email 是否重複！");
 	    }
 	    return response;
+	}
+	
+	@GetMapping("/api/users/check-unique")
+	@ResponseBody
+	public Map<String, Object> checkUniqueApi(@RequestParam(required = false) Integer userId, 
+			@RequestParam(required = false) String email, @RequestParam(required = false) String phoneNum) {
+		return userService.checkUserUnique(userId, email, phoneNum);
 	}
 	
 	
@@ -367,6 +379,11 @@ public class UserController {
 	@ResponseBody
 	public Map<String, Object> processUpdateApi(@RequestBody UserBean user, HttpServletRequest request) {
 	    Map<String, Object> response = new HashMap<>();
+	    
+	    Map<String, Object> uniqueCheck = userService.checkUserUnique(user.getUserId(), user.getEmail(), user.getPhoneNum());
+	    if (!(boolean) uniqueCheck.get("success")) {
+	        return uniqueCheck;
+	    }
 	    
 	    try {
 			String authHeader = request.getHeader("Authorization");

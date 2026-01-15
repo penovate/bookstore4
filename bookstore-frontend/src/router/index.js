@@ -19,31 +19,6 @@ const router = createRouter({
       component: () => import('../views/admin/Home.vue'),
     },
     {
-      path: '/users',
-      name: 'usersHome',
-      component: () => import('../views/admin/users/UsersHome.vue'),
-    },
-    {
-      path: '/users/list',
-      name: 'userList',
-      component: () => import('../views/admin/users/UserList.vue'),
-    },
-    {
-      path: '/users/get/:id',
-      name: 'userDetail',
-      component: () => import('../views/admin/users/GetUser.vue'),
-    },
-    {
-      path: '/users/insert',
-      name: 'userInsert',
-      component: () => import('../views/admin/users/UserInsert.vue'),
-    },
-    {
-      path: '/users/update/:id',
-      name: 'userUpdate',
-      component: () => import('../views/admin/users/UserUpdate.vue'),
-    },
-    {
       // 平行測試路由
       path: '/dev/admin',
       component: () => import('../views/Layout/AdminLayout.vue'),
@@ -92,6 +67,11 @@ const router = createRouter({
         path: 'reviews',
         name: 'admin-reviews',
         component: () => import('../views/admin/reviews/ReviewList.vue'),
+        },
+        {
+          path: 'users/logs',
+          name: 'admin-operation-logs',
+          component: () => import('../views/admin/users/UserLogList.vue'),
         },
       ],
     },

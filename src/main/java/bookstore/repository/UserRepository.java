@@ -31,4 +31,9 @@ public interface UserRepository extends JpaRepository<UserBean, Integer> {
 		List<UserBean> searchUsersGlobal(
 		    @Param("keyword") String keyword, 
 		    @Param("type") Integer type);
+	
+	boolean existsByEmailAndUserIdNot(String email, Integer userId);
+	boolean existsByPhoneNumAndUserIdNot(String phoneNum, Integer userId);
+	boolean existsByEmail(String email);
+	boolean existsByPhoneNum(String phoneNum);
 }

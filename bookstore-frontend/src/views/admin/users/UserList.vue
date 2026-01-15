@@ -1,11 +1,39 @@
 <template>
-  <v-app>
-    <div class="center-body forest-gradient-bg">
-      <div class="list-container forest-card-border elevation-2">
-        <h2 class="forest-title-text">所有會員資料</h2>
+  <div class="list-page-wrapper">
+    <div class="header-section mb-6 text-left">
+      <h2 class="forest-main-title">會員管理列表</h2>
+    </div>
 
-        <v-row class="mb-4" justify="center" align="center">
-          <v-col cols="12" md="4">
+    <v-row class="mb-4" align="center">
+      <v-col cols="auto">
+        <v-btn
+          v-if="currentUserRole === 'SUPER_ADMIN'"
+          color="primary"
+          prepend-icon="mdi-account-plus"
+          elevation="2"
+          class="rounded-lg font-weight-bold"
+          @click="router.push('/dev/admin/users/insert')"
+        >
+          新增會員資料
+        </v-btn>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn
+          color="secondary"
+          prepend-icon="mdi-clipboard-text-clock-outline"
+          elevation="2"
+          variant="elevated"
+          class="rounded-lg font-weight-bold"
+          @click="router.push('/dev/admin/users/logs')"
+        >
+          查看操作日誌
+        </v-btn>
+      </v-col>
+
+      <v-spacer></v-spacer>
+      <v-col cols="12" md="7" lg="6">
+        <v-row dense align="center">
+          <v-col cols="12" md="6">
             <v-text-field
               v-model="filters.keyword"
               label="搜尋姓名/電話/Email"
@@ -14,12 +42,14 @@
               density="compact"
               hide-details
               clearable
+              bg-color="white"
               color="primary"
+              class="rounded-lg"
               @keydown.enter="fetchUsers"
               @click:clear="resetFilters"
             ></v-text-field>
           </v-col>
-          <v-col cols="12" md="3">
+          <v-col cols="12" md="4">
             <v-select
               v-model="filters.userTypeFilter"
               label="權限篩選"
@@ -27,94 +57,79 @@
               variant="outlined"
               density="compact"
               hide-details
+              bg-color="white"
               color="primary"
+              class="rounded-lg"
+              @update:model-value="fetchUsers"
             ></v-select>
           </v-col>
           <v-col cols="auto">
-            <v-btn color="primary" @click="fetchUsers" class="mr-2 px-6">查詢</v-btn>
-            <v-btn variant="outlined" color="primary" @click="resetFilters">取消篩選</v-btn>
+            <v-btn color="primary" variant="flat" @click="fetchUsers" class="rounded-lg px-4"
+              >查詢</v-btn
+            >
           </v-col>
         </v-row>
+      </v-col>
+    </v-row>
 
-        <v-data-table
-          :headers="headers"
-          :items="users"
-          :items-per-page="10"
-          class="mt-5 forest-table-style"
-          hover
-        >
-          <template v-slot:item.userName="{ item }">
-            <a href="#" @click.prevent="goToDetail(item.userId)" class="forest-link">
-              {{ item.userName }}
-            </a>
-          </template>
+    <v-card class="forest-card-table">
+      <v-data-table
+        :headers="headers"
+        :items="users"
+        :items-per-page="10"
+        class="forest-table-style"
+        hover
+      >
+        <template v-slot:item.userName="{ item }">
+          <a href="#" @click.prevent="goToDetail(item.userId)" class="user-detail-link">
+            {{ item.userName }}
+          </a>
+        </template>
 
-          <template v-slot:item.userType="{ item }">
-            <v-chip
-              :color="getRoleColor(item.userType)"
-              size="small"
-              variant="flat"
-              class="text-white"
+        <template v-slot:item.userType="{ item }">
+          <v-chip
+            :color="getRoleColor(item.userType)"
+            size="small"
+            variant="flat"
+            class="text-white font-weight-bold"
+          >
+            {{ formatUserType(item.userType) }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.action="{ item }">
+          <v-btn
+            v-if="canEdit(item)"
+            icon="mdi-pencil-outline"
+            variant="text"
+            color="primary"
+            @click="goToUpdate(item.userId)"
+          ></v-btn>
+        </template>
+
+        <template v-slot:item.status="{ item }">
+          <div class="d-flex align-center justify-center">
+            <v-switch
+              :model-value="item.status === 1"
+              color="success"
+              hide-details
+              density="compact"
+              @click.prevent="handleToggleStatus(item)"
+            ></v-switch>
+            <span
+              :class="item.status === 1 ? 'text-success' : 'text-error'"
+              class="ml-2 font-weight-bold text-caption"
             >
-              {{ formatUserType(item.userType) }}
-            </v-chip>
-          </template>
-
-          <template v-slot:item.action="{ item }">
-            <v-btn
-              v-if="canEdit(item)"
-              icon="mdi-pencil"
-              variant="text"
-              color="primary"
-              @click="goToUpdate(item.userId)"
-            ></v-btn>
-          </template>
-
-          <template v-slot:item.status="{ item }">
-            <div class="d-flex align-center justify-center">
-              <v-switch
-                :model-value="item.status === 1"
-                color="success"
-                hide-details
-                density="compact"
-                @click.prevent="handleToggleStatus(item)"
-              ></v-switch>
-              <span
-                :class="item.status === 1 ? 'text-success' : 'text-error'"
-                class="ml-2 font-weight-bold text-caption"
-              >
-                {{ item.status === 1 ? '啟用中' : '停權' }}
-              </span>
-            </div>
-          </template>
-        </v-data-table>
-
-        <div class="action-footer mt-10">
-          <v-btn
-            v-if="currentUserRole === 'SUPER_ADMIN'"
-            color="primary"
-            prepend-icon="mdi-account-plus"
-            class="mr-4"
-            @click="router.push('/dev/admin/users/insert')"
-          >
-            新增會員資料
-          </v-btn>
-          <v-btn
-            variant="outlined"
-            color="primary"
-            prepend-icon="mdi-home"
-            @click="router.push('/users')"
-          >
-            回到會員中心首頁
-          </v-btn>
-        </div>
-      </div>
-    </div>
-  </v-app>
+              {{ item.status === 1 ? '啟用中' : '已停權' }}
+            </span>
+          </div>
+        </template>
+      </v-data-table>
+    </v-card>
+  </div>
 </template>
 
 <script setup>
-// ... (script 部分保持不變，邏輯是一樣的)
 import { ref, reactive, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter, useRoute } from 'vue-router'
@@ -147,7 +162,6 @@ const headers = [
 const formatUserType = (type) =>
   ({ 0: '超級管理員', 1: '一般管理員', 2: '一般會員' })[type] || '未知'
 
-// 💡 修改角色顏色以配合森林系 (綠、深綠、灰)
 const getRoleColor = (type) => ({ 0: 'primary', 1: 'secondary' })[type] || 'grey'
 
 const canEdit = (u) =>
@@ -195,7 +209,7 @@ const handleToggleStatus = (user) => {
     showCancelButton: true,
     confirmButtonText: actionText,
     cancelButtonText: '取消',
-    confirmButtonColor: newStatus === 2 ? '#d33' : '#4CAF50', // 改為綠色
+    confirmButtonColor: newStatus === 2 ? '#d33' : '#4CAF50',
     cancelButtonColor: '#aaa',
   }).then(async (result) => {
     if (result.isConfirmed) {
@@ -216,62 +230,47 @@ const goToDetail = (id) => router.push(`/dev/admin/users/get/${id}`)
 onMounted(fetchUsers)
 </script>
 
-<style lang="scss" scoped>
-/* 💡 風格完全同步組員，但結構不動你的 */
-
-// 1. 背景漸層同步
-.forest-gradient-bg {
-  background: linear-gradient(135deg, #fcf8f0 0%, #ede0d4 100%);
-  display: flex;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 40px 0;
+<style>
+.list-page-wrapper {
+  padding: 0;
+  width: 100%;
 }
 
-// 2. 容器邊框同步 (組員的 border-t-4 效果)
-.list-container {
-  width: 95%;
-  max-width: 1200px;
-  padding: 30px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  border-top: 4px solid #2e5c43 !important; // 加入組員的頂部粗邊框
-  border-left: 1px solid #d7ccc8;
-  border-right: 1px solid #d7ccc8;
-  border-bottom: 1px solid #d7ccc8;
-}
-
-// 3. 標題顏色同步 (深綠色)
-.forest-title-text {
+.forest-main-title {
   color: #2e5c43;
-  margin-bottom: 25px;
-  font-weight: bold;
   font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0;
 }
 
-// 4. 表格內部風格同步
-.forest-table-style {
-  :deep(.v-data-table-header) {
-    background-color: #f9fbe7 !important; // 米綠色表頭
-  }
-
-  :deep(.v-data-table-header__content) {
-    font-weight: bold;
-    color: #2e5c43;
-  }
-
-  :deep(.v-data-table__tr:hover) {
-    background-color: #f1f8e9 !important; // 滑過時的淺綠色
-  }
-}
-
-// 5. 連結顏色同步
-.forest-link {
+.user-detail-link {
   color: #2e5c43;
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 700;
   &:hover {
+    color: #1b5e20;
     text-decoration: underline;
   }
+}
+
+.forest-card-table {
+  background-color: white !important;
+  border-radius: 12px !important;
+  border-top: 5px solid #2e5c43 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+.forest-table-style {
+  :deep(.v-data-table-header) {
+    background-color: #f9fbe7 !important;
+  }
+  :deep(.v-data-table-header__content) {
+    font-weight: 800;
+    color: #2e5c43;
+  }
+}
+
+.v-switch {
+  transform: scale(0.8);
 }
 </style>

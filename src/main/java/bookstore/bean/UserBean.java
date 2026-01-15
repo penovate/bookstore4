@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -77,6 +78,10 @@ public class UserBean implements java.io.Serializable {
 	@OneToMany(mappedBy = "userBean", fetch = FetchType.LAZY)
 	@JsonIgnore	
 	private List<Orders> orders = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "adminUser", cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<UserLogBean> logs;
 
 //	@OneToMany(mappedBy = "userId", cascade = CascadeType.ALL)
 //	private List<Cart> carts = new ArrayList<>();
@@ -155,7 +160,7 @@ public class UserBean implements java.io.Serializable {
 	public List<Orders> getOrders() {
 		return orders;
 	}
-//
+	
 //	public List<Cart> getCarts() {
 //		return carts;
 //	}

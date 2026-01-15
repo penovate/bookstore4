@@ -49,7 +49,7 @@
               prepend-icon="mdi-pencil"
               size="large"
               class="px-6 mr-4"
-              @click="router.push(`/users/update/${user.userId}`)"
+              @click="router.push(`/dev/admin/users/update/${user.userId}`)"
             >
               修改資料
             </v-btn>
@@ -60,7 +60,7 @@
               prepend-icon="mdi-arrow-left"
               size="large"
               class="px-6"
-              @click="router.push('/users/list')"
+              @click="router.push('/dev/admin/users')"
             >
               返回列表
             </v-btn>

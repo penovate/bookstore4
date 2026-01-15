@@ -24,7 +24,7 @@
                     :elevation="isHovering ? 8 : 2"
                     class="text-h6 font-weight-bold rounded-lg mb-4"
                     prepend-icon="mdi-account-search"
-                    @click="router.push('/users/list')"
+                    @click="router.push('/dev/admin/users')"
                   >
                     查詢所有會員資料
                   </v-btn>

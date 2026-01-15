@@ -126,7 +126,7 @@
                 variant="outlined"
                 size="large"
                 class="px-8"
-                @click="router.push('/users/list')"
+                @click="router.push('/dev/admin/users')"
               >
                 取消返回
               </v-btn>
@@ -193,7 +193,7 @@ const fetchUser = async () => {
         String(userData.userId) !== currentUserId
       ) {
         Swal.fire({ icon: 'error', title: '權限不足', text: '您無權修改管理員等級的資料！' })
-        router.push('/users/list')
+        router.push('/dev/admin/users')
         return
       }
 
@@ -219,7 +219,7 @@ const handleUpdate = async () => {
         title: '更新成功！',
         confirmButtonColor: '#a07d58',
       }).then(() => {
-        router.push('/users/list')
+        router.push('/dev/admin/users')
       })
     } else {
       Swal.fire('更新失敗', response.data.message, 'error')

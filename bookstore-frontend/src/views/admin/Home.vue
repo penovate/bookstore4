@@ -70,7 +70,7 @@ const router = useRouter()
 
 const menuItems = [
   { title: '會員中心', icon: 'mdi-account-group', path: '/users' },
-  { title: '書籍資料處理', icon: 'mdi-book-open-page-variant', path: '/books' },
+  { title: '書籍資料處理', icon: 'mdi-book-open-page-variant', path: '/dev/admin/books' },
   { title: '訂單購物系統', icon: 'mdi-cart-check', path: '/orders' },
   { title: '評價管理', icon: 'mdi-comment-quote', path: '/reviews' },
 ]
@@ -103,20 +103,16 @@ const handleLogout = () => {
 .home-bg {
   background: linear-gradient(135deg, #fcf8f0 0%, #ede0d4 100%);
 }
-
 .text-brown-darken-3 {
   color: #3e2723 !important;
   letter-spacing: 2px;
 }
-
 .border-brown {
   border: 1px solid #d7ccc8 !important;
 }
-
 .transition-swing {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
-
 .cursor-pointer {
   cursor: pointer;
 }

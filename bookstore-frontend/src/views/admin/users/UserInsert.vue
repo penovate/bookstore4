@@ -133,9 +133,9 @@
                 variant="outlined"
                 size="large"
                 class="px-8"
-                @click="router.push('/users/list')"
+                @click="router.push('/dev/admin/users')"
               >
-                返回列表
+                取消返回
               </v-btn>
             </v-card-actions>
           </v-form>
@@ -180,7 +180,7 @@ const handleSubmit = async () => {
         text: `會員 ${formData.userName} 已成功加入`,
         confirmButtonColor: '#a07d58',
       }).then(() => {
-        router.push('/users/list')
+        router.push('/dev/admin/users')
       })
     } else {
       Swal.fire('失敗', response.data.message, 'error')

@@ -1,9 +1,11 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useDisplay } from 'vuetify'
 
 const { mobile } = useDisplay()
 const drawer = ref(false)
+
+const userRole = localStorage.getItem('userRole')
 
 const menuItems = ref([
   { title: '書籍專區', to: '', icon: 'mdi-book-open-page-variant' }, // 假設路由
@@ -13,10 +15,18 @@ const menuItems = ref([
   { title: '後台系統', to: '/home', icon: 'mdi-information' },
 ])
 
+const filteredMenuItems = computed(() => {
+  return menuItems.value.filter((item) => {
+    if (item.title === '後台系統') {
+      return userRole === 'ADMIN' || userRole === 'SUPER_ADMIN'
+    }
+    return true
+  })
+})
+
 const user = ref({
-  name: '訪客',
-  avatar: '',
-  isLoggedIn: false,
+  name: localStorage.getItem('userName') || '訪客',
+  isLoggedIn: !!localStorage.getItem('userToken'),
 })
 </script>
 
@@ -45,7 +55,7 @@ const user = ref({
 
       <div class="d-none d-md-flex justify-center flex-grow-1">
         <v-btn
-          v-for="item in menuItems"
+          v-for="item in filteredMenuItems"
           :key="item.title"
           variant="text"
           class="mx-1 text-subtitle-1 font-weight-medium"
@@ -84,11 +94,13 @@ const user = ref({
         <v-list-item title="導覽選單" subtitle="BookStore"></v-list-item>
         <v-divider></v-divider>
         <v-list-item
-          v-for="item in menuItems"
+          v-for="item in filteredMenuItems"
           :key="item.title"
-          :to="item.to"
           :prepend-icon="item.icon"
           :title="item.title"
+          :href="item.title === '後台系統' ? item.to : undefined"
+          :target="item.title === '後台系統' ? '_blank' : undefined"
+          :to="item.title === '後台系統' ? undefined : item.to"
         ></v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -122,8 +134,7 @@ const user = ref({
 </template>
 
 <style scoped>
-/* 可在此微調 navbar 樣式 */
 .v-btn {
-  text-transform: none; /* 防止按鈕文字全大寫 */
+  text-transform: none;
 }
 </style>

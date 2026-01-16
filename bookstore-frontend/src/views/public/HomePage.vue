@@ -7,7 +7,7 @@
       <div
         class="d-flex flex-column fill-height justify-center align-center text-white hero-overlay"
       >
-        <h1 class="text-h2 font-weight-black mb-4">森林書屋 Forest Books</h1>
+        <h1 class="text-h2 font-weight-black mb-4">網路書籍商城</h1>
         <h4 class="text-h5 font-weight-light mb-6">在喧囂的城市中，為您找尋一隅靜謐的書香。</h4>
         <v-btn color="primary" size="x-large" class="rounded-pill px-8" elevation="4">
           立即探索

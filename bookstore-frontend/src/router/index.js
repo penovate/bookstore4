@@ -66,6 +66,28 @@ const router = createRouter({
           component: () => import('../views/admin/users/UserUpdate.vue'),
         },
         {
+        path: 'reviews',
+        name: 'admin-reviews',
+        component: () => import('../views/admin/reviews/ReviewList.vue'),
+        },
+        // 暫用開始行
+        {
+        path: 'reviews/:id',
+        name: 'review-detail',
+        component: () => import('../views/admin/reviews/GetReview.vue'),
+        },
+        {
+        path: 'reviews/insert',
+        name: 'review-insert',
+        component: () => import('../views/admin/reviews/ReviewInsert.vue'),
+        },
+        {
+        path: 'reviews/:id/update',
+        name: 'review-update',
+        component: () => import('../views/admin/reviews/ReviewUpdate.vue'),
+        },
+        // 暫用結束行
+        {
           path: 'users/logs',
           name: 'admin-operation-logs',
           component: () => import('../views/admin/users/UserLogList.vue'),

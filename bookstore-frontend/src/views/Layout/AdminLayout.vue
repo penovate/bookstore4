@@ -27,7 +27,7 @@ const items = ref([
   {
     title: '評價管理',
     icon: 'mdi-star-half-full',
-    // to: '/dev/admin/reviews',
+    to: '/dev/admin/reviews',
   },
   {
     title: '進退貨管理',

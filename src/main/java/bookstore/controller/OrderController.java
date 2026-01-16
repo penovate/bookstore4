@@ -282,6 +282,12 @@ public class OrderController {
 		return response;
 	}
 
+	@GetMapping("/order/api/userOrders")
+	@ResponseBody
+	public List<Orders> getUserOrdersApi(@RequestParam("userId") Integer userId) {
+		return orderService.getOrdersByUserId(userId);
+	}
+
 	@PostMapping("/order/api/insert")
 	@ResponseBody
 	public Map<String, Object> insertOrderApi(HttpServletRequest request) {

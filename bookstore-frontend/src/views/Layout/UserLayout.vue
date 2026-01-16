@@ -6,9 +6,8 @@ const { mobile } = useDisplay()
 const drawer = ref(false)
 
 const menuItems = ref([
-  { title: '書籍專區', to: '', icon: 'mdi-book-open-page-variant' }, // 假設路由
-  { title: '會員中心', to: '', icon: 'mdi-book-open-page-variant' }, // 假設路由
-  { title: '讀書會', to: '', icon: 'mdi-book-open-page-variant' }, // 假設路由
+  { title: '書籍專區', to: '/dev/user/store', icon: 'mdi-book-open-page-variant' }, // 指向 Store
+  { title: '歷史訂單', to: '/dev/user/orders', icon: 'mdi-history' }, // 新增歷史訂單
   { title: '關於我們', to: '', icon: 'mdi-information' },
   { title: '後台系統', to: '/home', icon: 'mdi-information' },
 ])

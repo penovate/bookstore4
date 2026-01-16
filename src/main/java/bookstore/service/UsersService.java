@@ -31,7 +31,6 @@ public class UsersService {
 	    if ((keyword == null || keyword.trim().isEmpty()) && type == null) {
 	        return userRepo.findAll();
 	    }
-	    
 	    return userRepo.searchUsersGlobal(keyword, type);
 	}
 	
@@ -41,10 +40,6 @@ public class UsersService {
 	
 	public UserBean saveUser(UserBean user) {
 		return userRepo.save(user);
-	}
-	
-	public void deleteUser(Integer id) {
-		userRepo.deleteById(id);
 	}
 	
 	public void updateStatus(Integer id, Integer status) {

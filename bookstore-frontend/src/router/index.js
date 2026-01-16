@@ -6,12 +6,12 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/login',
+      redirect: '/dev/user/home',
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/public/users/LoginView.vue'),
+      component: () => import('../views/admin/LoginView.vue'),
     },
     {
       path: '/home',
@@ -95,6 +95,13 @@ const router = createRouter({
     {
       path: '/dev/user',
       component: () => import('../views/Layout/UserLayout.vue'),
+      children: [
+        {
+          path: 'home',
+          name: 'userHome',
+          component: () => import('../views/public/HomePage.vue'),
+        },
+      ],
     },
   ],
 })
@@ -103,24 +110,30 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('userToken')
   const role = localStorage.getItem('userRole')
 
-  if (to.name !== 'login') {
+  const isAdminRoute = to.path.startsWith('/dev/admin') || to.name === 'home'
+
+  if (isAdminRoute) {
     if (!token) {
       next({ name: 'login' })
+    } else if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
+      next()
     } else {
-      if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
-        next()
-      } else {
-        Swal.fire('權限不足', '您沒有進入後台管理系統的權限', 'error')
-        next({ name: 'login' })
-      }
+      Swal.fire('權限不足', '您沒有進入後台管理系統的權限', 'error')
+      next({ name: 'userHome' })
     }
-  } else {
+    return
+  }
+
+  if (to.name === 'login') {
     if (token && (role === 'SUPER_ADMIN' || role === 'ADMIN')) {
       next({ name: 'home' })
     } else {
       next()
     }
+    return
   }
+
+  next()
 })
 
 export default router

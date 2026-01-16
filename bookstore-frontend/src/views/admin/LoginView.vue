@@ -11,7 +11,12 @@
             class="pa-8 rounded-xl transition-swing forest-card-border"
           >
             <v-card-item class="text-center">
-              <v-icon icon="mdi-leaf" size="x-large" color="primary" class="mb-4"></v-icon>
+              <v-icon
+                icon="mdi mdi-book-open-blank-variant-outline"
+                size="x-large"
+                color="primary"
+                class="mb-4"
+              ></v-icon>
               <v-card-title class="text-h4 font-weight-bold text-primary mb-1">
                 BookStore
               </v-card-title>

@@ -30,7 +30,7 @@ const items = ref([
   },
   {
     title: '進退貨管理',
-    icon: 'mdi-truck-return',
+    icon: 'mdi-swap-horizontal-bold',
     // to: '/dev/admin/returns',
   },
   {
@@ -44,6 +44,7 @@ const items = ref([
     // to: '/dev/admin/bookclubs',
   },
 ])
+
 const handleLogout = () => {
   Swal.fire({
     title: '確定要登出嗎？',
@@ -77,18 +78,16 @@ const handleLogout = () => {
   })
 }
 </script>
+
 <template>
   <v-layout class="rounded rounded-md">
     <v-navigation-drawer v-model="drawer" color="primary">
-      <!-- 列表頂部的標題區域 -->
-      <v-list-item title="BookStore" subtitle="後台管理系統" class="py-4">
+      <v-list-item title="BookStore" subtitle="後台管理系統" class="py-4" to="/home">
         <template v-slot:prepend>
-          <!-- 這裡可以放 Logo 圖片 -->
-          <v-icon icon="mdi-leaf" class="me-2"></v-icon>
+          <v-icon icon="mdi mdi-book-open-blank-variant-outline" class="me-2"></v-icon>
         </template>
       </v-list-item>
       <v-divider></v-divider>
-      <!-- 選單列表 -->
       <v-list density="compact" nav>
         <v-list-item
           v-for="(item, i) in items"
@@ -105,7 +104,26 @@ const handleLogout = () => {
       <!-- 底部登出區 -->
       <template v-slot:append>
         <div class="pa-2">
-          <v-btn block color="secondary" @click="handleLogout"> 登出 </v-btn>
+          <v-btn
+            block
+            color="accent"
+            variant="tonal"
+            prepend-icon="mdi-storefront-outline"
+            class="mb-2"
+            style="
+              color: #ffffff !important;
+              font-weight: 500 !important;
+              background-color: rgba(var(--v-theme-accent), 0.3) !important;
+              filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.2));
+            "
+            href="/dev/user/home"
+            target="_blank"
+          >
+            前台網頁
+          </v-btn>
+          <v-btn block color="secondary" @click="handleLogout" prepend-icon="mdi mdi-logout">
+            登出
+          </v-btn>
         </div>
       </template>
     </v-navigation-drawer>
@@ -118,11 +136,6 @@ const handleLogout = () => {
         @click.stop="drawer = !drawer"
       ></v-app-bar-nav-icon>
       <v-spacer></v-spacer>
-      <!-- 右側功能區 -->
-      <v-btn icon="mdi-bell-outline" color="secondary" variant="text"></v-btn>
-      <v-avatar class="mx-2" size="32" color="secondary">
-        <span class="text-white text-caption">Admin</span>
-      </v-avatar>
     </v-app-bar>
 
     <v-main class="bg-background" style="min-height: 100vh">

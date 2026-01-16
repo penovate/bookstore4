@@ -22,7 +22,7 @@
                 v-bind="props"
                 :elevation="isHovering ? 12 : 2"
                 class="menu-tile d-flex flex-column align-center justify-center transition-swing rounded-xl"
-                @click="router.push(menu.path)"
+                @click="handleMenuClick(menu)"
               >
                 <v-icon :icon="menu.icon" size="42" color="primary" class="mb-3"></v-icon>
                 <div class="menu-text font-weight-bold">
@@ -66,6 +66,7 @@ const menuItems = [
   { title: '進退貨管理', icon: 'mdi-truck-return', path: '/returns' },
   { title: '數據報表分析', icon: 'mdi-chart-bar', path: '/reports' },
   { title: '讀書會管理', icon: 'mdi-book-multiple', path: '/bookclubs' },
+  { title: '網路書店前台', icon: 'mdi-storefront-outline', path: 'dev/user/home' },
 ]
 
 const handleLogout = () => {
@@ -84,6 +85,15 @@ const handleLogout = () => {
       router.push('/login?logout=true')
     }
   })
+}
+
+const handleMenuClick = (menu) => {
+  if (menu.title === '網路書店前台') {
+    const url = menu.path.startsWith('http') ? menu.path : '/' + menu.path
+    window.open(url, '_blank')
+  } else {
+    router.push(menu.path)
+  }
 }
 </script>
 

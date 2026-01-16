@@ -31,44 +31,47 @@
       </v-col>
 
       <v-spacer></v-spacer>
-      <v-col cols="12" md="7" lg="6">
-        <v-row dense align="center">
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="filters.keyword"
-              label="搜尋姓名/電話/Email"
-              prepend-inner-icon="mdi-magnify"
-              variant="outlined"
-              density="compact"
-              hide-details
-              clearable
-              bg-color="white"
-              color="primary"
-              class="rounded-lg"
-              @keydown.enter="fetchUsers"
-              @click:clear="resetFilters"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-select
-              v-model="filters.userTypeFilter"
-              label="權限篩選"
-              :items="roleOptions"
-              variant="outlined"
-              density="compact"
-              hide-details
-              bg-color="white"
-              color="primary"
-              class="rounded-lg"
-              @update:model-value="fetchUsers"
-            ></v-select>
-          </v-col>
-          <v-col cols="auto">
-            <v-btn color="primary" variant="flat" @click="fetchUsers" class="rounded-lg px-4"
-              >查詢</v-btn
-            >
-          </v-col>
-        </v-row>
+      <v-col cols="12" md="8" lg="7">
+        <div class="d-flex align-center">
+          <v-text-field
+            v-model="filters.keyword"
+            label="搜尋姓名/電話/Email"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            density="compact"
+            hide-details
+            clearable
+            bg-color="white"
+            color="primary"
+            class="rounded-lg flex-grow-1"
+            @keydown.enter="fetchUsers"
+            @click:clear="resetFilters"
+          ></v-text-field>
+
+          <v-select
+            v-model="filters.userTypeFilter"
+            label="權限篩選"
+            :items="roleOptions"
+            variant="outlined"
+            density="compact"
+            hide-details
+            bg-color="white"
+            color="primary"
+            class="rounded-lg ml-3"
+            style="max-width: 200px"
+            @update:model-value="fetchUsers"
+          ></v-select>
+
+          <v-btn
+            color="primary"
+            variant="flat"
+            @click="fetchUsers"
+            class="rounded-lg px-6 ml-3 font-weight-bold"
+            height="40"
+          >
+            查詢
+          </v-btn>
+        </div>
       </v-col>
     </v-row>
 

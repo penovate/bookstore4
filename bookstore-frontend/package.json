@@ -20,7 +20,8 @@
     "sweetalert2": "^11.26.17",
     "vue": "^3.5.26",
     "vue-router": "^4.6.4",
-    "vuetify": "^4.0.0-alpha.0"
+    "vuetify": "^4.0.0-alpha.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.3",

@@ -32,6 +32,14 @@ export default {
         return apiClient.get('/cart/api/items', getAuthHeaders());
     },
 
+    // 取得使用者歷史訂單
+    getUserOrders(userId) {
+        return apiClient.get('/order/api/userOrders', {
+            params: { userId: userId },
+            ...getAuthHeaders()
+        });
+    },
+
     // 加入購物車
     addToCart(bookId, quantity) {
         const params = new URLSearchParams();

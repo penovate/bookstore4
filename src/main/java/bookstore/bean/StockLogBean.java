@@ -35,7 +35,7 @@ public class StockLogBean {
 	@Column(name = "log_time")
 	private Date logTime;
 
-	@Column(name = "cost_price")
+	@Column(name = "total_amount")
 	private BigDecimal totalAmount;
 	
 	@Column(name = "stock_type")

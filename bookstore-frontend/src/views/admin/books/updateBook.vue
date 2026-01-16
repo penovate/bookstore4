@@ -183,11 +183,7 @@ const submit = async () => {
                                     :rules="[rules.required, rules.positive]" prefix="$" variant="outlined"
                                     color="primary"></v-text-field>
                             </v-col>
-                            <v-col cols="12" md="6">
-                                <v-text-field v-model.number="book.stock" label="庫存" type="number"
-                                    :rules="[rules.required, rules.positive]" variant="outlined"
-                                    color="primary"></v-text-field>
-                            </v-col>
+
                             <v-col cols="12">
                                 <v-text-field v-model="book.isbn" label="ISBN (13碼)"
                                     :rules="[rules.required, rules.isbnFormat, rules.isbnUnique]" counter="13"

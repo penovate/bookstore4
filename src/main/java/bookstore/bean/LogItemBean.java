@@ -2,6 +2,9 @@ package bookstore.bean;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -34,6 +37,7 @@ public class LogItemBean {
 
 	@ManyToOne
 	@JoinColumn(name = "log_id")
+	@JsonIgnore
 	private StockLogBean stockLogBean;
 
 	@ManyToOne

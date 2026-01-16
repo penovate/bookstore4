@@ -80,6 +80,11 @@ const router = createRouter({
           name: 'admin-logs-insert',
           component: () => import('../views/admin/logs/InsertStockLog.vue'),
         },
+        {
+          path: 'logs/:id',
+          name: 'admin-logs-detail',
+          component: () => import('../views/admin/logs/StockLogDetail.vue'),
+        },
       ],
     },
     {

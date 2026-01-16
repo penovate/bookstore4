@@ -28,7 +28,7 @@ public class StockLogService {
 	public List<StockLogBean> getAllStockLogs() {
 		List<StockLogBean> stockLogList = stockLogRepository.findAll();
 		if (stockLogList.isEmpty()) {
-			// log.warn("查無任何貨單"); // Consider removing warning for normal empty state
+			 log.warn("查無任何貨單"); // Consider removing warning for normal empty state
 		}
 		log.info("查詢貨單成功，取得 {} 筆資料", stockLogList.size());
 		return stockLogList;

@@ -38,7 +38,7 @@
     </table>
 
     <div class="button-group">
-      <button class="system-button add-button" @click="submit">新增評價</button>
+      <button class="system-button add-button" @click.prevent="submit">新增評價</button>
       <button class="system-button back-button" @click="goBack">返回所有評價</button>
     </div>
   </div>
@@ -57,16 +57,44 @@ const form = reactive({
   comment: '',
 })
 
-const submit = () => {
-  // 目前只示範流程，不送後端
-  console.log('送出資料', form)
-  router.push('/dev/admin/reviews')
+const submit = async () => {
+  // ✅ reactive → 直接用 form.xxx
+  if (!form.userId || !form.bookId || !form.rating || !form.comment) {
+    alert('請填寫所有欄位')
+    return
+  }
+
+  try {
+    const res = await fetch('/api/public/admin/reviews', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: Number(form.userId),
+        bookId: Number(form.bookId),
+        rating: Number(form.rating),
+        comment: form.comment,
+      }),
+    })
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`)
+    }
+
+    alert('新增成功')
+    router.push('/dev/admin/reviews')
+  } catch (err) {
+    console.error('新增評價失敗', err)
+    alert('新增失敗，無此會員或書籍')
+  }
 }
 
 const goBack = () => {
   router.push('/dev/admin/reviews')
 }
 </script>
+
 <style>
 /* ===== 表格本體 ===== */
 .detail-table {

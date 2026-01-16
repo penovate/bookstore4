@@ -2,7 +2,10 @@
   <div class="admin-page">
     <h1>評價詳細內容</h1>
 
-    <table class="table">
+    <p v-if="loading">載入中...</p>
+    <p v-else-if="error" style="color: red">{{ error }}</p>
+
+    <table class="table" v-else>
       <tbody>
         <tr>
           <th>評價編號</th>
@@ -53,10 +56,7 @@ import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
 const route = useRoute()
 
-// 單筆評價資料
 const review = ref(null)
-
-// 狀態（可選，但很推薦）
 const loading = ref(true)
 const error = ref(null)
 

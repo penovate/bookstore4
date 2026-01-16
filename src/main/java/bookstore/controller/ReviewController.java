@@ -8,9 +8,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import bookstore.bean.BooksBean;
@@ -227,6 +230,43 @@ public class ReviewController {
 	@ResponseBody
 	public ReviewBean getReviewForVue(@PathVariable Integer id) {
 		return reviewsService.findById(id);
+	}
+
+	// 【Vue - 新增評論（JSON）】
+	@PostMapping("/api/public/admin/reviews")
+	@ResponseBody
+	public ReviewBean insertReviewForVue(@RequestBody ReviewBean review) {
+
+		review.setCreatedAt(LocalDateTime.now());
+		reviewsService.save(review);
+
+		return review;
+	}
+
+	// 【Vue - 修改評論（JSON）】
+	@PutMapping("/api/public/admin/reviews/{id}")
+	@ResponseBody
+	public ReviewBean updateReviewForVue(@PathVariable Integer id, @RequestBody ReviewBean review) {
+
+		ReviewBean dbReview = reviewsService.findById(id);
+
+		if (dbReview == null) {
+			throw new RuntimeException("找不到評價");
+		}
+
+		dbReview.setRating(review.getRating());
+		dbReview.setComment(review.getComment());
+
+		reviewsService.save(dbReview);
+
+		return dbReview;
+	}
+	
+	// 【Vue - 刪除評論（JSON）】
+	@DeleteMapping("/api/public/admin/reviews/{id}")
+	@ResponseBody
+	public void deleteReviewForVue(@PathVariable Integer id) {
+	    reviewsService.delete(id);
 	}
 
 }

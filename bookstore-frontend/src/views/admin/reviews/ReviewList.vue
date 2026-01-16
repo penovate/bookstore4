@@ -39,7 +39,7 @@
               </router-link>
             </td>
             <td>
-              <button class="delete-button">刪除</button>
+              <button class="delete-button" @click="deleteReview(review.reviewId)">刪除</button>
             </td>
           </tr>
         </tbody>
@@ -80,6 +80,29 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+const deleteReview = async (reviewId) => {
+  const confirmed = confirm('確定要刪除這筆評價嗎？')
+  if (!confirmed) return
+
+  try {
+    const res = await fetch(`/api/public/admin/reviews/${reviewId}`, {
+      method: 'DELETE',
+    })
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`)
+    }
+
+    // 前端即時移除，不影響其他功能
+    reviews.value = reviews.value.filter((review) => review.reviewId !== reviewId)
+
+    alert('刪除成功')
+  } catch (err) {
+    console.error('刪除評價失敗:', err)
+    alert('刪除失敗，請查看後端或 console')
+  }
+}
 </script>
 
 <style scoped>

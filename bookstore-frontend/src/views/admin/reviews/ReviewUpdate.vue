@@ -12,9 +12,7 @@
           </tr>
           <tr>
             <th>會員編號</th>
-            <td>
-              <input v-model="form.userId" />
-            </td>
+            <td>{{ form.userId }}</td>
           </tr>
           <tr>
             <th>會員名稱</th>
@@ -22,9 +20,7 @@
           </tr>
           <tr>
             <th>書本編號</th>
-            <td>
-              <input v-model="form.bookId" />
-            </td>
+            <td>{{ form.bookId }}</td>
           </tr>
           <tr>
             <th>書本名稱</th>
@@ -57,45 +53,82 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
 
-// 👉 目前先用假資料（之後再接後端）
-const mockReviews = [
-  {
-    reviewId: 1,
-    userId: 101,
-    userName: '王小明',
-    bookId: 5001,
-    bookName: 'Java 入門',
-    rating: 5,
-    comment: '很好看',
-  },
-  {
-    reviewId: 2,
-    userId: 102,
-    userName: '陳小美',
-    bookId: 5002,
-    bookName: 'Spring Boot 實戰',
-    rating: 4,
-    comment: '內容扎實',
-  },
-]
+// 表單資料（一定要 reactive）
+const form = reactive({
+  reviewId: '',
+  userId: '',
+  userName: '',
+  bookId: '',
+  bookName: '',
+  rating: 1,
+  comment: '',
+})
 
-// 根據 route param 找到要修改的那筆
-const reviewId = Number(route.params.id)
-const origin = mockReviews.find((r) => r.reviewId === reviewId)
+// 取得網址上的 reviewId
+const reviewId = route.params.id
 
-// 表單資料（重點）
-const form = reactive({ ...origin })
+// 進頁面時：抓單筆評價資料
+onMounted(async () => {
+  try {
+    const res = await fetch(`/api/public/admin/reviews/${reviewId}`)
 
-const submit = () => {
-  console.log('送出修改資料', form)
-  // 之後改成 axios.put(...)
-  router.push('/dev/admin/reviews')
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`)
+    }
+
+    const data = await res.json()
+
+    // 塞進表單
+    form.reviewId = data.reviewId
+    form.userId = data.userId
+    form.userName = data.userName
+    form.bookId = data.bookId
+    form.bookName = data.bookName
+    form.rating = data.rating
+    form.comment = data.comment
+  } catch (err) {
+    console.error('載入評價失敗', err)
+    alert('載入評價資料失敗')
+  }
+})
+
+// 送出修改
+const submit = async () => {
+  if (!form.rating || !form.comment) {
+    alert('評價內容不能為空')
+    return
+  }
+
+  try {
+    const res = await fetch(`/api/public/admin/reviews/${form.reviewId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: Number(form.userId),
+        bookId: Number(form.bookId),
+        rating: Number(form.rating),
+        comment: form.comment,
+      }),
+    })
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`)
+    }
+
+    alert('評價修改成功')
+    router.push('/dev/admin/reviews')
+  } catch (err) {
+    console.error('修改評價失敗', err)
+    alert('修改失敗，請查看後端')
+  }
 }
 
 const goBack = () => {

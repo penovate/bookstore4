@@ -78,18 +78,16 @@ const handleLogout = () => {
   })
 }
 </script>
+
 <template>
   <v-layout class="rounded rounded-md">
     <v-navigation-drawer v-model="drawer" color="primary">
-      <!-- 列表頂部的標題區域 -->
       <v-list-item title="BookStore" subtitle="後台管理系統" class="py-4" to="/home">
         <template v-slot:prepend>
-          <!-- 這裡可以放 Logo 圖片 -->
-          <v-icon icon="mdi-leaf" class="me-2"></v-icon>
+          <v-icon icon="mdi mdi-book-open-blank-variant-outline" class="me-2"></v-icon>
         </template>
       </v-list-item>
       <v-divider></v-divider>
-      <!-- 選單列表 -->
       <v-list density="compact" nav>
         <v-list-item
           v-for="(item, i) in items"
@@ -121,9 +119,11 @@ const handleLogout = () => {
             href="/dev/user/home"
             target="_blank"
           >
-            瀏覽前台網頁
+            前台網頁
           </v-btn>
-          <v-btn block color="secondary" @click="handleLogout"> 登出 </v-btn>
+          <v-btn block color="secondary" @click="handleLogout" prepend-icon="mdi mdi-logout">
+            登出
+          </v-btn>
         </div>
       </template>
     </v-navigation-drawer>
@@ -136,11 +136,6 @@ const handleLogout = () => {
         @click.stop="drawer = !drawer"
       ></v-app-bar-nav-icon>
       <v-spacer></v-spacer>
-      <!-- 右側功能區 -->
-      <v-btn icon="mdi-bell-outline" color="secondary" variant="text"></v-btn>
-      <v-avatar class="mx-2" size="32" color="secondary">
-        <span class="text-white text-caption">Admin</span>
-      </v-avatar>
     </v-app-bar>
 
     <v-main class="bg-background" style="min-height: 100vh">

@@ -31,7 +31,7 @@ const items = ref([
   },
   {
     title: '進退貨管理',
-    icon: 'mdi-truck-return', // 採用第二段更直觀的圖示
+    icon: 'mdi-swap-horizontal-bold', // 採用第二段更直觀的圖示
     // to: '/dev/admin/returns',
   },
   {

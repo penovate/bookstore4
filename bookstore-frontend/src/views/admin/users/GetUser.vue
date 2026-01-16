@@ -67,9 +67,9 @@
           prepend-icon="mdi-arrow-left"
           size="large"
           class="px-8 rounded-lg font-weight-bold"
-          @click="router.push('/dev/admin/users')"
+          @click="handleBack"
         >
-          返回列表
+          返回
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -122,6 +122,14 @@ const fetchUserDetail = async () => {
     user.value = response.data
   } catch (error) {
     Swal.fire({ icon: 'error', title: '讀取失敗', text: '無法取得會員詳細資料' })
+  }
+}
+
+const handleBack = () => {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/dev/admin/users')
   }
 }
 

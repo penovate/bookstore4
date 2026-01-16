@@ -3,6 +3,7 @@ package bookstore.controller;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,12 +30,11 @@ public class OrderController {
 	@Autowired
 	private OrderService orderService;
 
-
 	@Autowired
-	private bookService bookService; 
+	private bookService bookService;
 
-//==================新增類 Controller==================//
-	
+	// ==================新增類 Controller==================//
+
 	// 建立新訂單
 	@PostMapping("/order/insert")
 	public String processInsertOrder(HttpServletRequest request, Model model) {
@@ -44,13 +44,17 @@ public class OrderController {
 			Integer userId = Integer.parseInt(request.getParameter("userId"));
 			UserBean user = new UserBean();
 			user.setUserId(userId);
-	        order.setUserBean(user);
+			order.setUserBean(user);
 			order.setRecipientAt(request.getParameter("recipientName"));
 			order.setAddress(request.getParameter("address"));
 			order.setPhone(request.getParameter("phone"));
 			String paymentMethod = request.getParameter("paymentMethod");
 			order.setPaymentMethod(paymentMethod);
-			
+
+			// 新增配送方式
+			String deliveryMethod = request.getParameter("deliveryMethod");
+			order.setDeliveryMethod(deliveryMethod);
+
 			// 判斷是否付款
 			order.setPaymentStatus("貨到付款".equals(paymentMethod) ? "未付款" : "已付款");
 			// 設定訂單狀態
@@ -71,15 +75,15 @@ public class OrderController {
 						item.setBooksBean(book);
 						item.setQuantity(Integer.parseInt(quantities[i]));
 						item.setPrice(new BigDecimal(prices[i]));
-						item.setSubtotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));//數量也要轉成BigDecimal物件，否則方法無法相乘
+						item.setSubtotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));// 數量也要轉成BigDecimal物件，否則方法無法相乘
 						items.add(item);
 					}
 				}
 			}
 
 			orderService.insertOrder(order, items);
-			model.addAttribute("order", order);//資料掛載
-			model.addAttribute("items", items);//資料掛載
+			model.addAttribute("order", order);// 資料掛載
+			model.addAttribute("items", items);// 資料掛載
 			return "order/InsertOrderDisplay";
 
 		} catch (Exception e) {
@@ -87,93 +91,94 @@ public class OrderController {
 			return "order/InsertOrderDisplay";
 		}
 	}
-	
+
 	// 新增明細到既有訂單
-		@PostMapping("/order/addItems")
-		//不使用Model，使用RedirectAttributes，因為model是導到新頁面，這裡是要新增完導回查詢單筆訂單頁面
-		public String addItemsToOrder(@RequestParam("orderId") Integer orderId, HttpServletRequest request, RedirectAttributes redirectAttributes) {
-			try {
-				String[] bookIds = request.getParameterValues("bookId");
-				String[] prices = request.getParameterValues("price");
-				String[] quantities = request.getParameterValues("quantity");
-				List<OrderItem> items = new ArrayList<>();
+	@PostMapping("/order/addItems")
+	// 不使用Model，使用RedirectAttributes，因為model是導到新頁面，這裡是要新增完導回查詢單筆訂單頁面
+	public String addItemsToOrder(@RequestParam("orderId") Integer orderId, HttpServletRequest request,
+			RedirectAttributes redirectAttributes) {
+		try {
+			String[] bookIds = request.getParameterValues("bookId");
+			String[] prices = request.getParameterValues("price");
+			String[] quantities = request.getParameterValues("quantity");
+			List<OrderItem> items = new ArrayList<>();
 
-				if (bookIds != null) {
-					for (int i = 0; i < bookIds.length; i++) {
-						OrderItem item = new OrderItem();
-						BooksBean book = new BooksBean();
-						book.setBookId(Integer.parseInt(bookIds[i]));
-						item.setBooksBean(book);
-						item.setQuantity(Integer.parseInt(quantities[i]));
-						item.setPrice(new BigDecimal(prices[i]));
-						item.setSubtotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));//數量也要轉成BigDecimal物件，否則方法無法相乘
-						items.add(item);
-					}
+			if (bookIds != null) {
+				for (int i = 0; i < bookIds.length; i++) {
+					OrderItem item = new OrderItem();
+					BooksBean book = new BooksBean();
+					book.setBookId(Integer.parseInt(bookIds[i]));
+					item.setBooksBean(book);
+					item.setQuantity(Integer.parseInt(quantities[i]));
+					item.setPrice(new BigDecimal(prices[i]));
+					item.setSubtotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));// 數量也要轉成BigDecimal物件，否則方法無法相乘
+					items.add(item);
 				}
-				orderService.addItemsToOrder(orderId, items);
-				redirectAttributes.addAttribute("id", orderId);
-				return "redirect:/order/get";
-			} catch (Exception e) {
-				//addFlashAttribute傳遞臨時訊息，等到跳轉後的下一個頁面讀取完後，就會直接刪除
-				redirectAttributes.addFlashAttribute("error", "新增明細失敗");
-				return "redirect:/order/get?id=" + orderId;
 			}
+			orderService.addItemsToOrder(orderId, items);
+			redirectAttributes.addAttribute("id", orderId);
+			return "redirect:/order/get";
+		} catch (Exception e) {
+			// addFlashAttribute傳遞臨時訊息，等到跳轉後的下一個頁面讀取完後，就會直接刪除
+			redirectAttributes.addFlashAttribute("error", "新增明細失敗");
+			return "redirect:/order/get?id=" + orderId;
 		}
-		
-//==================查詢類 Controller==================//
-		
-		// 查詢活動中的訂單
-		@GetMapping("/order/activeList")
-		public String listActiveOrders(Model model) {
-			List<Orders> orders = orderService.getAllActiveOrders();
-			model.addAttribute("orders", orders);
-			return "order/GetAllOrders";
-		}
-		
-		// 查詢已取消的訂單
-		@GetMapping("/order/cancelledList")
-		public String listCancelledOrders(Model model) {
-			List<Orders> orders = orderService.getCancelledOrders();
-			model.addAttribute("orders", orders);
-			return "order/GetAllCancelOrders";
-		}
-		
-		// 查詢單筆訂單明細
-		@GetMapping("/order/get")
-		public String getOrderById(@RequestParam("id") Integer orderId, Model model) {
-			Orders order = orderService.getOrderById(orderId);
-			if (order == null) {
-				return "redirect:/order/activeList?error=OrderNotFound";
-			}
-			List<OrderItem> items = orderService.getOrderItemsByOrderId(orderId);
-			model.addAttribute("order", order);
-			model.addAttribute("items", items);
-			return "order/GetOrder";
-		}
-		
-		// 查詢單筆已取消訂單明細
-		@GetMapping("/order/getCancel")
-		public String getCancelOrderById(@RequestParam("id") Integer orderId, Model model) {
-			Orders order = orderService.getOrderById(orderId);
-			if (order == null) {
-				return "redirect:/order/cancelledList?error=OrderNotFound";
-			}
-			List<OrderItem> items = orderService.getOrderItemsByOrderId(orderId);
-			model.addAttribute("order", order);
-			model.addAttribute("items", items);
-			return "order/GetCancelOrder";
-		}
-		
-		// 查詢所有明細
-		@GetMapping("/order/allItems")
-		public String listAllItems(Model model) {
-			List<OrderItem> items = orderService.getAllOrderItems();
-			model.addAttribute("items", items);
-			return "order/GetAllOrderItems";
-		}
+	}
 
-//==================更新類 Controller==================//
-	
+	// ==================查詢類 Controller==================//
+
+	// 查詢活動中的訂單
+	@GetMapping("/order/activeList")
+	public String listActiveOrders(Model model) {
+		List<Orders> orders = orderService.getAllActiveOrders();
+		model.addAttribute("orders", orders);
+		return "order/GetAllOrders";
+	}
+
+	// 查詢已取消的訂單
+	@GetMapping("/order/cancelledList")
+	public String listCancelledOrders(Model model) {
+		List<Orders> orders = orderService.getCancelledOrders();
+		model.addAttribute("orders", orders);
+		return "order/GetAllCancelOrders";
+	}
+
+	// 查詢單筆訂單明細
+	@GetMapping("/order/get")
+	public String getOrderById(@RequestParam("id") Integer orderId, Model model) {
+		Orders order = orderService.getOrderById(orderId);
+		if (order == null) {
+			return "redirect:/order/activeList?error=OrderNotFound";
+		}
+		List<OrderItem> items = orderService.getOrderItemsByOrderId(orderId);
+		model.addAttribute("order", order);
+		model.addAttribute("items", items);
+		return "order/GetOrder";
+	}
+
+	// 查詢單筆已取消訂單明細
+	@GetMapping("/order/getCancel")
+	public String getCancelOrderById(@RequestParam("id") Integer orderId, Model model) {
+		Orders order = orderService.getOrderById(orderId);
+		if (order == null) {
+			return "redirect:/order/cancelledList?error=OrderNotFound";
+		}
+		List<OrderItem> items = orderService.getOrderItemsByOrderId(orderId);
+		model.addAttribute("order", order);
+		model.addAttribute("items", items);
+		return "order/GetCancelOrder";
+	}
+
+	// 查詢所有明細
+	@GetMapping("/order/allItems")
+	public String listAllItems(Model model) {
+		List<OrderItem> items = orderService.getAllOrderItems();
+		model.addAttribute("items", items);
+		return "order/GetAllOrderItems";
+	}
+
+	// ==================更新類 Controller==================//
+
 	// 更新訂單主檔
 	@PostMapping("/order/update")
 	public String processUpdateOrder(@ModelAttribute Orders order, Model model) {
@@ -188,12 +193,13 @@ public class OrderController {
 
 	// 更新單筆明細
 	@PostMapping("/order/updateItem")
-	public String updateOrderItem(@ModelAttribute OrderItem item, @RequestParam("orderId") Integer orderId, Model model) {
+	public String updateOrderItem(@ModelAttribute OrderItem item, @RequestParam("orderId") Integer orderId,
+			Model model) {
 		try {
 			Orders order = new Orders();
 			order.setOrderId(orderId);
 			item.setOrders(order);
-			
+
 			orderService.updateOrderItem(item);
 			model.addAttribute("orderId", orderId);
 			return "order/UpdateOrderItemDisplay";
@@ -202,7 +208,7 @@ public class OrderController {
 		}
 	}
 
-//==================取消與還原類 Controller==================//
+	// ==================取消與還原類 Controller==================//
 	// --- 3. 刪除與狀態切換類 Controller ---
 
 	// 取消訂單-軟刪除
@@ -226,26 +232,214 @@ public class OrderController {
 
 	// 徹底刪除訂單-硬刪除(專題目前改用軟刪除 廢棄掉了)
 	/*
-	@PostMapping("/order/delete")
-	public String deleteOrder(@RequestParam("id") Integer id) {
-		orderService.deleteOrder(id);
-		return "redirect:/order/activeList";
-	}
-	*/
+	 * @PostMapping("/order/delete")
+	 * public String deleteOrder(@RequestParam("id") Integer id) {
+	 * orderService.deleteOrder(id);
+	 * return "redirect:/order/activeList";
+	 * }
+	 */
 
 	// 刪除單筆明細
 	@PostMapping("/order/deleteItem")
-	public String deleteItem(@RequestParam("orderItemId") Integer orderItemId, @RequestParam("orderId") Integer orderId) {
+	public String deleteItem(@RequestParam("orderItemId") Integer orderItemId,
+			@RequestParam("orderId") Integer orderId) {
 		orderService.deleteOrderItem(orderItemId);
 		return "redirect:/order/get?id=" + orderId;
 	}
 
-//==================其他 Controller==================//
+	// ==================其他 Controller==================//
 
 	// 獲取書籍詳情回傳 JSON
 	@GetMapping("/order/getBookDetail")
 	@ResponseBody // ajax，不要找jsp
 	public BooksBean getBookDetail(@RequestParam("bookId") Integer bookId) {
 		return bookService.selectBookByIdS(bookId);
+	}
+	// ================= API Endpoints for Vue Frontend ================= //
+
+	@GetMapping("/order/api/activeList")
+	@ResponseBody
+	public List<Orders> getActiveOrdersApi() {
+		return orderService.getAllActiveOrders();
+	}
+
+	@GetMapping("/order/api/cancelledList")
+	@ResponseBody
+	public List<Orders> getCancelledOrdersApi() {
+		return orderService.getCancelledOrders();
+	}
+
+	@GetMapping("/order/api/get")
+	@ResponseBody
+	public Map<String, Object> getOrderApi(@RequestParam("id") Integer orderId) {
+		Map<String, Object> response = new java.util.HashMap<>();
+		Orders order = orderService.getOrderById(orderId);
+		if (order != null) {
+			List<OrderItem> items = orderService.getOrderItemsByOrderId(orderId);
+			response.put("order", order);
+			response.put("items", items);
+		}
+		return response;
+	}
+
+	@PostMapping("/order/api/insert")
+	@ResponseBody
+	public Map<String, Object> insertOrderApi(HttpServletRequest request) {
+		Map<String, Object> response = new java.util.HashMap<>();
+		try {
+			// Reuse parsing logic
+			Orders order = new Orders();
+			String userIdStr = request.getParameter("userId");
+			if (userIdStr == null) {
+				// Fallback if not provided in params, maybe try attribute or token util if
+				// available?
+				// For now assume param is sent.
+				throw new Exception("User ID is required");
+			}
+			Integer userId = Integer.parseInt(userIdStr);
+			UserBean user = new UserBean();
+			user.setUserId(userId);
+			order.setUserBean(user);
+			order.setRecipientAt(request.getParameter("recipientName"));
+			order.setAddress(request.getParameter("address"));
+			order.setPhone(request.getParameter("phone"));
+			String paymentMethod = request.getParameter("paymentMethod");
+			order.setPaymentMethod(paymentMethod);
+
+			String deliveryMethod = request.getParameter("deliveryMethod");
+			order.setDeliveryMethod(deliveryMethod);
+			order.setPaymentStatus("貨到付款".equals(paymentMethod) ? "未付款" : "已付款");
+			order.setOrderStatus("待出貨");
+
+			String[] bookIds = request.getParameterValues("bookId");
+			String[] quantities = request.getParameterValues("quantity");
+			String[] prices = request.getParameterValues("price");
+			List<OrderItem> items = new ArrayList<>();
+
+			if (bookIds != null) {
+				for (int i = 0; i < bookIds.length; i++) {
+					if (bookIds[i] != null && !bookIds[i].isEmpty()) {
+						OrderItem item = new OrderItem();
+						BooksBean book = new BooksBean();
+						book.setBookId(Integer.parseInt(bookIds[i]));
+						item.setBooksBean(book);
+						item.setQuantity(Integer.parseInt(quantities[i]));
+						item.setPrice(new BigDecimal(prices[i]));
+						item.setSubtotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
+						items.add(item);
+					}
+				}
+			}
+
+			orderService.insertOrder(order, items);
+			response.put("success", true);
+			response.put("order", order);
+			response.put("items", items);
+		} catch (Exception e) {
+			response.put("success", false);
+			response.put("message", e.getMessage());
+		}
+		return response;
+	}
+
+	@PostMapping("/order/api/update")
+	@ResponseBody
+	public String updateOrderApi(@ModelAttribute Orders order) {
+		try {
+			Orders existingOrder = orderService.getOrderById(order.getOrderId());
+			if (existingOrder != null) {
+				existingOrder.setRecipientAt(order.getRecipientAt());
+				existingOrder.setPhone(order.getPhone());
+				existingOrder.setAddress(order.getAddress());
+				existingOrder.setPaymentMethod(order.getPaymentMethod());
+				existingOrder.setPaymentStatus(order.getPaymentStatus());
+				existingOrder.setOrderStatus(order.getOrderStatus());
+				existingOrder.setTotalAmount(order.getTotalAmount());
+				// Do not set UserBean, preserving existing user association
+
+				orderService.updateOrder(existingOrder);
+				return "success";
+			} else {
+				return "error: Order not found";
+			}
+		} catch (Exception e) {
+			return "error: " + e.getMessage();
+		}
+	}
+
+	@PostMapping("/order/api/cancel")
+	@ResponseBody
+	public String cancelOrderApi(@RequestParam("id") Integer orderId) {
+		orderService.processCancelOrder(orderId);
+		return "success";
+	}
+
+	@PostMapping("/order/api/restore")
+	@ResponseBody
+	public String restoreOrderApi(@RequestParam("id") Integer orderId) {
+		try {
+			orderService.processRestoreOrder(orderId);
+			return "success";
+		} catch (Exception e) {
+			return "error";
+		}
+	}
+
+	@PostMapping("/order/api/deleteItem")
+	@ResponseBody
+	public String deleteItemApi(@RequestParam("orderItemId") Integer orderItemId) {
+		try {
+			orderService.deleteOrderItem(orderItemId);
+			return "success";
+		} catch (Exception e) {
+			return "error: " + e.getMessage();
+		}
+	}
+
+	@PostMapping("/order/api/updateItem")
+	@ResponseBody
+	public String updateItemApi(@ModelAttribute OrderItem item, @RequestParam("orderId") Integer orderId) {
+		try {
+			// Re-link to order
+			Orders order = new Orders();
+			order.setOrderId(orderId);
+			item.setOrders(order);
+
+			// Recalculate subtotal just in case frontend didn't
+			item.setSubtotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
+
+			orderService.updateOrderItem(item);
+			return "success";
+		} catch (Exception e) {
+			return "error: " + e.getMessage();
+		}
+	}
+
+	@PostMapping("/order/api/addItems")
+	@ResponseBody
+	public String addItemsApi(@RequestParam("orderId") Integer orderId, HttpServletRequest request) {
+		try {
+			String[] bookIds = request.getParameterValues("bookId");
+			String[] prices = request.getParameterValues("price");
+			String[] quantities = request.getParameterValues("quantity");
+			List<OrderItem> items = new ArrayList<>();
+
+			if (bookIds != null) {
+				for (int i = 0; i < bookIds.length; i++) {
+					OrderItem item = new OrderItem();
+					BooksBean book = new BooksBean();
+					book.setBookId(Integer.parseInt(bookIds[i]));
+					item.setBooksBean(book);
+					item.setQuantity(Integer.parseInt(quantities[i]));
+					item.setPrice(new BigDecimal(prices[i]));
+					item.setSubtotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
+					items.add(item);
+				}
+			}
+			orderService.addItemsToOrder(orderId, items);
+			return "success";
+		} catch (Exception e) {
+			return "error: " + e.getMessage();
+		}
 	}
 }

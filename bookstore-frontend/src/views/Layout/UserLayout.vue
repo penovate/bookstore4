@@ -62,7 +62,8 @@ const user = ref({
       <div class="d-flex align-center justify-end" style="min-width: 200px">
         <v-btn icon="mdi-magnify" variant="text"></v-btn>
 
-        <v-btn icon class="me-2">
+        <!-- 導覽列的購物車icon，點擊後跳轉到購物車頁面 -->
+        <v-btn icon class="me-2" @click="$router.push({ name: 'cart' })">
           <v-badge content="2" color="accent">
             <v-icon icon="mdi-cart-outline"></v-icon>
           </v-badge>

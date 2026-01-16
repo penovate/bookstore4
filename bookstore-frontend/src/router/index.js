@@ -18,11 +18,12 @@ const router = createRouter({
       name: 'home',
       component: () => import('../views/admin/Home.vue'),
     },
+    // --- 後台管理區域 ---
     {
-      // 平行測試路由
       path: '/dev/admin',
       component: () => import('../views/Layout/AdminLayout.vue'),
       children: [
+        // 1. 書籍管理
         {
           path: 'books',
           name: 'admin-books',
@@ -43,6 +44,7 @@ const router = createRouter({
           name: 'admin-books-get',
           component: () => import('../views/admin/books/getBook.vue'),
         },
+        // 2. 用戶管理
         {
           path: 'users',
           name: 'userList',
@@ -68,22 +70,77 @@ const router = createRouter({
           name: 'admin-operation-logs',
           component: () => import('../views/admin/users/UserLogList.vue'),
         },
+        // 3. 訂單管理
+        {
+          path: 'orders',
+          name: 'orderMenu',
+          component: () => import('../views/admin/orders/OrderMenu.vue'),
+        },
+        {
+          path: 'orders/list',
+          name: 'orderList',
+          component: () => import('../views/admin/orders/OrderList.vue'),
+        },
+        {
+          path: 'orders/insert',
+          name: 'orderInsert',
+          component: () => import('../views/admin/orders/OrderInsert.vue'),
+        },
+        {
+          path: 'orders/detail/:id',
+          name: 'orderDetail-admin',
+          component: () => import('../views/admin/orders/OrderDetail.vue'),
+        },
+        {
+          path: 'orders/update/:id',
+          name: 'orderUpdate',
+          component: () => import('../views/admin/orders/OrderUpdate.vue'),
+        },
+        {
+          path: 'orders/items/add/:id',
+          name: 'orderAddItem',
+          component: () => import('../views/admin/orders/OrderAddItem.vue'),
+        },
+        {
+          path: 'orders/items/update/:itemId',
+          name: 'orderItemUpdate',
+          component: () => import('../views/admin/orders/OrderItemUpdate.vue'),
+        },
+        // 4. 評論管理 (待新增)
+        // 這裡補郁仁的評論系統後台路徑
       ],
     },
+    // --- 前台網站區域 ---
     {
       path: '/dev/user',
       component: () => import('../views/Layout/UserLayout.vue'),
       children: [
         {
+          path: 'store',
+          name: 'bookStore',
+          component: () => import('../views/public/books/BookStore.vue'), //測試購物車用，等宏孝加入書籍前台網頁後刪除
+        },
+        {
           path: 'home',
           name: 'userHome',
           component: () => import('../views/public/HomePage.vue'),
+        },
+        {
+          path: 'cart',
+          name: 'cart',
+          component: () => import('../views/public/cart/Cart.vue'),
+        },
+        {
+          path: 'checkout',
+          name: 'checkout',
+          component: () => import('../views/public/orders/Checkout.vue'),
         },
       ],
     },
   ],
 })
 
+// 路由守衛
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('userToken')
   const role = localStorage.getItem('userRole')

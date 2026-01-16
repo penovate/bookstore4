@@ -1,6 +1,6 @@
 <template>
   <div class="admin-page">
-    <h1>評價詳細資料</h1>
+    <h1>評價詳細內容</h1>
 
     <table class="table">
       <tbody>
@@ -41,7 +41,7 @@
 
     <!-- ⭐ 你要求的按鈕 -->
     <div style="margin-top: 20px">
-      <button class="system-button back-button" @click="goBack">回到所有評價資料</button>
+      <button class="system-button back-button" @click="goBack">回到所有評價</button>
     </div>
   </div>
 </template>
@@ -104,8 +104,9 @@ const goBack = () => {
 
 /* ===== 標題 ===== */
 .admin-page h1 {
+  text-align: center;
+  font-size: 26px;
   color: #7b5e47;
-  font-size: 24px;
   margin-bottom: 25px;
   border-bottom: 1px solid #e0d9c9;
   padding-bottom: 10px;
@@ -127,7 +128,6 @@ const goBack = () => {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-.table th,
 .table td {
   border: 1px solid #e0d9c9;
   padding: 12px 10px;
@@ -139,6 +139,7 @@ const goBack = () => {
   background-color: #e8e4dc;
   color: #5d5d5d;
   font-weight: bold;
+  text-align: center;
   white-space: nowrap;
 }
 

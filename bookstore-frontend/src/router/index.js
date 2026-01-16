@@ -70,14 +70,19 @@ const router = createRouter({
         },
         // 暫用開始行
         {
-        path: '/admin/reviews/:id',
+        path: 'reviews/:id',
         name: 'review-detail',
         component: () => import('../views/admin/reviews/GetReview.vue'),
         },
         {
-        path: '/admin/reviews/:id/edit',
-        name: 'review-edit',
-        component: { template: '<div>Review Edit Page</div>' },
+        path: 'reviews/insert',
+        name: 'review-insert',
+        component: () => import('../views/admin/reviews/ReviewInsert.vue'),
+        },
+        {
+        path: 'reviews/:id/update',
+        name: 'review-update',
+        component: () => import('../views/admin/reviews/ReviewUpdate.vue'),
         },
         // 暫用結束行
         {

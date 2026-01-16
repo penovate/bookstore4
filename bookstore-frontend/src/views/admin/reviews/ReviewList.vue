@@ -22,7 +22,7 @@
         <tbody>
           <tr v-for="review in reviews" :key="review.reviewId">
             <td>
-              <router-link :to="`/admin/reviews/${review.reviewId}`">
+              <router-link :to="`/dev/admin/reviews/${review.reviewId}`">
                 {{ review.reviewId }}
               </router-link>
             </td>
@@ -34,7 +34,7 @@
             <td>{{ review.comment }}</td>
             <td>{{ review.createdAt }}</td>
             <td>
-              <router-link :to="`/admin/reviews/${review.reviewId}/edit`">
+              <router-link :to="`/dev/admin/reviews/${review.reviewId}/update`">
                 <button class="update-button">修改</button>
               </router-link>
             </td>
@@ -47,8 +47,12 @@
 
       <h3>共 {{ reviews.length }} 筆評價資料</h3>
 
-      <button class="system-button add-button">新增評價資料</button>
-      <button class="system-button back-to-center-button">回到評價首頁</button>
+      <router-link to="/dev/admin/reviews/insert">
+        <button class="system-button add-button">新增評價</button>
+      </router-link>
+      <router-link to="/home">
+        <button class="system-button back-to-center-button">回到首頁</button>
+      </router-link>
     </div>
   </div>
 </template>

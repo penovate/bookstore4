@@ -22,7 +22,7 @@
                 v-bind="props"
                 :elevation="isHovering ? 12 : 2"
                 class="menu-tile d-flex flex-column align-center justify-center transition-swing rounded-xl"
-                @click="router.push(menu.path)"
+                @click="handleMenuClick(menu)"
               >
                 <v-icon :icon="menu.icon" size="42" color="primary" class="mb-3"></v-icon>
                 <div class="menu-text font-weight-bold">
@@ -85,6 +85,15 @@ const handleLogout = () => {
       router.push('/login?logout=true')
     }
   })
+}
+
+const handleMenuClick = (menu) => {
+  if (menu.title === '網路書店前台') {
+    const url = menu.path.startsWith('http') ? menu.path : '/' + menu.path
+    window.open(url, '_blank')
+  } else {
+    router.push(menu.path)
+  }
 }
 </script>
 

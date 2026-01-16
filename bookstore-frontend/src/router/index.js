@@ -70,6 +70,16 @@ const router = createRouter({
           name: 'admin-orders',
           // component: () => import('../views/admin/orders/OrdersHome.vue'),
         },
+        {
+          path: 'logs',
+          name: 'admin-logs',
+          component: () => import('../views/admin/logs/StockLogsHome.vue'),
+        },
+        {
+          path: 'logs/insert',
+          name: 'admin-logs-insert',
+          component: () => import('../views/admin/logs/InsertStockLog.vue'),
+        },
       ],
     },
     {

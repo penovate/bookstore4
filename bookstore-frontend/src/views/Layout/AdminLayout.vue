@@ -14,6 +14,11 @@ const items = ref([
         to: '/dev/admin/books',
     },
     {
+        title: '進退貨管理',
+        icon: 'mdi-truck-return',
+        to: '/dev/admin/logs',
+    },
+    {
         title: '訂單管理',
         icon: 'mdi-clipboard-list-outline',
         // to: '/dev/admin/orders',
@@ -22,11 +27,6 @@ const items = ref([
         title: '評價管理',
         icon: 'mdi-star-half-full',
         // to: '/dev/admin/reviews',
-    },
-    {
-        title: '進退貨管理',
-        icon: 'mdi-truck-return',
-        // to: '/dev/admin/returns',
     },
     {
         title: '數據報表分析',
@@ -42,7 +42,7 @@ const items = ref([
 </script>
 <template>
     <v-layout class="rounded rounded-md">
-  
+
         <v-navigation-drawer v-model="drawer" color="primary">
             <!-- 列表頂部的標題區域 -->
             <v-list-item title="BookStore" subtitle="後台管理系統" class="py-4">
@@ -56,7 +56,7 @@ const items = ref([
             <v-list density="compact" nav>
                 <v-list-item v-for="(item, i) in items" :key="i" :value="item" :to="item.to" :prepend-icon="item.icon"
                     color="accent">
-                  
+
                     <v-list-item-title v-text="item.title"></v-list-item-title>
                 </v-list-item>
             </v-list>
@@ -70,7 +70,7 @@ const items = ref([
                 </div>
             </template>
         </v-navigation-drawer>
-  
+
         <v-app-bar elevation="0" class="bg-background" density="compact">
             <!--漢堡選單按鈕：點擊切換側邊欄 -->
             <v-app-bar-nav-icon variant="text" color="primary" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
@@ -81,7 +81,7 @@ const items = ref([
                 <span class="text-white text-caption">Admin</span>
             </v-avatar>
         </v-app-bar>
-      
+
         <v-main class="bg-background" style="min-height: 100vh;">
             <v-container fluid class="pa-6">
                 <!-- 路由插槽：Home.vue 或其他頁面會顯示在這裡 -->

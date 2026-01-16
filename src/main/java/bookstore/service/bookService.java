@@ -3,7 +3,15 @@ package bookstore.service;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import bookstore.bean.BookImageBean;
+import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
 import bookstore.bean.ReviewBean;
 import bookstore.exceptionCenter.BusinessException;
@@ -384,6 +393,20 @@ public class bookService {
 			return false;
 		}
 		return true;
+	}
+
+	// 修改庫存 - 供Log調用
+	@Transactional
+	public BooksBean updateStock(Integer bookId, Integer stock) {
+		Optional<BooksBean> opt = bookRepo.findById(bookId);
+		if (opt.isPresent()) {
+			BooksBean book = opt.get();
+			book.setStock(stock);
+			return bookRepo.save(book);
+		} else {
+			log.warn("修改失敗 - 無該ID相關書籍資料");
+			throw new BusinessException(404, "修改失敗 - 無該ID相關書籍資料");
+		}
 	}
 
 	@Transactional

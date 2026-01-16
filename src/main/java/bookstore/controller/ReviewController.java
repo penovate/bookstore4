@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -214,13 +215,18 @@ public class ReviewController {
 				request.getContextPath() + "/GetAllReviews?status=success&msg=" + URLEncoder.encode(message, "UTF-8"));
 	}
 
-	// =================================================
-	// 【Vue 專用 - 取得所有評論（JSON）】
-	// =================================================
+	// 【Vue - 取得所有評論（JSON）】
 	@GetMapping("/api/public/admin/reviews")
 	@ResponseBody
 	public List<ReviewBean> getAllReviewsForVue() {
 		return reviewsService.findAllReviews();
+	}
+
+	// 【Vue - 取得單筆評論（JSON）】
+	@GetMapping("/api/public/admin/reviews/{id}")
+	@ResponseBody
+	public ReviewBean getReviewForVue(@PathVariable Integer id) {
+		return reviewsService.findById(id);
 	}
 
 }

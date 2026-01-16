@@ -47,41 +47,38 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
 
-// ✅ 固定使用你給的假資料
-const mockReviews = [
-  {
-    reviewId: 1,
-    userId: 101,
-    userName: '王小明',
-    bookId: 5001,
-    bookName: 'Java 入門',
-    rating: 5,
-    comment: '很好看',
-    createdAt: '2024-01-01 10:30:00',
-  },
-  {
-    reviewId: 2,
-    userId: 102,
-    userName: '陳小美',
-    bookId: 5002,
-    bookName: 'Spring Boot 實戰',
-    rating: 4,
-    comment: '內容扎實',
-    createdAt: '2024-01-02 14:20:00',
-  },
-]
+// 單筆評價資料
+const review = ref(null)
 
-// ✅ 關鍵：從網址抓 id
-const reviewId = Number(route.params.id)
+// 狀態（可選，但很推薦）
+const loading = ref(true)
+const error = ref(null)
 
-// ✅ 根據 id 找資料
-const review = ref(mockReviews.find((r) => r.reviewId === reviewId))
+// 從網址抓 reviewId
+const reviewId = route.params.id
+
+onMounted(async () => {
+  try {
+    const res = await fetch(`/api/public/admin/reviews/${reviewId}`)
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`)
+    }
+
+    review.value = await res.json()
+  } catch (err) {
+    console.error('取得評價失敗', err)
+    error.value = '讀取評價資料失敗'
+  } finally {
+    loading.value = false
+  }
+})
 
 const goBack = () => {
   router.push('/dev/admin/reviews')

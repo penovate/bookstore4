@@ -58,38 +58,31 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
-/**
- * 🚧 暫時假資料（取代 JSP 的 request.getAttribute）
- */
-const reviews = ref([
-  {
-    reviewId: 1,
-    userId: 101,
-    userName: '王小明',
-    bookId: 5001,
-    bookName: 'Java 入門',
-    rating: 5,
-    comment: '很好看',
-    createdAt: '2024-01-01 10:30:00',
-  },
-  {
-    reviewId: 2,
-    userId: 102,
-    userName: '陳小美',
-    bookId: 5002,
-    bookName: 'Spring Boot 實戰',
-    rating: 4,
-    comment: '內容扎實',
-    createdAt: '2024-01-02 14:20:00',
-  },
-])
+const reviews = ref([])
+const error = ref(null)
+const loading = ref(true)
+
+onMounted(async () => {
+  try {
+    const res = await fetch('/api/public/admin/reviews')
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`)
+    }
+
+    reviews.value = await res.json()
+  } catch (err) {
+    console.error('載入評價失敗:', err)
+    error.value = err.message
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <style scoped>
-/* 👉 這裡你可以「整段」從 JSP 的 <style> 貼過來 */
-
 .center-body {
   font-family: '微軟正黑體', 'Arial', sans-serif;
   background-color: #fcf8f0;

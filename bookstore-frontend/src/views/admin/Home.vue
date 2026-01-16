@@ -63,9 +63,10 @@ const menuItems = [
   { title: '書籍管理', icon: 'mdi-book-open-page-variant', path: '/dev/admin/books' },
   { title: '訂單管理', icon: 'mdi-clipboard-list-outline', path: '/orders' },
   { title: '評價管理', icon: 'mdi-star-half-full', path: '/reviews' },
-  { title: '進退貨管理', icon: 'mdi-truck-return', path: '/returns' },
+  { title: '進退貨管理', icon: 'mdi-swap-horizontal-bold', path: '/returns' },
   { title: '數據報表分析', icon: 'mdi-chart-bar', path: '/reports' },
   { title: '讀書會管理', icon: 'mdi-book-multiple', path: '/bookclubs' },
+  { title: '網路書店前台', icon: 'mdi-storefront-outline', path: 'dev/user/home' },
 ]
 
 const handleLogout = () => {

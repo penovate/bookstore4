@@ -30,7 +30,7 @@ const items = ref([
   },
   {
     title: '進退貨管理',
-    icon: 'mdi-truck-return',
+    icon: 'mdi-swap-horizontal-bold',
     // to: '/dev/admin/returns',
   },
   {
@@ -44,6 +44,7 @@ const items = ref([
     // to: '/dev/admin/bookclubs',
   },
 ])
+
 const handleLogout = () => {
   Swal.fire({
     title: '確定要登出嗎？',
@@ -81,7 +82,7 @@ const handleLogout = () => {
   <v-layout class="rounded rounded-md">
     <v-navigation-drawer v-model="drawer" color="primary">
       <!-- 列表頂部的標題區域 -->
-      <v-list-item title="BookStore" subtitle="後台管理系統" class="py-4">
+      <v-list-item title="BookStore" subtitle="後台管理系統" class="py-4" to="/home">
         <template v-slot:prepend>
           <!-- 這裡可以放 Logo 圖片 -->
           <v-icon icon="mdi-leaf" class="me-2"></v-icon>
@@ -105,6 +106,23 @@ const handleLogout = () => {
       <!-- 底部登出區 -->
       <template v-slot:append>
         <div class="pa-2">
+          <v-btn
+            block
+            color="accent"
+            variant="tonal"
+            prepend-icon="mdi-storefront-outline"
+            class="mb-2"
+            style="
+              color: #ffffff !important;
+              font-weight: 500 !important;
+              background-color: rgba(var(--v-theme-accent), 0.3) !important;
+              filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.2));
+            "
+            href="/dev/user/home"
+            target="_blank"
+          >
+            瀏覽前台網頁
+          </v-btn>
           <v-btn block color="secondary" @click="handleLogout"> 登出 </v-btn>
         </div>
       </template>

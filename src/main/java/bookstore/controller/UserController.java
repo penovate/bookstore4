@@ -102,14 +102,11 @@ public class UserController {
 	        @RequestParam(required = false) Integer userTypeFilter) {
 	    
 	    try {
-	        System.out.println("====== API 成功觸發 ======");
 	        String cleanKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword : null;
 	        
 	        List<UserBean> users = userService.searchUsers(cleanKeyword, userTypeFilter);
-	        System.out.println("成功查詢到 " + (users != null ? users.size() : 0) + " 筆資料");
 	        return users;
 	    } catch (Exception e) {
-	        System.err.println("API 執行失敗，原因如下：");
 	        e.printStackTrace(); 
 	        return null;
 	    }
@@ -118,11 +115,9 @@ public class UserController {
 	@GetMapping("/api/data/get/{id}")
 	@ResponseBody
 	public UserBean getUserDetailApi(@PathVariable("id") Integer id) {
-	    System.out.println("====== API 觸發：查詢 ID " + id + " ======");
 	    try {
 	        UserBean user = userService.findById(id);
 	        if (user == null) {
-	            System.out.println("找不到該會員！");
 	            return null;
 	        }
 	        return user;

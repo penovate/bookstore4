@@ -13,19 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import bookstore.bean.BookImageBean;
 import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
-import bookstore.bean.ReviewBean;
 import bookstore.exceptionCenter.BusinessException;
 import bookstore.repository.BookRepository;
 import bookstore.repository.GenreRepository;
-import bookstore.repository.OrderItemRepository;
-import bookstore.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -47,7 +43,6 @@ public class bookService {
 		List<BooksBean> bookList = bookRepo.findAll();
 		if (bookList == null || bookList.isEmpty()) {
 			log.warn("查詢全部失敗 - 資料庫內無任何書籍資料");
-			throw new BusinessException(404, "無任何書籍資料");
 		}
 		log.info("查詢全部成功 書籍數量: {} 筆", bookList.size());
 		return bookList;
@@ -142,7 +137,7 @@ public class bookService {
 
 		// 庫存檢查
 		if (book.getStock() == null || book.getStock() < 0) {
-			throw new BusinessException(400, "新增失敗：庫存量不可小於 0");
+			book.setStock(0);
 		}
 
 		// --- 2. 處理 Genre (多對多關聯) ---
@@ -389,6 +384,20 @@ public class bookService {
 			return false;
 		}
 		return true;
+	}
+
+	// 修改庫存 - 供Log調用
+	@Transactional
+	public BooksBean updateStock(Integer bookId, Integer stock) {
+		Optional<BooksBean> opt = bookRepo.findById(bookId);
+		if (opt.isPresent()) {
+			BooksBean book = opt.get();
+			book.setStock(stock);
+			return bookRepo.save(book);
+		} else {
+			log.warn("修改失敗 - 無該ID相關書籍資料");
+			throw new BusinessException(404, "修改失敗 - 無該ID相關書籍資料");
+		}
 	}
 
 	@Transactional

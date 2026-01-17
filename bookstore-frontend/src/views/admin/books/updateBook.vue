@@ -31,7 +31,7 @@ const originalIsbn = ref(''); // 儲存原始 ISBN 用於比對
 
 // Rules
 const rules = {
-    required: value => !!value || '此欄位為必填',
+    required: value => (value !== null && value !== undefined && value !== '') || '此欄位為必填',
     positive: value => value >= 0 || '數值必須大於等於 0',
     isbnFormat: value => /^\d{13}$/.test(value) || 'ISBN 必須為 13 位數字',
     isbnUnique: async (value) => {
@@ -183,11 +183,7 @@ const submit = async () => {
                                     :rules="[rules.required, rules.positive]" prefix="$" variant="outlined"
                                     color="primary"></v-text-field>
                             </v-col>
-                            <v-col cols="12" md="6">
-                                <v-text-field v-model.number="book.stock" label="庫存" type="number"
-                                    :rules="[rules.required, rules.positive]" variant="outlined"
-                                    color="primary"></v-text-field>
-                            </v-col>
+
                             <v-col cols="12">
                                 <v-text-field v-model="book.isbn" label="ISBN (13碼)"
                                     :rules="[rules.required, rules.isbnFormat, rules.isbnUnique]" counter="13"

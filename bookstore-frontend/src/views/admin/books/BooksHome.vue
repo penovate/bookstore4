@@ -21,7 +21,7 @@ const headers = [
     { title: '譯者', key: 'translator', sortable: true, align: 'center' },
     { title: '出版社', key: 'press', sortable: true, align: 'center' },
     { title: '類型', key: 'genres', sortable: false, align: 'center' },
-    { title: '價錢', key: 'price', sortable: true, align: 'center' },
+    { title: '售價', key: 'price', sortable: true, align: 'center' },
     { title: 'ISBN', key: 'isbn', sortable: true, align: 'center' },
     { title: '庫存', key: 'stock', sortable: true, align: 'center' },
     { title: '修改', key: 'actions_edit', sortable: false, align: 'center' },

@@ -26,7 +26,7 @@ const imagePreview = ref(null); // URL for preview
 
 // Rules
 const rules = {
-    required: value => !!value || '此欄位為必填',
+    required: value => (value !== null && value !== undefined && value !== '') || '此欄位為必填',
     positive: value => value >= 0 || '數值必須大於等於 0',
     isbnFormat: value => /^\d{13}$/.test(value) || 'ISBN 必須為 13 位數字',
     isbnUnique: async (value) => {
@@ -84,7 +84,7 @@ const generateRandomBook = () => {
         press: `出版社 ${randomSuffix}`,
         price: Math.floor(Math.random() * 901) + 100, // 100-1000
         isbn: isbn,
-        stock: Math.floor(Math.random() * 91) + 10, // 10-100
+        // stock: Math.floor(Math.random() * 91) + 10, // 10-100
         shortDesc: `這是一本隨機生成的書籍介紹 ${randomSuffix}。內容豐富，值得一讀。`,
         onShelf: 0
     };
@@ -225,15 +225,11 @@ const submit = async () => {
                                     variant="outlined" color="primary"></v-select>
                             </v-col>
                             <v-col cols="12" md="6">
-                                <v-text-field v-model.number="book.price" label="價錢" type="number"
+                                <v-text-field v-model.number="book.price" label="售價" type="number"
                                     :rules="[rules.required, rules.positive]" prefix="$" variant="outlined"
                                     color="primary"></v-text-field>
                             </v-col>
-                            <v-col cols="12" md="6">
-                                <v-text-field v-model.number="book.stock" label="庫存" type="number"
-                                    :rules="[rules.required, rules.positive]" variant="outlined"
-                                    color="primary"></v-text-field>
-                            </v-col>
+
                             <v-col cols="12">
                                 <v-text-field v-model="book.isbn" label="ISBN (13碼)"
                                     :rules="[rules.required, rules.isbnFormat, rules.isbnUnique]" counter="13"

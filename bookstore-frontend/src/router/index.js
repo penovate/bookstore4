@@ -53,7 +53,7 @@ const router = createRouter({
         {
           path: 'books/insert',
           name: 'admin-books-insert',
-          component: () => import('../views/public/books/UserBookList.vue'),
+          component: () => import('../views/admin/books/insertBook.vue'),
         },
         {
           path: 'books/:id',
@@ -89,6 +89,11 @@ const router = createRouter({
           path: 'logs/update/:id',
           name: 'admin-logs-update',
           component: () => import('../views/admin/logs/updateLogDetail.vue'),
+        },
+        {
+          path: 'reports',
+          name: 'admin-reports',
+          component: () => import('../views/admin/logs/SalesData.vue'),
         },
       ],
     },

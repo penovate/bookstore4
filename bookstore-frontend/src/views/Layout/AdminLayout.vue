@@ -20,6 +20,11 @@ const items = ref([
     to: '/dev/admin/books',
   },
   {
+    title: '優惠券管理',
+    icon: 'mdi-ticket-percent-outline',
+    to: '/dev/admin/coupons',
+  },
+  {
     title: '訂單管理',
     icon: 'mdi-clipboard-list-outline',
     to: '/dev/admin/orders', // 補齊路徑

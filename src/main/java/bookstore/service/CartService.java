@@ -28,16 +28,18 @@ public class CartService {
         BooksBean book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BusinessException(400, "找不到該書籍"));
 
-        // Handle nulls safely
+        // 安全處理 Null 值
         int stock = (book.getStock() != null) ? book.getStock() : 0;
         int onShelf = (book.getOnShelf() != null) ? book.getOnShelf() : 0;
 
         if (onShelf != 1) {
-            // Assuming 1 is On Shelf based on frontend logic.
-            // If strict check needed: throw Exception or ignore.
-            // Requirement says "失效商品管理...禁止勾選結帳", maybe add is ok but warn?
-            // But for "Add to Cart", usually we block invalid items.
-            throw new BusinessException(400, "該書籍目前未上架");
+            if (onShelf != 1) {
+                // 假設 1 代表上架狀態 (基於前端邏輯)
+                // 如果需要嚴格檢查：拋出異常或忽略
+                // 需求提到「失效商品管理...禁止勾選結帳」，也許加入購物車時稍微寬容？
+                // 但一般「加入購物車」時通常會阻擋無效商品
+                throw new BusinessException(400, "該書籍目前未上架");
+            }
         }
 
         if (quantity > stock) {
@@ -94,32 +96,46 @@ public class CartService {
     public List<Cart> getUserCart(Integer userId) {
         List<Cart> cartItems = cartRepository.findByUserId(userId);
 
-        // Auto-adjust quantities if they exceed stock
+        // 如果數量超過庫存，自動調整
         for (Cart item : cartItems) {
             BooksBean book = item.getBooksBean();
             if (book != null) {
+                // 檢查上架狀態
+                Integer onShelf = (book.getOnShelf() != null) ? book.getOnShelf() : 0;
+                boolean isStatusChanged = false;
+
+                if (onShelf != 1) {
+                    if (!"OFF_SHELF".equals(item.getCartStatus())) {
+                        item.setCartStatus("OFF_SHELF");
+                        isStatusChanged = true;
+                    }
+                } else {
+                    // 如果書籍重新上架，清空狀態或設為有效/空值
+                    if ("OFF_SHELF".equals(item.getCartStatus())) {
+                        item.setCartStatus(null); // 這裡設為 null 代表狀態正常
+                        isStatusChanged = true;
+                    }
+                }
+
                 int stock = (book.getStock() != null) ? book.getStock() : 0;
                 if (item.getQuantity() > stock) {
                     if (stock > 0) {
                         item.setQuantity(stock);
-                        item.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
-                        cartRepository.save(item);
+                        isStatusChanged = true;
                     } else {
-                        // Optional: If stock is 0, we could leave it as is (user sees it's invalid)
-                        // or set to 0? Usually we don't set cart qty to 0 unless removing.
-                        // User request: "如果超過要先將購物車該筆書本數量改為實際庫存量"
-                        // If stock is 0, qty becomes 0? That technically effectively removes it
-                        // visually or shows 0.
-                        // But cart item with 0 qty might handle weirdly.
-                        // Let's set to stock (0) if stock is 0, but user said "change to actual stock".
-                        // Use case: User added 5, stock became 3 -> set to 3.
-                        // Use case: User added 1, stock became 0 -> set to 0.
-                        // Frontend likely filters out invalid items or shows them as OOS.
-                        // Let's safe guard to set to stock.
-                        item.setQuantity(stock);
-                        item.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
-                        cartRepository.save(item);
+                        // 庫存為 0，暫時保留但可能透過狀態處理？
+                        // 如果庫存為 0 且上架狀態為 1，代表缺貨
+                        // 需求：「若出現下架中或是封存的書籍... 改變狀態」
+                        // 上面已經處理了 OFF_SHELF (下架)
+                        // 對於庫存 0：既有邏輯是「設為庫存量(0)」
+                        item.setQuantity(0); // 若無庫存則設為 0
+                        isStatusChanged = true;
                     }
+                }
+
+                if (isStatusChanged) {
+                    item.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+                    cartRepository.save(item);
                 }
             }
         }

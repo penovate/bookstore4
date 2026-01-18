@@ -167,7 +167,7 @@ export default {
 
     // 結帳 (從購物車)
     checkout(checkoutData) {
-        return apiClient.post('/orders/checkout', checkoutData, getAuthHeaders());
+        return apiClient.post('/order/api/checkout', checkoutData, getAuthHeaders());
     },
 
     // --- 書城 (前台) ---

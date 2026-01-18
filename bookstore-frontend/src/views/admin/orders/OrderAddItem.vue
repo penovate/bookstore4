@@ -78,21 +78,39 @@ const fetchBookInfo = async (item) => {
         const response = await orderService.getBookInfo(item.bookId)
         const book = response.data
         if (book && book.bookId) {
+            if (book.onShelf !== 1) { // 檢查是否上架 (0:下架, 1:上架, 2:封存)
+                Swal.fire('警告', '本書目前未上架，無法新增', 'warning')
+                item.bookName = ''
+                item.price = ''
+                item.bookId = '' // 清空 ID 避免誤送
+                return
+            }
             item.bookName = book.bookName
             item.price = book.price
+            item.onShelf = book.onShelf
         } else {
-            Swal.fire('錯誤', '找不到此書籍ID', 'error')
+            Swal.fire('錯誤', '查無此書籍', 'error')
             item.bookName = ''
             item.price = ''
             item.bookId = ''
         }
     } catch (error) {
         console.error(error)
-        Swal.fire('錯誤', '查詢書籍失敗', 'error')
+        Swal.fire('錯誤', '查無此書籍', 'error')
+        item.bookName = ''
+        item.price = ''
+        item.bookId = '' // 清空 ID 避免誤送
     }
 }
 
 const handleSubmit = async () => {
+    // 再次檢查是否有無效書籍
+    const invalidItems = items.value.filter(item => item.bookId && item.onShelf !== 1 && item.onShelf !== undefined)
+    if (invalidItems.length > 0) {
+         Swal.fire('錯誤', '包含未上架書籍，請檢查後重試', 'error')
+         return
+    }
+
     try {
         const response = await orderService.addOrderItems(orderId.value, items.value)
         

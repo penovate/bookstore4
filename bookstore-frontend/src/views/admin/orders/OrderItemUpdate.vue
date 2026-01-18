@@ -43,8 +43,8 @@ const router = useRouter()
 const route = useRoute()
 
 const itemId = route.params.itemId
-// Ideally fetch fresh data, but JSP example passed params via URL. 
-// We will use query params as initial state for simplicity as per JSP logic.
+// 理想情況是重新獲取資料，但 JSP 範例是透過 URL 傳遞參數。
+// 為求簡單並符合 JSP 邏輯，我們使用查詢參數作為初始狀態。
 const orderId = route.query.orderId
 const bookId = route.query.bookId
 const price = ref(route.query.price)
@@ -57,7 +57,7 @@ const handleSubmit = async () => {
         itemId, 
         price.value, 
         quantity.value, 
-        bookId // Pass bookId to ensure it's not lost
+        bookId // 傳遞 bookId 以確保不會遺失
     )
 
     if (response.data === 'success') {

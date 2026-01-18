@@ -70,6 +70,12 @@ const router = createRouter({
           name: 'admin-operation-logs',
           component: () => import('../views/admin/users/UserLogList.vue'),
         },
+        // 2.5 優惠券管理
+        {
+          path: 'coupons',
+          name: 'admin-coupons',
+          component: () => import('../views/admin/coupons/AdminCoupon.vue'),
+        },
         // 3. 訂單管理
         {
           path: 'orders',
@@ -159,6 +165,11 @@ const router = createRouter({
           path: 'orders',
           name: 'myOrders',
           component: () => import('../views/public/orders/MyOrders.vue'),
+        },
+        {
+          path: 'coupons',
+          name: 'userCoupons',
+          component: () => import('../views/public/user/UserCoupon.vue'),
         },
       ],
     },

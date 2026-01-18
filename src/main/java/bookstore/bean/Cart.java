@@ -40,10 +40,10 @@ public class Cart implements Serializable {
 	@Column(name = "cart_id")
 	private Integer cartId;
 
-	@Column(name = "user_id") // Keep as basic column for easy access, or rely on relationship
+	@Column(name = "user_id") // 保留基本欄位以便存取，或依賴關聯
 	private Integer userId;
 
-	@Column(name = "book_id") // Keep as basic column for easy access
+	@Column(name = "book_id") // 保留基本欄位以便存取
 	private Integer bookId;
 
 	@Column(name = "quantity")

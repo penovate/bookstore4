@@ -26,13 +26,13 @@ public class OrderItem implements Serializable {
 	@Column(name = "ORDER_ITEM_ID")
 	private Integer orderItemId;
 
-//  建立Order物件，可取代orderId欄位
-//	@Column(name = "ORDER_ID")
-//	private Integer orderId;
+	// 建立Order物件，可取代orderId欄位
+	// @Column(name = "ORDER_ID")
+	// private Integer orderId;
 
-//	整合後，可把Bookid註解掉
-//	@Column(name = "BOOK_ID")
-//	private Integer bookId;
+	// 整合後，可把Bookid註解掉
+	// @Column(name = "BOOK_ID")
+	// private Integer bookId;
 
 	@Column(name = "QUANTITY")
 	private Integer quantity;
@@ -45,6 +45,7 @@ public class OrderItem implements Serializable {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "ORDER_ID")
+	@com.fasterxml.jackson.annotation.JsonIgnore
 	private Orders orders;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -54,12 +55,12 @@ public class OrderItem implements Serializable {
 	public OrderItem() {
 	}
 
-	public OrderItem(Integer orderItemId , Integer quantity, BigDecimal price,
+	public OrderItem(Integer orderItemId, Integer quantity, BigDecimal price,
 			BigDecimal subtotal) {
 		super();
 		this.orderItemId = orderItemId;
-//		this.orderId = orderId;
-//		this.bookId = bookId;
+		// this.orderId = orderId;
+		// this.bookId = bookId;
 		this.quantity = quantity;
 		this.price = price;
 		this.subtotal = subtotal;
@@ -73,21 +74,21 @@ public class OrderItem implements Serializable {
 		this.orderItemId = orderItemId;
 	}
 
-//	public Integer getOrderId() {
-//		return orderId;
-//	}
-//
-//	public void setOrderId(Integer orderId) {
-//		this.orderId = orderId;
-//	}
+	// public Integer getOrderId() {
+	// return orderId;
+	// }
+	//
+	// public void setOrderId(Integer orderId) {
+	// this.orderId = orderId;
+	// }
 
-//	public Integer getBookId() {
-//		return bookId;
-//	}
-//
-//	public void setBookId(Integer bookId) {
-//		this.bookId = bookId;
-//	}
+	// public Integer getBookId() {
+	// return bookId;
+	// }
+	//
+	// public void setBookId(Integer bookId) {
+	// this.bookId = bookId;
+	// }
 
 	public Integer getQuantity() {
 		return quantity;
@@ -154,7 +155,7 @@ public class OrderItem implements Serializable {
 
 	@Override
 	public String toString() {
-		return "OrderItem [orderItemId=" + orderItemId  + ", quantity="
+		return "OrderItem [orderItemId=" + orderItemId + ", quantity="
 				+ quantity + ", price=" + price + ", subtotal=" + subtotal + "]";
 	}
 }

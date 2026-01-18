@@ -25,6 +25,7 @@
           class="cart-table"
           hide-default-footer
           :items-per-page="-1"
+          :item-class="rowClass"
         >
 
           <!-- 移除按鈕 (最左側) -->
@@ -47,6 +48,25 @@
               <div class="text-caption text-grey">
                 {{ item.booksBean ? item.booksBean.author : '' }}
               </div>
+               <!-- 顯示無庫存或下架警告 -->
+              <v-chip
+                v-if="item.cartStatus === 'OFF_SHELF'"
+                color="error"
+                size="default"
+                class="mt-1 font-weight-bold"
+                variant="flat"
+              >
+                本書籍暫不供應販售，請移除
+              </v-chip>
+              <v-chip
+                v-else-if="item.quantity === 0"
+                color="error"
+                size="default"
+                class="mt-1 font-weight-bold"
+                variant="flat"
+              >
+                本書暫無庫存，請移除
+              </v-chip>
             </div>
           </template>
 
@@ -64,7 +84,7 @@
                   size="x-small"
                   variant="outlined"
                   color="grey"
-                  :disabled="item.quantity <= 1"
+                  :disabled="item.quantity <= 1 || item.cartStatus === 'OFF_SHELF' || item.quantity === 0"
                   @click="adjustQuantity(item, -1)"
                 ></v-btn>
                 
@@ -76,6 +96,7 @@
                    hide-details
                    class="centered-input"
                    style="width: 60px; text-align: center;"
+                   :disabled="item.cartStatus === 'OFF_SHELF' || item.quantity === 0"
                    @change="updateQuantity(item)"
                 ></v-text-field>
 
@@ -84,7 +105,7 @@
                   size="x-small"
                   variant="outlined"
                   color="primary"
-                  :disabled="item.booksBean && item.quantity >= item.booksBean.stock"
+                  :disabled="(item.booksBean && item.quantity >= item.booksBean.stock) || item.cartStatus === 'OFF_SHELF' || item.quantity === 0"
                   @click="adjustQuantity(item, 1)"
                 ></v-btn>
              </div>
@@ -141,7 +162,7 @@
              class="px-10 rounded-lg font-weight-bold button-shadow"
              append-icon="mdi-arrow-right"
              @click="goToCheckout"
-             :disabled="cartItems.length === 0"
+             :disabled="cartItems.length === 0 || hasInvalidItems"
              height="50"
           >
             前往結帳
@@ -154,7 +175,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import orderService from '@/api/orderService.js'
@@ -164,6 +185,10 @@ const cartItems = ref([])
 const totalAmount = ref(0)
 const alertMessage = ref('')
 
+const hasInvalidItems = computed(() => {
+  return cartItems.value.some(item => item.cartStatus === 'OFF_SHELF' || item.quantity === 0)
+})
+
 const headers = [
   { title: '', key: 'remove', align: 'center', width: '50px' },
   { title: '書籍資訊', key: 'bookName', align: 'start', width: '40%' },
@@ -172,15 +197,12 @@ const headers = [
   { title: '小計', key: 'subtotal', align: 'center' },
 ]
 
-// adjustQuantity helper needs to function, but it calls updateQuantity which is replaced.
-// Wait, I removed adjustQuantity in the previous block accidentally?
-// Checking previous replace block...
-// Yes, I included adjustQuantity in the TargetContent and did NOT include it in ReplacementContent. 
-// I need to RESTORE adjustQuantity in this or the next block or define it.
-// Actually, looking at the previous tool call, I replaced the block starting with `fetchCart` down to `removeItem`.
-// `adjustQuantity` WAS inside that block. My replacement content did NOT include `adjustQuantity`.
-// This breaks the UI (+/- buttons). I must restore it now.
-
+const rowClass = (item) => {
+  if (item.item.cartStatus === 'OFF_SHELF' || item.item.quantity === 0) {
+    return 'disabled-row'
+  }
+  return ''
+}
 
 const fetchCart = async () => {
   try {
@@ -205,6 +227,8 @@ const fetchCart = async () => {
 }
 
 const adjustQuantity = (item, delta) => {
+  if (item.cartStatus === 'OFF_SHELF') return
+
   const stock = item.booksBean ? item.booksBean.stock : 9999
   const newQty = item.quantity + delta
 
@@ -214,7 +238,7 @@ const adjustQuantity = (item, delta) => {
      Swal.fire({
        icon: 'warning',
        title: '庫存不足',
-       text: `目前庫存僅剩 \${stock} 本`,
+       text: `目前庫存僅剩 ${stock} 本`,
        toast: true,
        position: 'center',
        showConfirmButton: false,
@@ -229,12 +253,13 @@ const adjustQuantity = (item, delta) => {
 
 const updateQuantity = async (item) => {
   const stock = item.booksBean ? item.booksBean.stock : 9999
+  // 使用本地邏輯進行預檢查，但依賴後端進行實際更新
   if (item.quantity < 1) item.quantity = 1
   if (item.quantity > stock) {
       Swal.fire({
        icon: 'warning',
        title: '庫存不足',
-       text: `目前庫存僅剩 \${stock} 本`,
+       text: `目前庫存僅剩 ${stock} 本`,
        toast: true,
        position: 'center',
        showConfirmButton: false,
@@ -336,5 +361,25 @@ onMounted(() => {
 
 .button-shadow {
   box-shadow: 0 4px 14px rgba(46, 92, 67, 0.3);
+}
+
+.cart-table :deep(.disabled-row) {
+  background-color: #f5f5f5 !important; /* 淺灰色背景 */
+  color: #9e9e9e !important;
+  opacity: 1; /* 恢復不透明度以確保文字可讀但為灰色 */
+}
+
+/* 強制指定元素變灰 */
+.cart-table :deep(.disabled-row .text-primary),
+.cart-table :deep(.disabled-row .text-h6),
+.cart-table :deep(.disabled-row .text-body-1),
+.cart-table :deep(.disabled-row .text-caption),
+.cart-table :deep(.disabled-row .v-chip) {
+  color: #9e9e9e !important;
+}
+
+
+.cart-table :deep(.disabled-row .v-chip) {
+   color: white !important; /* 恢復 Chip 文字顏色（如果有被影響） */
 }
 </style>

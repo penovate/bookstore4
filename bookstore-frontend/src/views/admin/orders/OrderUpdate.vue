@@ -83,7 +83,7 @@ const order = reactive({
   paymentMethod: '',
   paymentStatus: '',
   orderStatus: '',
-  totalAmount: '' // Needed for update call if controller checks it, though typically read-only
+  totalAmount: '' // 更新時需要，雖然通常是唯讀的
 })
 
 const fetchOrder = async () => {
@@ -123,25 +123,12 @@ const handleSubmit = async () => {
     params.append('totalAmount', order.totalAmount)
 
     // Controller: @PostMapping("/order/update") -> processUpdateOrder(@ModelAttribute Orders order, Model model)
-    // It maps params to Orders object fields.
+    // 將參數對應到 Orders 物件欄位
 
     await axios.post('http://localhost:8080/order/api/update', params, {
       withCredentials: true
     })
-    // Note: The controller returns a JSP view name if successful.
-    // My previous plan was to create `/order/api/update`.
-    // I missed creating `/order/api/update` in OrderController execution step 179!
-    // I created `insert`, `cancel`, `restore`, `get`... 
-    // Wait, let me check OrderController.java content again.
-    
-    // Step 179 added:
-    // /order/api/activeList, /order/api/cancelledList, /order/api/get, /order/api/insert, /order/api/cancel, /order/api/restore.
-    // IT DID NOT ADD /order/api/update!
-    
-    // I need to add /order/api/update in OrderController or use the existing /order/update (which returns JSP view, might cause issue if axios expects JSON or if returned HTML is large).
-    // Ideally I should add /order/api/update.
-    
-    // For now I will code this component to use /order/api/update and I MUST add it to controller in next step.
+    // 注意: 控制器如果成功會回傳 JSP 視圖名稱
       
     Swal.fire({
       icon: 'success',
@@ -152,7 +139,7 @@ const handleSubmit = async () => {
     })
 
   } catch (error) {
-     // If I use existing controller it might return HTML 200 OK.
+     // 如果使用現有的控制器，可能會回傳 HTML 200 OK
     Swal.fire('錯誤', '更新失敗', 'error')
   } finally {
     isSubmitting.value = false

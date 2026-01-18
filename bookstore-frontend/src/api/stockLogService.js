@@ -18,5 +18,11 @@ export default {
     },
     insertStockLog(stockLogData) {
         return apiClient.post('/insert', stockLogData);
+    },
+    updateStockLog(stockLogData) {
+        return apiClient.post('/update', stockLogData);
+    },
+    returnStockLog(logId) {
+        return apiClient.post('/return', { logId });
     }
 };

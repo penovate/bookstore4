@@ -11,12 +11,11 @@ const items = ref([
     {
         title: '書籍管理',
         icon: 'mdi-book-open-page-variant',
-        to: '/dev/admin/books',
-    },
-    {
-        title: '進退貨管理',
-        icon: 'mdi-truck-return',
-        to: '/dev/admin/logs',
+        children: [
+            { title: '書籍列表', to: '/dev/admin/books', icon: 'mdi-format-list-bulleted' },
+            { title: '進退貨管理', to: '/dev/admin/logs', icon: 'mdi-truck' },
+            { title: '數據報表分析', icon: 'mdi-chart-bar', /* to: '/dev/admin/reports' */ },
+        ]
     },
     {
         title: '訂單管理',
@@ -27,11 +26,6 @@ const items = ref([
         title: '評價管理',
         icon: 'mdi-star-half-full',
         // to: '/dev/admin/reviews',
-    },
-    {
-        title: '數據報表分析',
-        icon: 'mdi-chart-bar',
-        // to: '/dev/admin/reports',
     },
     {
         title: '讀書會管理',
@@ -54,11 +48,22 @@ const items = ref([
             <v-divider></v-divider>
             <!-- 選單列表 -->
             <v-list density="compact" nav>
-                <v-list-item v-for="(item, i) in items" :key="i" :value="item" :to="item.to" :prepend-icon="item.icon"
-                    color="accent">
+                <template v-for="(item, i) in items" :key="i">
+                    <!-- 如果有子選單 -->
+                    <v-list-group v-if="item.children" :value="item.title">
+                        <template v-slot:activator="{ props }">
+                            <v-list-item v-bind="props" :prepend-icon="item.icon" :title="item.title"></v-list-item>
+                        </template>
 
-                    <v-list-item-title v-text="item.title"></v-list-item-title>
-                </v-list-item>
+                        <v-list-item v-for="(child, k) in item.children" :key="k" :title="child.title"
+                            :prepend-icon="child.icon" :to="child.to" :value="child.title" color="accent"></v-list-item>
+                    </v-list-group>
+
+                    <!-- 如果沒有子選單 -->
+                    <v-list-item v-else :value="item" :to="item.to" :prepend-icon="item.icon" color="accent">
+                        <v-list-item-title v-text="item.title"></v-list-item-title>
+                    </v-list-item>
+                </template>
             </v-list>
 
             <!-- 底部登出區 -->
@@ -90,3 +95,11 @@ const items = ref([
         </v-main>
     </v-layout>
 </template>
+
+<style scoped>
+/* 覆寫 Vuetify 預設的縮排 */
+:deep(.v-list-group__items .v-list-item) {
+    padding-inline-start: 16px !important;
+    /* 調整此數值以改變縮排寬度 (原預設較大) */
+}
+</style>

@@ -128,6 +128,60 @@ public class StockLogService {
 		return totalSales;
 	}
 
+	@Transactional
+	public StockLogBean returnStockLog(StockLogBean inputBean) {
+		Integer logId = inputBean.getLogId();
+		if (logId == null) {
+			throw new BusinessException(400, "貨單ID不可為空白");
+		}
+
+		// 1. 查詢原單據
+		Optional<StockLogBean> opt = stockLogRepository.findById(logId);
+		if (!opt.isPresent()) {
+			throw new BusinessException(404, "查無此貨單 ID:" + logId);
+		}
+
+		StockLogBean logBean = opt.get();
+
+		// 2. 驗證是否已經是退貨單
+		if (logBean.getStockType() == 2) {
+			throw new BusinessException(400, "此貨單已經是退貨單，不可重複退貨");
+		}
+
+		// 3. 處理庫存回沖 (原本是進貨+，現在要變成退貨-，所以要減去原數量)
+		List<LogItemBean> items = logBean.getLogItemBeans();
+		if (items != null) {
+			for (LogItemBean item : items) {
+				if (item.getBooksBean() != null) {
+					BooksBean book = item.getBooksBean();
+					// 重新查詢書籍以確保庫存最新
+					Optional<BooksBean> bookOpt = bookRepository.findById(book.getBookId());
+					if (bookOpt.isPresent()) {
+						book = bookOpt.get();
+						Integer currentStock = book.getStock();
+						Integer qtyToRevert = item.getChangeQty() != null ? item.getChangeQty() : 0;
+
+						// 檢查庫存是否足夠扣除
+						if (currentStock < qtyToRevert) {
+							throw new BusinessException(400, "書籍 [" + book.getBookName() + "] 目前庫存(" + currentStock
+									+ ")不足以執行退貨(" + qtyToRevert + ")");
+						}
+
+						// 扣除庫存
+						book.setStock(currentStock - qtyToRevert);
+						bookRepository.save(book);
+					}
+				}
+			}
+		}
+
+		// 4. 更新單據狀態為退貨 (StockType = 2)
+		logBean.setStockType(2); // 2: 退貨
+		// 也可以更新時間或其他備註 if needed
+
+		return stockLogRepository.save(logBean);
+	}
+
 	// 取得未付款營業額
 	public BigDecimal unpaidtotalSales() {
 		BigDecimal totalSales = BigDecimal.ZERO;

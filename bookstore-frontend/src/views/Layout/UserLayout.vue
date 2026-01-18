@@ -7,11 +7,12 @@ const drawer = ref(false) // Mobile drawer state
 
 const menuItems = ref([
     { title: '首頁', to: '/dev/user', icon: 'mdi-home' },
-    { title: '書籍專區', to: '', icon: 'mdi-book-open-page-variant' }, // 假設路由
+
+    { title: '書籍專區', to: '/dev/user/books', icon: 'mdi-book-open-page-variant' }, // 假設路由
     { title: '會員中心', to: '', icon: 'mdi-book-open-page-variant' }, // 假設路由
     { title: '讀書會', to: '', icon: 'mdi-book-open-page-variant' }, // 假設路由
     { title: '關於我們', to: '', icon: 'mdi-information' },
-    
+
 ]);
 
 const user = ref({
@@ -25,7 +26,7 @@ const user = ref({
 <template>
     <!-- 使用 forestTheme 以符合 AdminLayout 配色風格，或可保留自定義 colors 但風格統一 -->
     <v-app theme="forestTheme">
-        
+
         <!-- 頂部導航列 (App Bar) -->
         <v-app-bar color="primary" elevation="2" class="px-md-4">
             <!-- Mobile Menu Icon -->
@@ -41,13 +42,8 @@ const user = ref({
 
             <!-- Desktop Navigation Links (Centered) -->
             <div class="d-none d-md-flex align-center">
-                <v-btn 
-                    v-for="item in menuItems" 
-                    :key="item.title"
-                    :to="item.to"
-                    variant="text"
-                    class="mx-1 text-subtitle-1 font-weight-medium"
-                >
+                <v-btn v-for="item in menuItems" :key="item.title" :to="item.to" variant="text"
+                    class="mx-1 text-subtitle-1 font-weight-medium">
                     {{ item.title }}
                 </v-btn>
             </div>
@@ -57,7 +53,7 @@ const user = ref({
             <!-- Right Side Icons: Search, Cart, User -->
             <div class="d-flex align-center">
                 <v-btn icon="mdi-magnify" variant="text"></v-btn>
-                
+
                 <v-btn icon class="me-2">
                     <v-badge content="2" color="accent">
                         <v-icon icon="mdi-cart-outline"></v-icon>
@@ -92,13 +88,8 @@ const user = ref({
             <v-list>
                 <v-list-item title="導覽選單" subtitle="BookStore"></v-list-item>
                 <v-divider></v-divider>
-                <v-list-item 
-                    v-for="item in menuItems" 
-                    :key="item.title"
-                    :to="item.to"
-                    :prepend-icon="item.icon"
-                    :title="item.title"
-                ></v-list-item>
+                <v-list-item v-for="item in menuItems" :key="item.title" :to="item.to" :prepend-icon="item.icon"
+                    :title="item.title"></v-list-item>
             </v-list>
         </v-navigation-drawer>
 
@@ -114,7 +105,8 @@ const user = ref({
             <div class="d-flex w-100 align-center px-4">
                 <strong class="text-h6">與我們保持聯繫，獲取最新好書資訊！</strong>
                 <v-spacer></v-spacer>
-                <v-btn v-for="icon in ['mdi-facebook', 'mdi-twitter', 'mdi-instagram']" :key="icon" :icon="icon" class="mx-2" variant="text"></v-btn>
+                <v-btn v-for="icon in ['mdi-facebook', 'mdi-twitter', 'mdi-instagram']" :key="icon" :icon="icon"
+                    class="mx-2" variant="text"></v-btn>
             </div>
             <v-divider class="w-100 my-4 border-opacity-25"></v-divider>
             <div class="text-center w-100 text-body-2">
@@ -128,6 +120,7 @@ const user = ref({
 <style scoped>
 /* 可在此微調 navbar 樣式 */
 .v-btn {
-    text-transform: none; /* 防止按鈕文字全大寫 */
+    text-transform: none;
+    /* 防止按鈕文字全大寫 */
 }
 </style>

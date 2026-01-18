@@ -22,7 +22,7 @@ public class StockLogController {
 
 	@Autowired
 	private StockLogService stockLogService;
-	
+
 	@Autowired
 	private OrderService orderService;
 
@@ -43,7 +43,17 @@ public class StockLogController {
 		StockLogBean result = stockLogService.insertStockLog(stockLogBean);
 		return ResponseEntity.ok(result);
 	}
-	
+
+	@PostMapping("/return")
+	public ResponseEntity<StockLogBean> returnStockLog(@RequestBody StockLogBean stockLogBean) {
+		// Assuming the frontend passes { logId: ... } which maps to StockLogBean
+		// If strict binding is needed, we might need a DTO or map
+		// But usually Spring handles field mapping fine.
+		// If frontend sends { logId: 123 }, it works if StockLogBean has logId.
+		StockLogBean result = stockLogService.returnStockLog(stockLogBean);
+		return ResponseEntity.ok(result);
+	}
+
 	@ResponseBody
 	@PostMapping("/paidtotalSales")
 	public BigDecimal paidtotalSals() {

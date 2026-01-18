@@ -53,7 +53,12 @@ const router = createRouter({
         {
           path: 'books/insert',
           name: 'admin-books-insert',
-          component: () => import('../views/admin/books/insertBook.vue'),
+          component: () => import('../views/public/books/UserBookList.vue'),
+        },
+        {
+          path: 'books/:id',
+          name: 'user-book-detail',
+          component: () => import('../views/public/books/UserBookDetail.vue'),
         },
         {
           path: 'books/update/:id',
@@ -64,11 +69,6 @@ const router = createRouter({
           path: 'books/get/:id',
           name: 'admin-books-get',
           component: () => import('../views/admin/books/getBook.vue'),
-        },
-        {
-          path: 'orders',
-          name: 'admin-orders',
-          // component: () => import('../views/admin/orders/OrdersHome.vue'),
         },
         {
           path: 'logs',
@@ -85,11 +85,28 @@ const router = createRouter({
           name: 'admin-logs-detail',
           component: () => import('../views/admin/logs/StockLogDetail.vue'),
         },
+        {
+          path: 'logs/update/:id',
+          name: 'admin-logs-update',
+          component: () => import('../views/admin/logs/updateLogDetail.vue'),
+        },
       ],
     },
     {
       path: '/dev/user',
       component: () => import('../views/Layout/UserLayout.vue'),
+      children: [
+        {
+          path: 'books',
+          name: 'user-books',
+          component: () => import('../views/public/books/UserBookList.vue'),
+        },
+        {
+          path: 'books/:id',
+          name: 'user-book-detail',
+          component: () => import('../views/public/books/UserBookDetail.vue'),
+        },
+      ],
     },
   ],
 })

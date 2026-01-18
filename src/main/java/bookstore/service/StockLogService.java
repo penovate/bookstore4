@@ -1,6 +1,7 @@
 package bookstore.service;
 
 import java.math.BigDecimal;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,9 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import bookstore.bean.BooksBean;
 import bookstore.bean.LogItemBean;
+import bookstore.bean.OrderItem;
+import bookstore.bean.Orders;
 import bookstore.bean.StockLogBean;
 import bookstore.exceptionCenter.BusinessException;
 import bookstore.repository.BookRepository;
+import bookstore.repository.OrderItemRepository;
+import bookstore.repository.OrdersRepository;
 import bookstore.repository.StockLogRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,10 +30,19 @@ public class StockLogService {
 	@Autowired
 	private BookRepository bookRepository;
 
+	@Autowired
+	private OrderItemRepository orderItemRepository;
+
+	@Autowired
+	private OrdersRepository ordersRepository;
+
+	private static final String STATUS_PAID = "已付款";
+	private static final String STATUS_UNPAID = "未付款";
+
 	public List<StockLogBean> getAllStockLogs() {
 		List<StockLogBean> stockLogList = stockLogRepository.findAll();
 		if (stockLogList.isEmpty()) {
-			 log.warn("查無任何貨單"); // Consider removing warning for normal empty state
+			log.warn("查無任何貨單"); // Consider removing warning for normal empty state
 		}
 		log.info("查詢貨單成功，取得 {} 筆資料", stockLogList.size());
 		return stockLogList;
@@ -103,4 +117,24 @@ public class StockLogService {
 		return stockLogRepository.save(stockLogBean);
 	}
 
+	// 取得已付款營業額
+	public BigDecimal paidTotalSales() {
+		BigDecimal totalSales = BigDecimal.ZERO;
+
+		List<Orders> ordersList = ordersRepository.findByPaymentStatus(STATUS_PAID);
+		for (Orders orders : ordersList) {
+			totalSales.add(orders.getTotalAmount());
+		}
+		return totalSales;
+	}
+
+	// 取得未付款營業額
+	public BigDecimal unpaidtotalSales() {
+		BigDecimal totalSales = BigDecimal.ZERO;
+		List<Orders> ordersList = ordersRepository.findByPaymentStatus(STATUS_UNPAID);
+		for (Orders orders : ordersList) {
+			totalSales.add(orders.getTotalAmount());
+		}
+		return totalSales;
+	}
 }

@@ -92,6 +92,44 @@
               </label>
             </div>
           </div>
+
+
+          
+          <!-- 5. 優惠券 -->
+          <div class="section-block">
+            <h3>優惠券</h3>
+            <div v-if="coupons.length > 0">
+                <div class="radio-group" style="flex-direction: column; gap: 10px;">
+                    <label class="radio-label" :class="{ active: selectedCouponId === null }">
+                        <input type="radio" :value="null" v-model="selectedCouponId" />
+                        不使用優惠券
+                    </label>
+                    <label 
+                        v-for="coupon in coupons" 
+                        :key="coupon.couponId" 
+                        class="radio-label" 
+                        :class="{ active: selectedCouponId === coupon.couponId, 'disabled-coupon': cartTotal < coupon.minSpend }"
+                    >
+                        <input 
+                            type="radio" 
+                            :value="coupon.couponId" 
+                            v-model="selectedCouponId" 
+                            :disabled="cartTotal < coupon.minSpend"
+                        />
+                        <div class="d-flex justify-space-between w-100 align-center">
+                            <span>
+                                <strong class="text-primary">${{ coupon.discountAmount }} 折價券</strong>
+                                <span class="text-caption text-grey ml-2">(滿 ${{ coupon.minSpend }} 可用)</span>
+                            </span>
+                             <span v-if="cartTotal < coupon.minSpend" class="text-caption text-error">未達門檻</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div v-else class="text-grey pa-2">
+                無可用優惠券
+            </div>
+          </div>
         </div>
 
         <!-- 右側：訂單摘要 -->
@@ -105,6 +143,10 @@
             <div class="summary-row">
               <span>運費</span>
               <span>$ {{ shippingFee }}</span>
+            </div>
+            <div class="summary-row" v-if="discountAmount > 0">
+              <span>折價券</span>
+              <span class="text-error">- $ {{ discountAmount }}</span>
             </div>
             <div class="divider"></div>
             <div class="summary-row total-row">
@@ -129,6 +171,7 @@ import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import orderService from '@/api/orderService.js'
+import couponService from '@/api/couponService.js'
 
 const router = useRouter()
 const loading = ref(true)
@@ -137,11 +180,13 @@ const isSubmitting = ref(false)
 const user = ref({ userName: '', userPhone: '' })
 const cartTotal = ref(0) // 假設從後端取得購物車總額
 const cartItemsCount = ref(0)
+const coupons = ref([])
+const selectedCouponId = ref(null)
 
 const form = ref({
   recipientName: '',
   recipientPhone: '',
-  deliveryMethod: '宅配到府', // Default
+  deliveryMethod: '宅配到府', // 預設值
   address: '',
   paymentMethod: '',
 })
@@ -199,6 +244,17 @@ const initData = async () => {
       }
     }
 
+    // 3. 獲取優惠券
+    try {
+        const couponRes = await couponService.getMyCoupons()
+        if (couponRes.data.success) {
+            // 只顯示未使用且符合低消的優惠券
+            coupons.value = couponRes.data.coupons.filter(c => c.status === 0)
+        }
+    } catch (e) {
+        console.error('Failed to fetch coupons', e)
+    }
+
     loading.value = false
   } catch (error) {
     console.error(error)
@@ -218,7 +274,22 @@ const shippingFee = computed(() => {
 })
 
 const finalAmount = computed(() => {
-  return cartTotal.value + shippingFee.value
+  let total = cartTotal.value + shippingFee.value
+  if (selectedCouponId.value) {
+      const coupon = coupons.value.find(c => c.couponId === selectedCouponId.value)
+      if (coupon) {
+          total -= coupon.discountAmount
+      }
+  }
+  return total > 0 ? total : 0
+})
+
+const discountAmount = computed(() => {
+    if (selectedCouponId.value) {
+      const coupon = coupons.value.find(c => c.couponId === selectedCouponId.value)
+      return coupon ? coupon.discountAmount : 0
+    }
+    return 0
 })
 
 const canUseCreditCard = computed(() => true) // 總是可用
@@ -286,6 +357,7 @@ const submitOrder = async () => {
       deliveryMethod: form.value.deliveryMethod,
       address: form.value.address,
       paymentMethod: form.value.paymentMethod,
+      couponId: selectedCouponId.value
     }
 
     const response = await orderService.checkout(payload)
@@ -298,7 +370,7 @@ const submitOrder = async () => {
         showConfirmButton: false,
         timer: 1500,
       }).then(() => {
-        router.push({ name: 'bookStore' }) // Or success page
+        router.push({ name: 'bookStore' }) // 或成功頁面
       })
     } else {
       Swal.fire('訂購失敗', response.data.message, 'error')
@@ -331,7 +403,7 @@ onMounted(() => {
   max-width: 1000px;
   padding: 30px;
   background-color: #ffffff;
-  border-radius: 6px; /* Smooth corners */
+  border-radius: 6px; /* 圓角效果 */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
@@ -431,7 +503,7 @@ input[type='text'] {
   background-color: #dcd5c7;
 }
 
-/* Radio Group */
+/* 單選按鈕群組 */
 .radio-group {
   display: flex;
   gap: 15px;
@@ -477,7 +549,7 @@ input[type='text'] {
   white-space: nowrap;
 }
 
-/* Payment Options */
+/* 付款選項 */
 .payment-options {
   display: flex;
   flex-direction: column;
@@ -498,7 +570,7 @@ input[type='text'] {
   color: #a07d58;
 }
 
-/* Summary */
+/* 訂單摘要 */
 .summary-card {
   background-color: #fcfcfc;
   border: 1px solid #e0d9c9;
@@ -556,5 +628,13 @@ input[type='text'] {
   border-radius: 4px;
   margin-top: 10px;
   cursor: pointer;
+}
+.disabled-coupon {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+}
+.text-error {
+    color: #d33;
 }
 </style>

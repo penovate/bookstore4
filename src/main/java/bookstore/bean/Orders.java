@@ -67,6 +67,12 @@ public class Orders implements Serializable {
 	@Column(name = "FINAL_AMOUNT")
 	private BigDecimal finalAmount;
 
+	@Column(name = "DISCOUNT")
+	private BigDecimal discount;
+
+	@Column(name = "COUPON_ID")
+	private Integer couponId;
+
 	@Column(name = "RECIPIENT_AT")
 	private String recipientAt;
 

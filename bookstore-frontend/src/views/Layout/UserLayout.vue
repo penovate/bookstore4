@@ -10,6 +10,7 @@ const userRole = localStorage.getItem('userRole')
 const menuItems = ref([
   { title: '書籍專區', to: '/dev/user/store', icon: 'mdi-book-open-page-variant' }, // 指向 Store
   { title: '歷史訂單', to: '/dev/user/orders', icon: 'mdi-history' }, // 新增歷史訂單
+  { title: '我的優惠券', to: '/dev/user/coupons', icon: 'mdi-ticket-percent' },
   { title: '關於我們', to: '', icon: 'mdi-information' },
   { title: '後台系統', to: '/home', icon: 'mdi-information' },
 ])
@@ -27,6 +28,12 @@ const user = ref({
   name: localStorage.getItem('userName') || '訪客',
   isLoggedIn: !!localStorage.getItem('userToken'),
 })
+
+const socialLinks = [
+  { icon: 'mdi-facebook' },
+  { icon: 'mdi-twitter' },
+  { icon: 'mdi-instagram', link: 'https://www.instagram.com/penbrary.616/' },
+]
 </script>
 
 <template>
@@ -117,11 +124,14 @@ const user = ref({
         <strong class="text-h6">與我們保持聯繫，獲取最新好書資訊！</strong>
         <v-spacer></v-spacer>
         <v-btn
-          v-for="icon in ['mdi-facebook', 'mdi-twitter', 'mdi-instagram']"
-          :key="icon"
-          :icon="icon"
+          v-for="item in socialLinks"
+          :key="item.icon"
+          :icon="item.icon"
           class="mx-2"
           variant="text"
+          :href="item.link"
+          :target="item.link ? '_blank' : undefined"
+          rel="noopener noreferrer"
         ></v-btn>
       </div>
       <v-divider class="w-100 my-4 border-opacity-25"></v-divider>

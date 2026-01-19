@@ -133,6 +133,7 @@
                 <div class="d-flex justify-end">
                    <div class="text-right">
                      <div class="text-subtitle-2 text-grey">運費: ${{ currentOrder?.shippingFee || 0 }}</div>
+                     <div v-if="currentOrder?.discount > 0" class="text-subtitle-2 text-error">折扣: -${{ currentOrder?.discount }}</div>
                      <div class="text-h6 text-error font-weight-bold">總計: ${{ currentOrder?.finalAmount || 0 }}</div>
                    </div>
                 </div>
@@ -158,6 +159,11 @@ const orders = ref([])
 const loading = ref(true)
 const search = ref('')
 const itemsPerPage = ref(5)
+const detailsDialog = ref(false)
+const selectedOrderId = ref(null)
+const detailsLoading = ref(false)
+const currentOrderItems = ref([])
+const currentOrder = ref(null)
 const formatDate = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)

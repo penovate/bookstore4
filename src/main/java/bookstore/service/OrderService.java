@@ -10,10 +10,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import bookstore.bean.OrderItem;
 import bookstore.bean.Orders;
+import bookstore.bean.UserBean;
+import bookstore.bean.BooksBean;
+import bookstore.bean.Cart;
+import bookstore.bean.CouponBean;
 import bookstore.repository.BookRepository;
 import bookstore.repository.CartRepository;
 import bookstore.repository.OrderItemRepository;
 import bookstore.repository.OrdersRepository;
+import bookstore.repository.UserRepository;
+import bookstore.repository.CouponRepository;
+import bookstore.dto.CheckoutRequest;
+
+import bookstore.exceptionCenter.BusinessException;
 
 @Service
 @Transactional
@@ -32,35 +41,39 @@ public class OrderService {
 	private BookRepository bookRepository;
 
 	@Autowired
-	private bookstore.repository.UserRepository userRepository;
+	private UserRepository userRepository;
+
+	@Autowired
+	private CouponRepository couponRepository;
 
 	// 從購物車轉訂單 (Checkout Transcation)
-	public void createOrderFromCart(Integer userId, bookstore.dto.CheckoutRequest request) {
+	@SuppressWarnings("null")
+	public Orders createOrderFromCart(Integer userId, CheckoutRequest request) {
 
 		// 1. 取得使用者資料
-		bookstore.bean.UserBean user = userRepository.findById(userId)
-				.orElseThrow(() -> new bookstore.exceptionCenter.BusinessException(400, "找不到使用者"));
+		UserBean user = userRepository.findById(userId)
+				.orElseThrow(() -> new BusinessException(400, "找不到使用者"));
 
 		// 2. 取得使用者購物車
-		List<bookstore.bean.Cart> cartItems = cartRepository.findByUserId(userId);
+		List<Cart> cartItems = cartRepository.findByUserId(userId);
 		if (cartItems.isEmpty()) {
-			throw new bookstore.exceptionCenter.BusinessException(400, "購物車是空的");
+			throw new BusinessException(400, "購物車是空的");
 		}
 
 		// 3. 檢查庫存 & 計算總金額
 		BigDecimal totalAmount = BigDecimal.ZERO;
 
-		for (bookstore.bean.Cart cart : cartItems) {
-			bookstore.bean.BooksBean book = cart.getBooksBean();
+		for (Cart cart : cartItems) {
+			BooksBean book = cart.getBooksBean();
 
 			// 檢查上架狀態
 			if (book.getOnShelf() != 1) {
-				throw new bookstore.exceptionCenter.BusinessException(400, "書籍 " + book.getBookName() + " 已下架，請移除後再結帳");
+				throw new BusinessException(400, "書籍 " + book.getBookName() + " 已下架，請移除後再結帳");
 			}
 
 			// 檢查庫存
 			if (book.getStock() < cart.getQuantity()) {
-				throw new bookstore.exceptionCenter.BusinessException(400,
+				throw new BusinessException(400,
 						"書籍 " + book.getBookName() + " 庫存不足，僅剩 " + book.getStock() + " 本");
 			}
 
@@ -117,6 +130,7 @@ public class OrderService {
 		order.setPhone(request.getRecipientPhone());
 		order.setAddress(request.getAddress()); // 地址或超商門市名稱
 		order.setDeliveryMethod(delivery);
+		order.setCouponId(request.getCouponId());
 
 		order.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
 		order.setUpdatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
@@ -124,7 +138,7 @@ public class OrderService {
 		ordersRepository.save(order);
 
 		// 6. 建立訂單明細
-		for (bookstore.bean.Cart cart : cartItems) {
+		for (Cart cart : cartItems) {
 			OrderItem item = new OrderItem();
 			item.setOrders(order);
 			item.setBooksBean(cart.getBooksBean());
@@ -135,8 +149,48 @@ public class OrderService {
 			orderItemRepository.save(item);
 		}
 
+		// 8. 處理優惠券 (如果有)
+		if (order.getCouponId() != null) {
+			CouponBean coupon = couponRepository.findById(order.getCouponId())
+					.orElseThrow(() -> new BusinessException(400, "優惠券不存在"));
+
+			// 驗證優惠券歸屬
+			if (!coupon.getUserId().equals(order.getUserBean().getUserId())) {
+				throw new BusinessException(400, "這張優惠券不屬於您");
+			}
+
+			// 驗證是否已使用
+			if (coupon.getStatus() == 1) {
+				throw new BusinessException(400, "優惠券已使用");
+			}
+
+			// 驗證低消
+			if (order.getTotalAmount().compareTo(coupon.getMinSpend()) < 0) {
+				throw new BusinessException(400, "未達優惠券最低消費金額: " + coupon.getMinSpend());
+			}
+
+			// 套用折扣
+			BigDecimal discount = coupon.getDiscountAmount();
+			order.setDiscount(discount);
+
+			// 重新計算實付金額
+			// 實付金額 = 總金額 + 運費 - 折扣金額
+			BigDecimal newFinal = order.getFinalAmount().subtract(discount);
+			if (newFinal.compareTo(BigDecimal.ZERO) < 0) {
+				newFinal = BigDecimal.ZERO;
+			}
+			order.setFinalAmount(newFinal);
+
+			// 標記已使用
+			coupon.setStatus(1);
+			coupon.setUsedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+			couponRepository.save(coupon);
+			ordersRepository.save(order); // 更新訂單的折扣和最終金額
+		}
+
 		// 7. 清空購物車
 		cartRepository.deleteByUserId(userId);
+		return order;
 	}
 
 	// 後台新增訂單
@@ -145,17 +199,17 @@ public class OrderService {
 		for (OrderItem item : items) {
 			Integer bookId = item.getBooksBean().getBookId();
 			// 必須重新查詢以確保獲取最新庫存與狀態
-			bookstore.bean.BooksBean book = bookRepository.findById(bookId)
-					.orElseThrow(() -> new bookstore.exceptionCenter.BusinessException(400, "找不到書籍 ID: " + bookId));
+			BooksBean book = bookRepository.findById(bookId)
+					.orElseThrow(() -> new BusinessException(400, "找不到書籍 ID: " + bookId));
 
 			// 檢查上架狀態
 			if (book.getOnShelf() != 1) {
-				throw new bookstore.exceptionCenter.BusinessException(400, "書籍 " + book.getBookName() + " 已下架，無法建立訂單");
+				throw new BusinessException(400, "書籍 " + book.getBookName() + " 已下架，無法建立訂單");
 			}
 
 			// 檢查庫存
 			if (book.getStock() < item.getQuantity()) {
-				throw new bookstore.exceptionCenter.BusinessException(400,
+				throw new BusinessException(400,
 						"書籍 " + book.getBookName() + " 庫存不足，僅剩 " + book.getStock() + " 本");
 			}
 
@@ -202,9 +256,48 @@ public class OrderService {
 			orderItemRepository.save(item);
 
 			// 扣除庫存 (新增邏輯)
-			bookstore.bean.BooksBean book = item.getBooksBean();
+			BooksBean book = item.getBooksBean();
 			book.setStock(book.getStock() - item.getQuantity());
 			bookRepository.save(book);
+		}
+
+		// 8. 處理優惠券 (如果有)
+		if (order.getCouponId() != null) {
+			CouponBean coupon = couponRepository.findById(order.getCouponId())
+					.orElseThrow(() -> new BusinessException(400, "優惠券不存在"));
+
+			// 驗證優惠券歸屬
+			if (!coupon.getUserId().equals(order.getUserBean().getUserId())) {
+				throw new BusinessException(400, "這張優惠券不屬於您");
+			}
+
+			// 驗證是否已使用
+			if (coupon.getStatus() == 1) {
+				throw new BusinessException(400, "優惠券已使用");
+			}
+
+			// 驗證低消
+			if (order.getTotalAmount().compareTo(coupon.getMinSpend()) < 0) {
+				throw new BusinessException(400, "未達優惠券最低消費金額: " + coupon.getMinSpend());
+			}
+
+			// 套用折扣
+			BigDecimal discount = coupon.getDiscountAmount();
+			order.setDiscount(discount);
+
+			// 重新計算實付金額
+			// 實付金額 = 總金額 + 運費 - 折扣金額
+			BigDecimal newFinal = order.getFinalAmount().subtract(discount);
+			if (newFinal.compareTo(BigDecimal.ZERO) < 0) {
+				newFinal = BigDecimal.ZERO;
+			}
+			order.setFinalAmount(newFinal);
+
+			// 標記已使用
+			coupon.setStatus(1);
+			coupon.setUsedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+			couponRepository.save(coupon);
+			ordersRepository.save(order); // 更新訂單的折扣和最終金額
 		}
 	}
 

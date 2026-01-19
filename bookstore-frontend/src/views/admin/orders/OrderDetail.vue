@@ -73,7 +73,7 @@
             </v-list-item>
             <v-list-item>
               <template v-slot:prepend><span class="label">收件人：</span></template>
-              <span class="value">{{ order.recipientName || order.recipientAt }}</span> <!-- Support both fields if schema varies -->
+              <span class="value">{{ order.recipientName || order.recipientAt }}</span> <!-- 支援兩種欄位格式 -->
             </v-list-item>
             <v-list-item>
               <template v-slot:prepend><span class="label">聯絡電話：</span></template>
@@ -84,6 +84,56 @@
               <span class="value">{{ order.address }}</span>
             </v-list-item>
           </v-list>
+        </v-col>
+      </v-row>
+
+      <v-divider class="my-6 border-opacity-50" color="primary"></v-divider>
+      
+      <!-- 詳細時間與狀態 -->
+      <h3 class="text-h5 font-weight-bold text-primary mb-4">
+        <v-icon icon="mdi-clock-outline" class="mr-2"></v-icon>
+        詳細時間與狀態
+      </h3>
+      <v-row>
+        <v-col cols="12" md="6">
+            <v-list density="compact" class="info-list">
+                <v-list-item>
+                    <template v-slot:prepend><span class="label">付款狀態：</span></template>
+                    <span class="value">{{ order.paymentStatus || '-' }}</span>
+                </v-list-item>
+                <v-list-item>
+                    <template v-slot:prepend><span class="label">付款時間：</span></template>
+                    <span class="value">{{ formatDate(order.paidAt) || '-' }}</span>
+                </v-list-item>
+                <v-list-item>
+                    <template v-slot:prepend><span class="label">更新時間：</span></template>
+                    <span class="value">{{ formatDate(order.updatedAt) || '-' }}</span>
+                </v-list-item>
+                 <v-list-item>
+                    <template v-slot:prepend><span class="label">優惠券ID：</span></template>
+                    <span class="value">{{ order.couponId || '未使用' }}</span>
+                </v-list-item>
+            </v-list>
+        </v-col>
+        <v-col cols="12" md="6">
+            <v-list density="compact" class="info-list">
+                 <v-list-item>
+                    <template v-slot:prepend><span class="label">出貨時間：</span></template>
+                    <span class="value">{{ formatDate(order.shippedAt) || '-' }}</span>
+                </v-list-item>
+                 <v-list-item>
+                    <template v-slot:prepend><span class="label">送達時間：</span></template>
+                    <span class="value">{{ formatDate(order.deliveredAt) || '-' }}</span>
+                </v-list-item>
+                 <v-list-item>
+                    <template v-slot:prepend><span class="label">簽收時間：</span></template>
+                    <span class="value">{{ formatDate(order.receivedAt) || '-' }}</span>
+                </v-list-item>
+                 <v-list-item>
+                    <template v-slot:prepend><span class="label">完成時間：</span></template>
+                    <span class="value">{{ formatDate(order.completedAt) || '-' }}</span>
+                </v-list-item>
+            </v-list>
         </v-col>
       </v-row>
 
@@ -158,6 +208,10 @@
                <span class="text-grey-darken-2">運費</span>
                <span class="font-weight-bold">${{ order.shippingFee }}</span>
             </div>
+             <div class="d-flex justify-space-between mb-2">
+                <span class="text-grey-darken-2">折扣</span>
+                <span class="font-weight-bold text-error">-${{ order.discount || 0 }}</span>
+             </div>
             <v-divider class="my-2"></v-divider>
             <div class="d-flex justify-space-between text-h6 text-primary font-weight-bold">
                <span>總金額</span>
@@ -230,7 +284,7 @@ const fetchOrderDetail = async () => {
   }
 }
 
-// --- Item Management Logic ---
+// --- 明細管理邏輯 ---
 
 const goToAddItem = () => {
     router.push({ name: 'orderAddItem', params: { id: orderId } })
@@ -284,7 +338,7 @@ const handleCancel = () => {
             try {
                 await orderService.cancelOrder(orderId)
                 Swal.fire('成功', '訂單已取消', 'success')
-                fetchOrderDetail() // Refresh
+                fetchOrderDetail() // 刷新
             } catch (error) {
                 Swal.fire('錯誤', '取消失敗', 'error')
             }

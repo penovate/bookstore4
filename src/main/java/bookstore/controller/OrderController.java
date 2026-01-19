@@ -21,8 +21,12 @@ import bookstore.bean.Orders;
 import bookstore.bean.UserBean;
 import bookstore.service.OrderService;
 import bookstore.service.bookService;
+import bookstore.dto.CheckoutRequest;
+import bookstore.util.JwtUtil;
 //import bookstore.service.BookService; 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @Controller
 public class OrderController {
@@ -32,6 +36,9 @@ public class OrderController {
 
 	@Autowired
 	private bookService bookService;
+
+	@Autowired
+	private JwtUtil jwtUtil;
 
 	// ==================新增類 Controller==================//
 
@@ -293,7 +300,7 @@ public class OrderController {
 	public Map<String, Object> insertOrderApi(HttpServletRequest request) {
 		Map<String, Object> response = new java.util.HashMap<>();
 		try {
-			// Reuse parsing logic
+			// 重用解析邏輯
 			Orders order = new Orders();
 			String userIdStr = request.getParameter("userId");
 			if (userIdStr == null) {
@@ -316,6 +323,11 @@ public class OrderController {
 			order.setDeliveryMethod(deliveryMethod);
 			order.setPaymentStatus("貨到付款".equals(paymentMethod) ? "未付款" : "已付款");
 			order.setOrderStatus("待出貨");
+
+			String couponIdStr = request.getParameter("couponId");
+			if (couponIdStr != null && !couponIdStr.trim().isEmpty()) {
+				order.setCouponId(Integer.parseInt(couponIdStr));
+			}
 
 			String[] bookIds = request.getParameterValues("bookId");
 			String[] quantities = request.getParameterValues("quantity");
@@ -361,7 +373,7 @@ public class OrderController {
 				existingOrder.setPaymentStatus(order.getPaymentStatus());
 				existingOrder.setOrderStatus(order.getOrderStatus());
 				existingOrder.setTotalAmount(order.getTotalAmount());
-				// Do not set UserBean, preserving existing user association
+				// 不設定 UserBean，保留現有的使用者關聯
 
 				orderService.updateOrder(existingOrder);
 				return "success";
@@ -406,12 +418,12 @@ public class OrderController {
 	@ResponseBody
 	public String updateItemApi(@ModelAttribute OrderItem item, @RequestParam("orderId") Integer orderId) {
 		try {
-			// Re-link to order
+			// 重新連結到訂單
 			Orders order = new Orders();
 			order.setOrderId(orderId);
 			item.setOrders(order);
 
-			// Recalculate subtotal just in case frontend didn't
+			// 重新計算小計，以此確保前端計算正確
 			item.setSubtotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
 
 			orderService.updateOrderItem(item);
@@ -447,5 +459,29 @@ public class OrderController {
 		} catch (Exception e) {
 			return "error: " + e.getMessage();
 		}
+	}
+
+	@PostMapping("/order/api/checkout")
+	@ResponseBody
+	public Map<String, Object> checkout(@RequestBody CheckoutRequest checkoutRequest,
+			@RequestHeader(value = "Authorization", required = false) String token) {
+		Map<String, Object> response = new java.util.HashMap<>();
+		try {
+			// 從 Token 取得 User ID
+			if (token == null || !token.startsWith("Bearer ")) {
+				throw new Exception("Unauthorized: Missing token");
+			}
+			String jwt = token.substring(7);
+			Integer userId = Integer.parseInt(jwtUtil.getMemberId(jwt));
+
+			orderService.createOrderFromCart(userId, checkoutRequest);
+
+			response.put("success", true);
+			response.put("message", "Order created successfully");
+		} catch (Exception e) {
+			response.put("success", false);
+			response.put("message", e.getMessage());
+		}
+		return response;
 	}
 }

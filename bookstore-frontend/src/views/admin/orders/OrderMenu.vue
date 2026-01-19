@@ -2,8 +2,8 @@
   <v-container class="fill-height" fluid>
     <div class="menu-container w-100">
       <div class="text-center mb-10">
-        <h2 class="forest-main-title mb-2">後台訂單與購物車系統</h2>
-        <p class="forest-subtitle">訂單管理核心選單</p>
+        <h2 class="forest-main-title mb-2">後台訂單與優惠券管理系統</h2>
+        <p class="forest-subtitle">訂單管理與優惠券管理核心選單</p>
       </div>
 
       <v-row justify="center" class="gap-4">
@@ -31,13 +31,13 @@
               v-bind="props"
               :elevation="isHovering ? 12 : 2"
               class="menu-card d-flex flex-column align-center justify-center pa-6 rounded-xl transition-swing"
-              @click="router.push({ name: 'cart' })"
+              @click="router.push({ name: 'admin-coupons' })"
             >
               <div class="icon-wrapper mb-4">
-                <span class="emoji-icon">🛒</span>
+                <span class="emoji-icon">🎫</span>
               </div>
-              <h3 class="text-h5 font-weight-bold text-primary mb-2">購物車</h3>
-              <p class="text-grey-darken-1 text-center">瀏覽商品、查看購物車內容與結帳</p>
+              <h3 class="text-h5 font-weight-bold text-primary mb-2">優惠券管理</h3>
+              <p class="text-grey-darken-1 text-center">新增、查詢與管理優惠券</p>
               <div class="card-indicator"></div>
             </v-card>
           </v-hover>

@@ -110,6 +110,11 @@
           {{ formatDate(item.createdAt) }}
         </template>
 
+        <!-- 最後修改日期 -->
+        <template v-slot:item.updatedAt="{ item }">
+          {{ formatDate(item.updatedAt) }}
+        </template>
+
         <!-- 操作按鈕 -->
         <template v-slot:item.action="{ item }">
           <div class="d-flex justify-center gap-2">
@@ -196,7 +201,8 @@ const tableHeaders = [
   { title: '訂單金額', key: 'finalAmount', align: 'end', sortable: true },
   { title: '付款方式', key: 'paymentMethod', align: 'center' },
   { title: '訂單狀態', key: 'orderStatus', align: 'center' },
-  { title: '訂單日期', key: 'createdAt', align: 'end', sortable: true },
+  { title: '訂單時間', key: 'createdAt', align: 'end', sortable: true },
+  { title: '修改時間', key: 'updatedAt', align: 'end', sortable: true },
   { title: '操作', key: 'action', align: 'center', sortable: false },
 ]
 
@@ -275,18 +281,7 @@ const handleRestore = (order) => {
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        // Does Service have restore? Let's check or add it.
-        // The original called /order/api/restore.
-        // My orderService definition missed 'restoreOrder'. I should add it or use raw axios here and then fix service?
-        // Better to add it to service. But I can't edit service file in this turn easily without context switch.
-        // Wait, I can just use axios for now or better, I'll update orderService later.
-        // Actually I defined getAllOrders, getOrderDetail, create, cancel, items... I missed 'restore'.
-        // I will use `axios` for restore for this specific tool call or I should assume I'll add it.
-        // Let's use axios for restore temporarily or just add it to service file now?
-        // I'll stick to replacing others first, but restore is inside this block. 
-        // I will use apiClient from service? No can't import internal.
-        // I will just use axios for restore in this file for a moment, OR simply assume I will add `restoreOrder` to service.
-        // I'll add `restoreOrder` to `handleRestore` assuming it exists, and I will strictly add it to `orderService.js` in the next step.
+        // 呼叫 restoreOrder 還原訂單
         await orderService.restoreOrder(order.orderId)
         
         Swal.fire({

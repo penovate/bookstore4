@@ -6,8 +6,29 @@
       <form @submit.prevent="handleSubmit">
         <h3>收件資訊</h3>
         <div class="form-group">
-          <label>使用者 ID</label>
-          <input type="number" v-model="form.userId" required placeholder="請輸入 User ID" />
+          <label>選擇使用者</label>
+          <div style="display: flex; gap: 10px;">
+            <select v-model="form.userId" required style="flex: 1;">
+              <option value="" disabled>請選擇使用者</option>
+              <option v-for="user in userList" :key="user.userId" :value="user.userId">
+                {{ user.userName }} (會員編號: {{ user.userId }})
+              </option>
+            </select>
+            <button 
+                type="button" 
+                class="fill-btn" 
+                @click="fillUserInfo" 
+                :disabled="!form.userId"
+                title="自動帶入會員姓名、電話與地址"
+            >
+                帶入會員資料
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>使用者姓名</label>
+          <input type="text" v-model="form.userName" readonly class="readonly-input" placeholder="選擇使用者後自動顯示" />
         </div>
 
         <div class="form-group">
@@ -97,8 +118,9 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 import Swal from 'sweetalert2'
 import orderService from '@/api/orderService.js'
 
@@ -107,12 +129,15 @@ const isSubmitting = ref(false)
 
 const form = reactive({
   userId: '',
+  userName: '',
   recipientName: '',
   phone: '',
   address: '',
   deliveryMethod: '宅配到府',
   paymentMethod: '信用卡',
 })
+
+const userList = ref([]) // 儲存使用者列表
 
 const items = ref([{ bookId: '', bookName: '', price: '', quantity: 1 }])
 
@@ -131,14 +156,19 @@ const fetchBookInfo = async (item) => {
     const response = await orderService.getBookInfo(item.bookId)
     const book = response.data
     if (book && book.bookId) {
+      if (book.onShelf !== 1) {
+          Swal.fire('警告', '本此書籍已下架，無法新增', 'warning')
+          item.bookName = ''
+          item.price = ''
+          item.bookId = '' // 清空 ID 避免誤送
+          item.stock = 0
+          item.onShelf = 0
+          return
+      }
       item.bookName = book.bookName
       item.price = book.price
       item.stock = book.stock
       item.onShelf = book.onShelf
-
-      if (book.onShelf !== 1) {
-          Swal.fire('警告', '此書籍已下架', 'warning')
-      }
     } else {
       Swal.fire('錯誤', '找不到此書籍ID', 'error')
       item.bookName = ''
@@ -151,6 +181,43 @@ const fetchBookInfo = async (item) => {
     console.error(error)
     Swal.fire('錯誤', '查詢書籍失敗', 'error')
   }
+}
+
+const fetchUsers = async () => {
+  try {
+    const response = await axios.get('http://localhost:8080/api/data/list')
+    userList.value = response.data
+  } catch (error) {
+    console.error('Failed to fetch users', error)
+    Swal.fire('錯誤', '無法取得使用者列表', 'error')
+  }
+}
+
+const fillUserInfo = async () => {
+    if (!form.userId) return
+
+    try {
+        const response = await axios.get(`http://localhost:8080/api/data/get/${form.userId}`)
+        const user = response.data
+        if (user) {
+            form.userName = user.userName // Also update displayed user name
+            form.recipientName = user.userName || ''
+            form.phone = user.phoneNum || ''
+            form.address = user.address || ''
+            
+            Swal.fire({
+                icon: 'success',
+                title: '已帶入會員資料',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
+            })
+        }
+    } catch (error) {
+        console.error(error)
+        Swal.fire('錯誤', '無法取得會員詳細資料', 'error')
+    }
 }
 
 const handleSubmit = async () => {
@@ -220,6 +287,10 @@ const handleSubmit = async () => {
     isSubmitting.value = false
   }
 }
+
+onMounted(() => {
+  fetchUsers()
+})
 </script>
 
 <style scoped>
@@ -318,6 +389,24 @@ h4 {
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
+}
+
+.fill-btn {
+  background-color: #7a9c84;
+  color: white;
+  border: none;
+  padding: 0 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.fill-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+.fill-btn:hover:not(:disabled) {
+    background-color: #5d7a66;
 }
 
 .add-btn {

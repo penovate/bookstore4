@@ -95,6 +95,11 @@ const router = createRouter({
           name: 'admin-reports',
           component: () => import('../views/admin/logs/SalesData.vue'),
         },
+        {
+          path: 'bookclubs',
+          name: 'admin-bookclubs',
+          component: () => import('../views/admin/bookClubs/ClubList.vue'),
+        }
       ],
     },
     {

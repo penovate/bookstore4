@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import bookService from '@/api/bookService.js';
 import BookCard from './BookCard.vue';
 import Swal from 'sweetalert2';
+import AiAssistant from '@/views/public/books/AiAssistant.vue';
 
 const router = useRouter();
 const books = ref([]);
@@ -139,6 +140,7 @@ onMounted(() => {
                 <div class="text-h6">暫無相關書籍</div>
             </div>
         </div>
+        <AiAssistant :books="filteredBooks.length > 0 ? filteredBooks : books" />
     </div>
 </template>
 

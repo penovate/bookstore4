@@ -30,7 +30,7 @@ const items = ref([
     {
         title: '讀書會管理',
         icon: 'mdi-book-multiple',
-        // to: '/dev/admin/bookclubs',
+        to: '/dev/admin/bookclubs',
     },
 ]);
 </script>

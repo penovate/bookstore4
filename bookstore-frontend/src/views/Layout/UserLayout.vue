@@ -8,23 +8,12 @@ const drawer = ref(false)
 const userRole = localStorage.getItem('userRole')
 
 const menuItems = ref([
-<<<<<<< HEAD
-    { title: '首頁', to: '/dev/user', icon: 'mdi-home' },
-
-    { title: '書籍專區', to: '/dev/user/books', icon: 'mdi-book-open-page-variant' }, // 假設路由
-    { title: '會員中心', to: '', icon: 'mdi-book-open-page-variant' }, // 假設路由
-    { title: '讀書會', to: '', icon: 'mdi-book-open-page-variant' }, // 假設路由
-    { title: '關於我們', to: '', icon: 'mdi-information' },
-
-]);
-=======
-  { title: '書籍專區', to: '/dev/user/store', icon: 'mdi-book-open-page-variant' }, // 指向 Store
-  { title: '歷史訂單', to: '/dev/user/orders', icon: 'mdi-history' }, // 新增歷史訂單
+  { title: '書籍專區', to: '/dev/user/books', icon: 'mdi-book-open-page-variant' },
+  { title: '歷史訂單', to: '/dev/user/orders', icon: 'mdi-history' },
   { title: '我的優惠券', to: '/dev/user/coupons', icon: 'mdi-ticket-percent' },
   { title: '關於我們', to: '', icon: 'mdi-information' },
   { title: '後台系統', to: '/home', icon: 'mdi-information' },
 ])
->>>>>>> master
 
 const filteredMenuItems = computed(() => {
   return menuItems.value.filter((item) => {
@@ -48,31 +37,14 @@ const socialLinks = [
 </script>
 
 <template>
-<<<<<<< HEAD
-    <!-- 使用 forestTheme 以符合 AdminLayout 配色風格，或可保留自定義 colors 但風格統一 -->
-    <v-app theme="forestTheme">
-
-        <!-- 頂部導航列 (App Bar) -->
-        <v-app-bar color="primary" elevation="2" class="px-md-4">
-            <!-- Mobile Menu Icon -->
-            <v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer" class="d-md-none"></v-app-bar-nav-icon>
-=======
   <!-- 使用 forestTheme 以符合 AdminLayout 配色風格，或可保留自定義 colors 但風格統一 -->
   <v-app theme="forestTheme">
     <!-- 頂部導航列 (App Bar) -->
     <v-app-bar color="primary" elevation="2" class="px-md-4">
       <div class="d-flex align-center" style="min-width: 200px">
-        <v-app-bar-nav-icon
-          variant="text"
-          @click.stop="drawer = !drawer"
-          class="d-md-none"
-        ></v-app-bar-nav-icon>
->>>>>>> master
+        <v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer" class="d-md-none"></v-app-bar-nav-icon>
 
-        <v-toolbar-title
-          class="font-weight-bold text-h5 cursor-pointer"
-          @click="$router.push('/dev/user/home')"
-        >
+        <v-toolbar-title class="font-weight-bold text-h5 cursor-pointer" @click="$router.push('/dev/user/home')">
           <v-icon icon="mdi-book-open-variant" class="me-2"></v-icon>
           網路書籍商城
         </v-toolbar-title>
@@ -80,46 +52,18 @@ const socialLinks = [
 
       <v-spacer class="d-none d-md-block"></v-spacer>
 
-<<<<<<< HEAD
-            <!-- Desktop Navigation Links (Centered) -->
-            <div class="d-none d-md-flex align-center">
-                <v-btn v-for="item in menuItems" :key="item.title" :to="item.to" variant="text"
-                    class="mx-1 text-subtitle-1 font-weight-medium">
-                    {{ item.title }}
-                </v-btn>
-            </div>
-=======
       <div class="d-none d-md-flex justify-center flex-grow-1">
-        <v-btn
-          v-for="item in filteredMenuItems"
-          :key="item.title"
-          variant="text"
-          class="mx-1 text-subtitle-1 font-weight-medium"
-          :href="item.title === '後台系統' ? item.to : undefined"
-          :target="item.title === '後台系統' ? '_blank' : undefined"
-          :to="item.title === '後台系統' ? undefined : item.to"
-        >
+        <v-btn v-for="item in filteredMenuItems" :key="item.title" variant="text"
+          class="mx-1 text-subtitle-1 font-weight-medium" :href="item.title === '後台系統' ? item.to : undefined"
+          :target="item.title === '後台系統' ? '_blank' : undefined" :to="item.title === '後台系統' ? undefined : item.to">
           {{ item.title }}
         </v-btn>
       </div>
->>>>>>> master
 
       <v-spacer class="d-none d-md-block"></v-spacer>
 
-<<<<<<< HEAD
-            <!-- Right Side Icons: Search, Cart, User -->
-            <div class="d-flex align-center">
-                <v-btn icon="mdi-magnify" variant="text"></v-btn>
-
-                <v-btn icon class="me-2">
-                    <v-badge content="2" color="accent">
-                        <v-icon icon="mdi-cart-outline"></v-icon>
-                    </v-badge>
-                </v-btn>
-=======
       <div class="d-flex align-center justify-end" style="min-width: 200px">
         <v-btn icon="mdi-magnify" variant="text"></v-btn>
->>>>>>> master
 
         <!-- 導覽列的購物車icon，點擊後跳轉到購物車頁面 -->
         <v-btn icon class="me-2" @click="$router.push({ name: 'cart' })">
@@ -128,17 +72,6 @@ const socialLinks = [
           </v-badge>
         </v-btn>
 
-<<<<<<< HEAD
-        <!-- Mobile Navigation Drawer -->
-        <v-navigation-drawer v-model="drawer" temporary location="left">
-            <v-list>
-                <v-list-item title="導覽選單" subtitle="BookStore"></v-list-item>
-                <v-divider></v-divider>
-                <v-list-item v-for="item in menuItems" :key="item.title" :to="item.to" :prepend-icon="item.icon"
-                    :title="item.title"></v-list-item>
-            </v-list>
-        </v-navigation-drawer>
-=======
         <div v-if="user.isLoggedIn">
           <v-avatar color="surface" size="36" class="cursor-pointer">
             <span class="text-primary font-weight-bold">{{ user.name.charAt(0) }}</span>
@@ -147,63 +80,32 @@ const socialLinks = [
         <v-btn v-else variant="outlined" color="surface" size="small" to="/">登入</v-btn>
       </div>
     </v-app-bar>
->>>>>>> master
 
     <!-- Mobile Navigation Drawer -->
     <v-navigation-drawer v-model="drawer" temporary location="left">
       <v-list>
         <v-list-item title="導覽選單" subtitle="BookStore"></v-list-item>
         <v-divider></v-divider>
-        <v-list-item
-          v-for="item in filteredMenuItems"
-          :key="item.title"
-          :prepend-icon="item.icon"
-          :title="item.title"
-          :href="item.title === '後台系統' ? item.to : undefined"
-          :target="item.title === '後台系統' ? '_blank' : undefined"
-          :to="item.title === '後台系統' ? undefined : item.to"
-        ></v-list-item>
+        <v-list-item v-for="item in filteredMenuItems" :key="item.title" :prepend-icon="item.icon" :title="item.title"
+          :href="item.title === '後台系統' ? item.to : undefined" :target="item.title === '後台系統' ? '_blank' : undefined"
+          :to="item.title === '後台系統' ? undefined : item.to"></v-list-item>
       </v-list>
     </v-navigation-drawer>
 
-<<<<<<< HEAD
-        <!-- Footer -->
-        <v-footer color="primary" class="d-flex flex-column py-6">
-            <div class="d-flex w-100 align-center px-4">
-                <strong class="text-h6">與我們保持聯繫，獲取最新好書資訊！</strong>
-                <v-spacer></v-spacer>
-                <v-btn v-for="icon in ['mdi-facebook', 'mdi-twitter', 'mdi-instagram']" :key="icon" :icon="icon"
-                    class="mx-2" variant="text"></v-btn>
-            </div>
-            <v-divider class="w-100 my-4 border-opacity-25"></v-divider>
-            <div class="text-center w-100 text-body-2">
-                {{ new Date().getFullYear() }} — <strong>BookStore Inc.</strong>
-            </div>
-        </v-footer>
-=======
     <!-- Main Content (有 padding-top 避免被 App Bar 遮擋) -->
     <v-main class="bg-background">
       <v-container class="py-6" style="min-height: 80vh">
         <router-view></router-view>
       </v-container>
     </v-main>
->>>>>>> master
 
     <!-- Footer -->
     <v-footer color="primary" class="d-flex flex-column py-6">
       <div class="d-flex w-100 align-center px-4">
         <strong class="text-h6">與我們保持聯繫，獲取最新好書資訊！</strong>
         <v-spacer></v-spacer>
-        <v-btn
-          v-for="item in socialLinks"
-          :key="item.icon"
-          :icon="item.icon"
-          class="mx-2"
-          variant="text"
-          :href="item.link"
-          :target="item.link ? '_blank' : undefined"
-          rel="noopener noreferrer"
-        ></v-btn>
+        <v-btn v-for="item in socialLinks" :key="item.icon" :icon="item.icon" class="mx-2" variant="text"
+          :href="item.link" :target="item.link ? '_blank' : undefined" rel="noopener noreferrer"></v-btn>
       </div>
       <v-divider class="w-100 my-4 border-opacity-25"></v-divider>
       <div class="text-center w-100 text-body-2">
@@ -215,11 +117,6 @@ const socialLinks = [
 
 <style scoped>
 .v-btn {
-<<<<<<< HEAD
-    text-transform: none;
-    /* 防止按鈕文字全大寫 */
-=======
   text-transform: none;
->>>>>>> master
 }
 </style>

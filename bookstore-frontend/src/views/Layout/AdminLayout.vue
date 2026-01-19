@@ -9,38 +9,6 @@ const drawer = ref(true)
 
 // 合併後的選單：補齊了訂單管理路徑，並採用更直觀的圖示
 const items = ref([
-<<<<<<< HEAD
-    {
-        title: '會員管理',
-        icon: 'mdi-account-group',
-        // to: '/dev/admin/users',
-    },
-    {
-        title: '書籍管理',
-        icon: 'mdi-book-open-page-variant',
-        children: [
-            { title: '書籍列表', to: '/dev/admin/books', icon: 'mdi-format-list-bulleted' },
-            { title: '進退貨管理', to: '/dev/admin/logs', icon: 'mdi-truck' },
-            { title: '數據報表分析', icon: 'mdi-chart-bar', to: '/dev/admin/reports' },
-        ]
-    },
-    {
-        title: '訂單管理',
-        icon: 'mdi-clipboard-list-outline',
-        // to: '/dev/admin/orders',
-    },
-    {
-        title: '評價管理',
-        icon: 'mdi-star-half-full',
-        // to: '/dev/admin/reviews',
-    },
-    {
-        title: '讀書會管理',
-        icon: 'mdi-book-multiple',
-        to: '/dev/admin/bookclubs',
-    },
-]);
-=======
   {
     title: '會員管理',
     icon: 'mdi-account-group',
@@ -49,7 +17,11 @@ const items = ref([
   {
     title: '書籍管理',
     icon: 'mdi-book-open-page-variant',
-    to: '/dev/admin/books',
+    children: [
+      { title: '書籍列表', to: '/dev/admin/books', icon: 'mdi-format-list-bulleted' },
+      { title: '進退貨管理', to: '/dev/admin/logs', icon: 'mdi-swap-horizontal-bold' },
+      { title: '數據報表分析', to: '/dev/admin/reports', icon: 'mdi-chart-bar' },
+    ]
   },
   {
     title: '優惠券管理',
@@ -59,7 +31,7 @@ const items = ref([
   {
     title: '訂單管理',
     icon: 'mdi-clipboard-list-outline',
-    to: '/dev/admin/orders', // 補齊路徑
+    to: '/dev/admin/orders',
   },
   {
     title: '評價管理',
@@ -67,19 +39,9 @@ const items = ref([
     to: '/dev/admin/reviews',
   },
   {
-    title: '進退貨管理',
-    icon: 'mdi-swap-horizontal-bold', // 採用第二段更直觀的圖示
-    // to: '/dev/admin/returns',
-  },
-  {
-    title: '數據報表分析',
-    icon: 'mdi-chart-bar',
-    // to: '/dev/admin/reports',
-  },
-  {
     title: '讀書會管理',
     icon: 'mdi-book-multiple',
-    // to: '/dev/admin/bookclubs',
+    to: '/dev/admin/bookclubs',
   },
 ])
 
@@ -115,7 +77,6 @@ const handleLogout = () => {
     }
   })
 }
->>>>>>> master
 </script>
 
 <template>
@@ -127,69 +88,35 @@ const handleLogout = () => {
         </template>
       </v-list-item>
 
-<<<<<<< HEAD
-        <v-navigation-drawer v-model="drawer" color="primary">
-            <!-- 列表頂部的標題區域 -->
-            <v-list-item title="BookStore" subtitle="後台管理系統" class="py-4">
-                <template v-slot:prepend>
-                    <!-- 這裡可以放 Logo 圖片 -->
-                    <v-icon icon="mdi-leaf" class="me-2"></v-icon>
-                </template>
-            </v-list-item>
-            <v-divider></v-divider>
-            <!-- 選單列表 -->
-            <v-list density="compact" nav>
-                <template v-for="(item, i) in items" :key="i">
-                    <!-- 如果有子選單 -->
-                    <v-list-group v-if="item.children" :value="item.title">
-                        <template v-slot:activator="{ props }">
-                            <v-list-item v-bind="props" :prepend-icon="item.icon" :title="item.title"></v-list-item>
-                        </template>
-
-                        <v-list-item v-for="(child, k) in item.children" :key="k" :title="child.title"
-                            :prepend-icon="child.icon" :to="child.to" :value="child.title" color="accent"></v-list-item>
-                    </v-list-group>
-
-                    <!-- 如果沒有子選單 -->
-                    <v-list-item v-else :value="item" :to="item.to" :prepend-icon="item.icon" color="accent">
-                        <v-list-item-title v-text="item.title"></v-list-item-title>
-                    </v-list-item>
-                </template>
-            </v-list>
-=======
       <v-divider></v-divider>
 
       <v-list density="compact" nav>
-        <v-list-item
-          v-for="(item, i) in items"
-          :key="i"
-          :value="item"
-          :to="item.to"
-          :prepend-icon="item.icon"
-          color="accent"
-        >
-          <v-list-item-title v-text="item.title"></v-list-item-title>
-        </v-list-item>
+        <template v-for="(item, i) in items" :key="i">
+          <!-- 子選單 -->
+          <v-list-group v-if="item.children" :value="item.title">
+            <template v-slot:activator="{ props }">
+              <v-list-item v-bind="props" :prepend-icon="item.icon" :title="item.title"></v-list-item>
+            </template>
+
+            <v-list-item v-for="(child, k) in item.children" :key="k" :title="child.title" :prepend-icon="child.icon"
+              :to="child.to" :value="child.title" color="accent"></v-list-item>
+          </v-list-group>
+
+          <!-- 一般選單 -->
+          <v-list-item v-else :value="item" :to="item.to" :prepend-icon="item.icon" color="accent">
+            <v-list-item-title v-text="item.title"></v-list-item-title>
+          </v-list-item>
+        </template>
       </v-list>
->>>>>>> master
 
       <template v-slot:append>
         <div class="pa-2">
-          <v-btn
-            block
-            color="accent"
-            variant="tonal"
-            prepend-icon="mdi-storefront-outline"
-            class="mb-2"
-            style="
+          <v-btn block color="accent" variant="tonal" prepend-icon="mdi-storefront-outline" class="mb-2" style="
               color: #ffffff !important;
               font-weight: 500 !important;
               background-color: rgba(var(--v-theme-accent), 0.3) !important;
               filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.2));
-            "
-            href="/dev/user/home"
-            target="_blank"
-          >
+            " href="/dev/user/home" target="_blank">
             前台網頁
           </v-btn>
 
@@ -201,11 +128,7 @@ const handleLogout = () => {
     </v-navigation-drawer>
 
     <v-app-bar elevation="0" class="bg-background" density="compact">
-      <v-app-bar-nav-icon
-        variant="text"
-        color="primary"
-        @click.stop="drawer = !drawer"
-      ></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon variant="text" color="primary" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
 
       <v-spacer></v-spacer>
 
@@ -226,7 +149,7 @@ const handleLogout = () => {
 <style scoped>
 /* 覆寫 Vuetify 預設的縮排 */
 :deep(.v-list-group__items .v-list-item) {
-    padding-inline-start: 16px !important;
-    /* 調整此數值以改變縮排寬度 (原預設較大) */
+  padding-inline-start: 16px !important;
+  /* 調整此數值以改變縮排寬度 (原預設較大) */
 }
 </style>

@@ -34,7 +34,6 @@ const loadBooks = async () => {
     loading.value = true;
     try {
         const response = await bookService.getAllBooks();
-        // console.log('API Response:', response); // 移除 console.log 避免卡頓
         books.value = response.data;
     } catch (error) {
         console.error('讀取失敗:', error);

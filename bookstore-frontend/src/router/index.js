@@ -49,6 +49,23 @@ const router = createRouter({
           name: 'admin-books-get',
           component: () => import('../views/admin/books/getBook.vue'),
         },
+
+        //進貨管理
+        {
+          path: 'logs',
+          name: 'admin-logs',
+          component: () => import('../views/admin/logs/StockLogsHome.vue'),
+        },
+        {
+          path: 'logs/:id',
+          name: 'admin-logs-detail',
+          component: () => import('../views/admin/logs/StockLogDetail.vue'),
+        },
+        {
+          path: 'logs/insert',
+          name: 'admin-logs-insert',
+          component: () => import('../views/admin/logs/InsertStockLog.vue'),
+        },
         // 2. 用戶管理
         {
           path: 'users',
@@ -83,11 +100,9 @@ const router = createRouter({
         },
         // 3. 訂單管理
         {
-<<<<<<< HEAD
           path: 'logs',
           name: 'admin-logs',
           component: () => import('../views/admin/logs/StockLogsHome.vue'),
-=======
           path: 'orders',
           name: 'orderMenu',
           component: () => import('../views/admin/orders/OrderMenu.vue'),
@@ -96,7 +111,6 @@ const router = createRouter({
           path: 'orders/list',
           name: 'orderList',
           component: () => import('../views/admin/orders/OrderList.vue'),
->>>>>>> master
         },
         {
           path: 'orders/insert',
@@ -109,7 +123,6 @@ const router = createRouter({
           component: () => import('../views/admin/orders/OrderDetail.vue'),
         },
         {
-<<<<<<< HEAD
           path: 'logs/update/:id',
           name: 'admin-logs-update',
           component: () => import('../views/admin/logs/updateLogDetail.vue'),
@@ -123,8 +136,8 @@ const router = createRouter({
           path: 'bookclubs',
           name: 'admin-bookclubs',
           component: () => import('../views/admin/bookClubs/ClubList.vue'),
-        }
-=======
+        },
+        {
           path: 'orders/update/:id',
           name: 'orderUpdate',
           component: () => import('../views/admin/orders/OrderUpdate.vue'),
@@ -161,7 +174,6 @@ const router = createRouter({
           component: () => import('../views/admin/reviews/ReviewUpdate.vue'),
         },
         // 暫用結束行
->>>>>>> master
       ],
     },
     // --- 前台網站區域 ---
@@ -170,7 +182,6 @@ const router = createRouter({
       component: () => import('../views/Layout/UserLayout.vue'),
       children: [
         {
-<<<<<<< HEAD
           path: 'books',
           name: 'user-books',
           component: () => import('../views/public/books/UserBookList.vue'),
@@ -179,7 +190,8 @@ const router = createRouter({
           path: 'books/:id',
           name: 'user-book-detail',
           component: () => import('../views/public/books/UserBookDetail.vue'),
-=======
+        },
+        {
           path: 'store',
           name: 'bookStore',
           component: () => import('../views/public/books/BookStore.vue'), //測試購物車用，等宏孝加入書籍前台網頁後刪除
@@ -208,7 +220,6 @@ const router = createRouter({
           path: 'coupons',
           name: 'userCoupons',
           component: () => import('../views/public/user/UserCoupon.vue'),
->>>>>>> master
         },
       ],
     },

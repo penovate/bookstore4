@@ -46,10 +46,6 @@ public class StockLogController {
 
 	@PostMapping("/return")
 	public ResponseEntity<StockLogBean> returnStockLog(@RequestBody StockLogBean stockLogBean) {
-		// Assuming the frontend passes { logId: ... } which maps to StockLogBean
-		// If strict binding is needed, we might need a DTO or map
-		// But usually Spring handles field mapping fine.
-		// If frontend sends { logId: 123 }, it works if StockLogBean has logId.
 		StockLogBean result = stockLogService.returnStockLog(stockLogBean);
 		return ResponseEntity.ok(result);
 	}

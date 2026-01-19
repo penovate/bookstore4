@@ -4,4 +4,6 @@
 .settings/
 .classpath
 .project
+.factorypath
 Ai Response/
+.factorypath

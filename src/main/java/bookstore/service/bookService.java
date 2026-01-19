@@ -3,11 +3,7 @@ package bookstore.service;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -17,19 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import bookstore.bean.BookImageBean;
 import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
-import bookstore.bean.ReviewBean;
 import bookstore.exceptionCenter.BusinessException;
 import bookstore.repository.BookRepository;
 import bookstore.repository.GenreRepository;
-import bookstore.repository.OrderItemRepository;
-import bookstore.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 
 @Service

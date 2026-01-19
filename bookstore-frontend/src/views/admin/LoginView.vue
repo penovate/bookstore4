@@ -1,0 +1,278 @@
+<template>
+  <v-app>
+    <v-main class="forest-login-bg">
+      <v-container class="fill-height d-flex justify-center align-center" fluid>
+        <v-hover v-slot="{ isHovering, props }">
+          <v-card
+            v-bind="props"
+            width="100%"
+            max-width="520"
+            :elevation="isHovering ? 12 : 4"
+            class="pa-8 rounded-xl transition-swing forest-card-border"
+          >
+            <v-card-item class="text-center">
+              <v-icon
+                icon="mdi mdi-book-open-blank-variant-outline"
+                size="x-large"
+                color="primary"
+                class="mb-4"
+              ></v-icon>
+              <v-card-title class="text-h4 font-weight-bold text-primary mb-1">
+                BookStore
+              </v-card-title>
+              <v-card-subtitle class="text-subtitle-1">後台管理系統</v-card-subtitle>
+            </v-card-item>
+
+            <v-divider class="my-6"></v-divider>
+
+            <v-form @submit.prevent="handleLogin">
+              <v-text-field
+                v-model="loginForm.email"
+                label="管理員帳號"
+                prepend-inner-icon="mdi-account-circle-outline"
+                variant="outlined"
+                color="primary"
+                class="mb-3"
+                hide-details="auto"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="loginForm.password"
+                label="密碼"
+                prepend-inner-icon="mdi-lock-open-outline"
+                type="password"
+                variant="outlined"
+                color="primary"
+                class="mb-6"
+                hide-details="auto"
+              ></v-text-field>
+
+              <v-btn
+                type="submit"
+                block
+                height="50"
+                color="primary"
+                class="text-h6 font-weight-bold elevation-2 rounded-lg"
+              >
+                登入系統
+              </v-btn>
+            </v-form>
+
+            <v-divider class="my-8"></v-divider>
+
+            <div class="text-subtitle-2 text-grey-darken-1 mb-5 text-center font-weight-bold">
+              測試帳號快選
+            </div>
+
+            <v-row dense class="px-2">
+              <v-col cols="3">
+                <v-btn
+                  block
+                  variant="outlined"
+                  color="primary"
+                  class="quick-login-btn rounded-lg"
+                  @click="quickLogin('SUPER_ADMIN')"
+                >
+                  <v-icon icon="mdi-shield-check" size="small"></v-icon>
+                  <span class="btn-label">超管</span>
+                </v-btn>
+              </v-col>
+
+              <v-col cols="3">
+                <v-btn
+                  block
+                  variant="outlined"
+                  color="secondary"
+                  class="quick-login-btn rounded-lg"
+                  @click="quickLogin('ADMIN')"
+                >
+                  <v-icon icon="mdi-account-cog" size="small"></v-icon>
+                  <span class="btn-label">管理員</span>
+                </v-btn>
+              </v-col>
+
+              <v-col cols="3">
+                <v-btn
+                  block
+                  variant="outlined"
+                  color="grey-darken-1"
+                  class="quick-login-btn rounded-lg"
+                  @click="quickLogin('USER')"
+                >
+                  <v-icon icon="mdi-account" size="small"></v-icon>
+                  <span class="btn-label">會員</span>
+                </v-btn>
+              </v-col>
+
+              <v-col cols="3">
+                <v-btn
+                  block
+                  variant="outlined"
+                  color="error"
+                  class="quick-login-btn rounded-lg"
+                  @click="quickLogin('BANNED')"
+                >
+                  <v-icon icon="mdi-account-off" size="small"></v-icon>
+                  <span class="btn-label">停權</span>
+                </v-btn>
+              </v-col>
+            </v-row>
+
+            <div class="text-center text-caption text-grey-lighten-1 mt-8">
+              © 2026 網路書店系統管理後台
+            </div>
+          </v-card>
+        </v-hover>
+      </v-container>
+    </v-main>
+  </v-app>
+</template>
+
+<script setup>
+import { reactive, onMounted } from 'vue'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
+
+const router = useRouter()
+const loginForm = reactive({
+  email: '',
+  password: '',
+})
+
+const quickLogin = (type) => {
+  const accounts = {
+    SUPER_ADMIN: { email: 'pen@bookstore.com', pass: '12345' },
+    ADMIN: { email: 'alice.lee@mail.com', pass: '123456' },
+    USER: { email: 'vip.reader@test.com', pass: 'vip777' },
+    BANNED: { email: 'super@bookstore.com', pass: '123' },
+  }
+  loginForm.email = accounts[type].email
+  loginForm.password = accounts[type].pass
+}
+
+const handleLogin = async () => {
+  if (!loginForm.email || !loginForm.password) return
+
+  try {
+    const response = await axios.post('http://localhost:8080/api/login', {
+      email: loginForm.email,
+      password: loginForm.password,
+    })
+
+    if (response.data.success) {
+      localStorage.setItem('userToken', response.data.token)
+      localStorage.setItem('userRole', response.data.role)
+      localStorage.setItem('userName', response.data.userName || '')
+      localStorage.setItem('userId', response.data.userId)
+
+      Swal.fire({
+        icon: 'success',
+        title: '登入成功',
+        text: `歡迎回來，${response.data.userName || '管理員'}`,
+        confirmButtonColor: '#2E5C43',
+        timer: 1500,
+        timerProgressBar: true,
+      }).then(() => {
+        router.push('/home')
+      })
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: '登入失敗',
+        text: response.data.message,
+        confirmButtonColor: '#B05252',
+      })
+    }
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: '連線失敗',
+      text: '請檢查伺服器連線狀態',
+      confirmButtonColor: '#B05252',
+    })
+  }
+}
+
+onMounted(() => {
+  const token = localStorage.getItem('userToken')
+  const role = localStorage.getItem('userRole')
+
+  if (token && (role === 'SUPER_ADMIN' || role === 'ADMIN')) {
+    router.push('/home')
+    return
+  }
+
+  const urlParams = new URLSearchParams(window.location.search)
+  if (urlParams.has('logout')) {
+    localStorage.clear()
+    Swal.fire({
+      icon: 'info',
+      title: '您已登出',
+      confirmButtonColor: '#2E5C43',
+      timer: 1500,
+      timerProgressBar: true,
+      showConfirmButton: true,
+    })
+    window.history.replaceState({}, document.title, window.location.pathname)
+  }
+})
+</script>
+
+<style scoped lang="scss">
+.forest-login-bg {
+  background: linear-gradient(135deg, #fcf8f0 0%, #ede0d4 100%);
+}
+
+.forest-card-border {
+  border-top: 6px solid #2e5c43 !important;
+}
+
+.text-primary {
+  color: #2e5c43 !important;
+}
+
+.quick-login-btn {
+  height: 68px !important;
+  padding: 8px 0 !important;
+  border-width: 1px !important;
+
+  :deep(.v-btn__content) {
+    flex-direction: column !important;
+    font-size: 0.75rem;
+  }
+
+  .btn-label {
+    margin-top: 4px;
+    font-weight: 700;
+    white-space: nowrap;
+    letter-spacing: 0;
+  }
+}
+
+:deep(.v-btn) {
+  text-transform: none !important;
+}
+
+.quick-login-btn {
+  height: 72px !important;
+  padding: 12px 0 !important;
+  border-width: 1.5px !important;
+
+  :deep(.v-btn__content) {
+    flex-direction: column !important;
+    font-size: 0.85rem;
+  }
+
+  .btn-label {
+    margin-top: 4px;
+    font-weight: 700;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+}
+
+:deep(.v-btn) {
+  text-transform: none !important;
+}
+</style>

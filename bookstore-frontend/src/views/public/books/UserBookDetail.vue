@@ -3,11 +3,15 @@ import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import bookService from '@/api/bookService.js';
 import Swal from 'sweetalert2';
-
+import axios from 'axios';
+import { useCartStore } from '@/stores/cartStore';
+import orderService from '@/api/orderService.js';
 const route = useRoute();
 const router = useRouter();
 const book = ref({});
 const loading = ref(false);
+const cartStore = useCartStore();
+const quantity = ref(1);
 
 const bookId = route.params.id;
 
@@ -20,7 +24,6 @@ const loadBookMsg = async () => {
     } catch (error) {
         console.error('載入書籍詳情失敗:', error);
         Swal.fire('錯誤', '無法載入書籍資料', 'error');
-        // router.push('/dev/user/books'); // 失敗返回列表
     } finally {
         loading.value = false;
     }
@@ -39,14 +42,74 @@ const formattedPrice = computed(() => {
     return book.value.price ? `$${Number(book.value.price).toLocaleString()}` : '$0';
 });
 
-// 加入購物車 (暫時僅顯示訊息)
-const addToCart = () => {
-    Swal.fire('成功', `已將 ${book.value.bookName} 加入購物車`, 'success');
-};
+const addToCart = async () => {
+    try {
+        const response = await orderService.addToCart(book.value.bookId, quantity.value);
+
+        if (response.data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: '加入成功',
+                text: `${book.value.bookName} 已加入購物車`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
+            });
+
+            // 更新全域狀態
+            if (response.data.cartCount !== undefined) {
+                cartStore.setCartCount(response.data.cartCount);
+            } else {
+                cartStore.fetchCartCount();
+            }
+        } else {
+            if (response.data.message === '請先登入') {
+                router.push('/login');
+            }
+            Swal.fire('加入失敗', response.data.message, 'error');
+        }
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            Swal.fire('驗證失效', '請重新登入', 'error').then(() => {
+                router.push('/login');
+            });
+        } else {
+            console.error(error);
+            Swal.fire('錯誤', '加入購物車失敗', 'error');
+        }
+    }
+}
 
 // 立即購買
-const buyNow = () => {
-    Swal.fire('info', '跳轉至結帳頁面...', 'info');
+const buyNow = async () => {
+    try {
+        const response = await orderService.addToCart(book.value.bookId, quantity.value);
+
+        if (response.data.success) {
+            // 更新全域狀態
+            if (response.data.cartCount !== undefined) {
+                cartStore.setCartCount(response.data.cartCount);
+            } else {
+                cartStore.fetchCartCount();
+            }
+            router.push({ name: 'cart' });
+        } else {
+            if (response.data.message === '請先登入') {
+                router.push('/login');
+            }
+            Swal.fire('購買失敗', response.data.message, 'error');
+        }
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            Swal.fire('驗證失效', '請重新登入', 'error').then(() => {
+                router.push('/login');
+            });
+        } else {
+            console.error(error);
+            Swal.fire('錯誤', '無法加入購物車', 'error');
+        }
+    }
 };
 
 // 收藏

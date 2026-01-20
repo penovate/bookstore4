@@ -194,7 +194,7 @@ const router = createRouter({
         {
           path: 'store',
           name: 'bookStore',
-          component: () => import('../views/public/books/BookStore.vue'), //測試購物車用，等宏孝加入書籍前台網頁後刪除
+          component: () => import('../views/public/books/UserBookList.vue'), //測試購物車用，等宏孝加入書籍前台網頁後刪除
         },
         {
           path: 'home',

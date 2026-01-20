@@ -1,6 +1,9 @@
 <script setup>
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2';
+import { useCartStore } from '@/stores/cartStore';
+import orderService from '@/api/orderService.js';
 
 const props = defineProps({
     book: {
@@ -10,6 +13,7 @@ const props = defineProps({
 });
 
 const router = useRouter();
+const cartStore = useCartStore();
 
 // 格式化金額
 const formattedPrice = computed(() => {
@@ -21,12 +25,81 @@ const imageUrl = computed(() => {
     if (props.book.bookImageBean && props.book.bookImageBean.imageUrl) {
         return `http://localhost:8080/upload-images/${props.book.bookImageBean.imageUrl}`;
     }
-    return ''; // 或者放一個預設圖片
+    return '';
 });
 
 const goToDetail = () => {
     router.push({ name: 'user-book-detail', params: { id: props.book.bookId } });
 };
+
+const addToCart = async () => {
+    try {
+        const response = await orderService.addToCart(props.book.bookId, 1);
+
+        if (response.data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: '加入成功',
+                text: `${props.book.bookName} 已加入購物車`,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
+            });
+
+            // 更新全域狀態
+            if (response.data.cartCount !== undefined) {
+                cartStore.setCartCount(response.data.cartCount);
+            } else {
+                cartStore.fetchCartCount();
+            }
+        } else {
+            if (response.data.message === '請先登入') {
+                router.push('/login');
+            }
+            Swal.fire('加入失敗', response.data.message, 'error');
+        }
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            Swal.fire('驗證失效', '請重新登入', 'error').then(() => {
+                router.push('/login');
+            });
+        } else {
+            console.error(error);
+            Swal.fire('錯誤', '加入購物車失敗', 'error');
+        }
+    }
+}
+const addAndGoToCart = async () => {
+    try {
+        const response = await orderService.addToCart(props.book.bookId, 1);
+
+        if (response.data.success) {
+            // 更新全域狀態
+            if (response.data.cartCount !== undefined) {
+                cartStore.setCartCount(response.data.cartCount);
+            } else {
+                cartStore.fetchCartCount();
+            }
+            router.push({ name: 'cart' });
+        } else {
+            if (response.data.message === '請先登入') {
+                router.push('/login');
+            }
+            Swal.fire('加入失敗', response.data.message, 'error');
+        }
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            Swal.fire('驗證失效', '請重新登入', 'error').then(() => {
+                router.push('/login');
+            });
+        } else {
+            console.error(error);
+            Swal.fire('錯誤', '加入購物車失敗', 'error');
+        }
+    }
+}
+
 </script>
 
 <template>
@@ -58,7 +131,7 @@ const goToDetail = () => {
         </v-card-text>
 
         <v-card-actions>
-            <v-btn block variant="flat" color="primary" class="text-white">
+            <v-btn block variant="flat" color="primary" class="text-white" @click.stop="addToCart">
                 <v-icon start>mdi-cart-plus</v-icon>
                 加入購物車
             </v-btn>

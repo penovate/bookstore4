@@ -1,7 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
+import { useCartStore } from '@/stores/cartStore';
 
+const cartStore = useCartStore();
 const { mobile } = useDisplay()
 const drawer = ref(false)
 
@@ -34,6 +36,12 @@ const socialLinks = [
   { icon: 'mdi-twitter' },
   { icon: 'mdi-instagram', link: 'https://www.instagram.com/penbrary.616/' },
 ]
+
+onMounted(() => {
+  if (user.value.isLoggedIn) {
+    cartStore.fetchCartCount();
+  }
+});
 </script>
 
 <template>
@@ -67,7 +75,7 @@ const socialLinks = [
 
         <!-- 導覽列的購物車icon，點擊後跳轉到購物車頁面 -->
         <v-btn icon class="me-2" @click="$router.push({ name: 'cart' })">
-          <v-badge content="2" color="accent">
+          <v-badge :content="cartStore.cartCount" :model-value="cartStore.cartCount > 0" color="accent">
             <v-icon icon="mdi-cart-outline"></v-icon>
           </v-badge>
         </v-btn>

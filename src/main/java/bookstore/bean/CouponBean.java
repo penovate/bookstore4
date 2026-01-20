@@ -32,7 +32,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @DynamicInsert
 @DynamicUpdate
-@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })//避免在 JSON 轉換時，因為 Hibernate 的延遲加載（Lazy Loading）產生循環引用或代理物件報錯
 public class CouponBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -44,7 +44,7 @@ public class CouponBean implements Serializable {
     @Column(name = "user_id")
     private Integer userId;
 
-    // 優惠券代碼 (例如: "read50")
+    // 優惠券代碼 ("read50"、"read100")
     @Column(name = "coupon_code", nullable = false)
     private String couponCode;
 

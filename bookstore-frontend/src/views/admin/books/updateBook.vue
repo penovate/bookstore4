@@ -123,7 +123,7 @@ const submit = async () => {
         Swal.fire({
             icon: 'error',
             title: '修改失敗',
-            text: error.response?.data?.message || '發生錯誤，請稍後再試。',
+            text: error.message || '發生錯誤，請稍後再試。',
             confirmButtonColor: '#d33'
         });
     } finally {

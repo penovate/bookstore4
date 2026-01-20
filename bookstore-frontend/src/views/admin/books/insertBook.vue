@@ -142,7 +142,7 @@ const submit = async () => {
                     <div style="margin-bottom: 4px;"><strong>出版社：</strong> ${newBook.press}</div>
                     <div style="margin-bottom: 4px;"><strong>定價：</strong> $${newBook.price}</div>
                     <div style="margin-bottom: 4px;"><strong>庫存：</strong> ${newBook.stock}</div>
-                    <div><strong>ISBN：</strong> ${newBook.isbn}</div>
+                    <div validate-on="blur"><strong>ISBN：</strong> ${newBook.isbn}</div>
                 </div>
             </div>
         `;
@@ -166,11 +166,13 @@ const submit = async () => {
         router.push('/dev/admin/books');
 
     } catch (error) {
+        console.error(`[GlobalHandler] Error Code: ${code}, Message: ${message}`);
+
         console.error(error);
         Swal.fire({
             icon: 'error',
             title: '新增失敗',
-            text: '發生錯誤，請稍後再試。',
+            text: error.message || '發生錯誤，請稍後再試。',
             confirmButtonColor: '#d33'
         });
     } finally {

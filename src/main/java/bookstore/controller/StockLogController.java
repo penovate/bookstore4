@@ -17,7 +17,7 @@ import bookstore.service.OrderService;
 import bookstore.service.StockLogService;
 
 @RestController
-@RequestMapping("/log")
+@RequestMapping("/api/log")
 public class StockLogController {
 
 	@Autowired

@@ -16,10 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import bookstore.aop.BusinessException;
 import bookstore.bean.BookImageBean;
 import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
-import bookstore.exceptionCenter.BusinessException;
 import bookstore.repository.BookRepository;
 import bookstore.repository.GenreRepository;
 import jakarta.transaction.Transactional;

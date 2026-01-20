@@ -123,7 +123,7 @@ const submit = async () => {
         Swal.fire({
             icon: 'error',
             title: '修改失敗',
-            text: error.response?.data?.message || '發生錯誤，請稍後再試。',
+            text: error.message || '發生錯誤，請稍後再試。',
             confirmButtonColor: '#d33'
         });
     } finally {
@@ -183,6 +183,11 @@ const submit = async () => {
                                     :rules="[rules.required, rules.positive]" prefix="$" variant="outlined"
                                     color="primary"></v-text-field>
                             </v-col>
+                            <!-- <v-col cols="12" md="6">
+                                <v-text-field v-model.number="book.stock" label="庫存數量" type="number"
+                                    :rules="[rules.required, rules.positive]" variant="outlined"
+                                    color="primary"></v-text-field>
+                            </v-col> -->
 
                             <v-col cols="12">
                                 <v-text-field v-model="book.isbn" label="ISBN (13碼)"

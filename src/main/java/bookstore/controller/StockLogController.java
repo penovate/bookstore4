@@ -1,5 +1,6 @@
 package bookstore.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,17 +9,22 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import bookstore.bean.StockLogBean;
+import bookstore.service.OrderService;
 import bookstore.service.StockLogService;
 
 @RestController
-@RequestMapping("/log")
+@RequestMapping("/api/log")
 public class StockLogController {
 
 	@Autowired
 	private StockLogService stockLogService;
+
+	@Autowired
+	private OrderService orderService;
 
 	@GetMapping("/getAllStockLogs")
 	public List<StockLogBean> getAllStockLogs() {
@@ -38,4 +44,21 @@ public class StockLogController {
 		return ResponseEntity.ok(result);
 	}
 
+	@PostMapping("/return")
+	public ResponseEntity<StockLogBean> returnStockLog(@RequestBody StockLogBean stockLogBean) {
+		StockLogBean result = stockLogService.returnStockLog(stockLogBean);
+		return ResponseEntity.ok(result);
+	}
+
+	@ResponseBody
+	@PostMapping("/paidtotalSales")
+	public BigDecimal paidtotalSals() {
+		return stockLogService.paidTotalSales();
+	}
+
+	@ResponseBody
+	@PostMapping("/unpaidtotalSales")
+	public BigDecimal unpaidTotalSales() {
+		return stockLogService.unpaidtotalSales();
+	}
 }

@@ -7,9 +7,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import bookstore.aop.BusinessException;
 import bookstore.bean.CouponBean;
-
-import bookstore.exceptionCenter.BusinessException;
 import bookstore.repository.CouponRepository;
 import bookstore.repository.UserRepository;
 import jakarta.transaction.Transactional;

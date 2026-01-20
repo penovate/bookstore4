@@ -1,15 +1,20 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
+import { useCartStore } from '@/stores/cartStore'
+import { useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
+import { useUserStore } from '@/stores/userStore'
 
+const cartStore = useCartStore()
 const { mobile } = useDisplay()
 const drawer = ref(false)
-
-const userRole = localStorage.getItem('userRole')
+const router = useRouter()
+const userStore = useUserStore()
 
 const menuItems = ref([
-  { title: '書籍專區', to: '/dev/user/store', icon: 'mdi-book-open-page-variant' }, // 指向 Store
-  { title: '歷史訂單', to: '/dev/user/orders', icon: 'mdi-history' }, // 新增歷史訂單
+  { title: '書籍專區', to: '/dev/user/books', icon: 'mdi-book-open-page-variant' },
+  { title: '歷史訂單', to: '/dev/user/orders', icon: 'mdi-history' },
   { title: '我的優惠券', to: '/dev/user/coupons', icon: 'mdi-ticket-percent' },
   { title: '關於我們', to: '', icon: 'mdi-information' },
   { title: '後台系統', to: '/home', icon: 'mdi-information' },
@@ -18,15 +23,10 @@ const menuItems = ref([
 const filteredMenuItems = computed(() => {
   return menuItems.value.filter((item) => {
     if (item.title === '後台系統') {
-      return userRole === 'ADMIN' || userRole === 'SUPER_ADMIN'
+      return userStore.role === 'ADMIN' || userStore.role === 'SUPER_ADMIN'
     }
     return true
   })
-})
-
-const user = ref({
-  name: localStorage.getItem('userName') || '訪客',
-  isLoggedIn: !!localStorage.getItem('userToken'),
 })
 
 const socialLinks = [
@@ -34,6 +34,40 @@ const socialLinks = [
   { icon: 'mdi-twitter' },
   { icon: 'mdi-instagram', link: 'https://www.instagram.com/penbrary.616/' },
 ]
+
+const handleLogout = () => {
+  Swal.fire({
+    title: '確定要登出嗎？',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#2e5c43',
+    cancelButtonColor: '#aaa',
+    confirmButtonText: '登出',
+    cancelButtonText: '取消',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      userStore.logout()
+
+      Swal.fire({
+        icon: 'success',
+        title: '登出成功',
+        text: '期待再次見到您！',
+        confirmButtonColor: '#2e5c43',
+        timer: 1500,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      }).then(() => {
+        router.push('/dev/user/home')
+      })
+    }
+  })
+}
+
+onMounted(() => {
+  if (userStore.isLoggedIn) {
+    cartStore.fetchCartCount()
+  }
+})
 </script>
 
 <template>
@@ -80,17 +114,48 @@ const socialLinks = [
 
         <!-- 導覽列的購物車icon，點擊後跳轉到購物車頁面 -->
         <v-btn icon class="me-2" @click="$router.push({ name: 'cart' })">
-          <v-badge content="2" color="accent">
+          <v-badge
+            :content="cartStore.cartCount"
+            :model-value="cartStore.cartCount > 0"
+            color="accent"
+          >
             <v-icon icon="mdi-cart-outline"></v-icon>
           </v-badge>
         </v-btn>
 
-        <div v-if="user.isLoggedIn">
-          <v-avatar color="surface" size="36" class="cursor-pointer">
-            <span class="text-primary font-weight-bold">{{ user.name.charAt(0) }}</span>
-          </v-avatar>
+        <div v-if="userStore.isLoggedIn">
+          <v-menu min-width="200px" rounded>
+            <template v-slot:activator="{ props }">
+              <v-avatar color="surface" size="36" class="cursor-pointer" v-bind="props">
+                <span class="text-primary font-weight-bold">{{ userStore.name.charAt(0) }}</span>
+              </v-avatar>
+            </template>
+
+            <v-list>
+              <v-list-item
+                prepend-icon="mdi-account-circle"
+                title="個人檔案"
+                to="/dev/user/profile"
+              ></v-list-item>
+              <v-list-item
+                prepend-icon="mdi-history"
+                title="歷史訂單"
+                :to="{ name: 'myOrders' }"
+              ></v-list-item>
+              <v-divider></v-divider>
+              <v-list-item
+                prepend-icon="mdi-logout"
+                title="登出"
+                @click="handleLogout"
+                class="text-error"
+              ></v-list-item>
+            </v-list>
+          </v-menu>
         </div>
-        <v-btn v-else variant="outlined" color="surface" size="small" to="/">登入</v-btn>
+
+        <v-btn v-else variant="outlined" color="surface" size="small" to="/dev/user/login">
+          登入
+        </v-btn>
       </div>
     </v-app-bar>
 
@@ -112,8 +177,12 @@ const socialLinks = [
     </v-navigation-drawer>
 
     <!-- Main Content (有 padding-top 避免被 App Bar 遮擋) -->
-    <v-main class="bg-background">
-      <v-container class="py-6" style="min-height: 80vh">
+    <v-main :class="{ 'bg-transparent': $route.name === 'user-login' }">
+      <v-container
+        :class="{ 'py-6': $route.name !== 'user-login' }"
+        :fluid="$route.name === 'user-login'"
+        style="min-height: 80vh"
+      >
         <router-view></router-view>
       </v-container>
     </v-main>
@@ -143,6 +212,14 @@ const socialLinks = [
 </template>
 
 <style scoped>
+:deep(.v-main) {
+  background-color: transparent !important;
+}
+
+:deep(.v-application--wrap) {
+  background-color: #f2f2e9 !important;
+}
+
 .v-btn {
   text-transform: none;
 }

@@ -18,6 +18,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name="operation_log")
@@ -36,6 +37,7 @@ public class UserLogBean {
 	@JoinColumn(name = "adminId", referencedColumnName = "user_id") 
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "logs"})
 	@NonNull
+	@ToString.Exclude
 	private UserBean adminUser;
 	
 	@Column(name="adminName") 

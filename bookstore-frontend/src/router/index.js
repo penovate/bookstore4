@@ -35,6 +35,11 @@ const router = createRouter({
           component: () => import('../views/admin/books/insertBook.vue'),
         },
         {
+          path: 'books/:id',
+          name: 'user-book-detail',
+          component: () => import('../views/public/books/UserBookDetail.vue'),
+        },
+        {
           path: 'books/update/:id',
           name: 'admin-books-update',
           component: () => import('../views/admin/books/updateBook.vue'),
@@ -44,6 +49,23 @@ const router = createRouter({
           name: 'admin-books-get',
           component: () => import('../views/admin/books/getBook.vue'),
         },
+
+        //進貨管理
+        // {
+        //   path: 'logs',
+        //   name: 'admin-logs',
+        //   component: () => import('../views/admin/logs/StockLogsHome.vue'),
+        // },
+        // {
+        //   path: 'logs/:id',
+        //   name: 'admin-logs-detail',
+        //   component: () => import('../views/admin/logs/StockLogDetail.vue'),
+        // },
+        // {
+        //   path: 'logs/insert',
+        //   name: 'admin-logs-insert',
+        //   component: () => import('../views/admin/logs/InsertStockLog.vue'),
+        // },
         // 2. 用戶管理
         {
           path: 'users',
@@ -97,6 +119,21 @@ const router = createRouter({
           name: 'orderDetail-admin',
           component: () => import('../views/admin/orders/OrderDetail.vue'),
         },
+        // {
+        //   path: 'logs/update/:id',
+        //   name: 'admin-logs-update',
+        //   component: () => import('../views/admin/logs/updateLogDetail.vue'),
+        // },
+        // {
+        //   path: 'reports',
+        //   name: 'admin-reports',
+        //   component: () => import('../views/admin/logs/SalesData.vue'),
+        // },
+        {
+          path: 'bookclubs',
+          name: 'admin-bookclubs',
+          component: () => import('../views/admin/bookClubs/ClubList.vue'),
+        },
         {
           path: 'orders/update/:id',
           name: 'orderUpdate',
@@ -142,9 +179,24 @@ const router = createRouter({
       component: () => import('../views/Layout/UserLayout.vue'),
       children: [
         {
+          path: 'login',
+          name: 'user-login',
+          component: () => import('../views/public/user/UserLogin.vue'),
+        },
+        {
+          path: 'books',
+          name: 'user-books',
+          component: () => import('../views/public/books/UserBookList.vue'),
+        },
+        {
+          path: 'books/:id',
+          name: 'user-book-detail',
+          component: () => import('../views/public/books/UserBookDetail.vue'),
+        },
+        {
           path: 'store',
           name: 'bookStore',
-          component: () => import('../views/public/books/BookStore.vue'), //測試購物車用，等宏孝加入書籍前台網頁後刪除
+          component: () => import('../views/public/books/UserBookList.vue'), //測試購物車用，等宏孝加入書籍前台網頁後刪除
         },
         {
           path: 'home',
@@ -183,25 +235,30 @@ router.beforeEach((to, from, next) => {
 
   const isAdminRoute = to.path.startsWith('/dev/admin') || to.name === 'home'
 
+  const isUserProtectedRoute =
+    ['myOrders', 'checkout', 'cart', 'userCoupons'].includes(to.name) ||
+    to.path.startsWith('/dev/user/orders') ||
+    to.path.startsWith('/dev/user/coupons')
+
   if (isAdminRoute) {
     if (!token) {
-      next({ name: 'login' })
+      return next({ name: 'login', query: { redirect: to.fullPath } })
     } else if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
-      next()
+      return next()
     } else {
       Swal.fire('權限不足', '您沒有進入後台管理系統的權限', 'error')
-      next({ name: 'userHome' })
+      return next({ name: 'userHome' })
     }
-    return
   }
 
-  if (to.name === 'login') {
-    if (token && (role === 'SUPER_ADMIN' || role === 'ADMIN')) {
-      next({ name: 'home' })
-    } else {
-      next()
-    }
-    return
+  if (isUserProtectedRoute && !token) {
+    Swal.fire({
+      title: '請先登入',
+      text: '登入會員後即可查看',
+      icon: 'info',
+      confirmButtonColor: '#2e5c43',
+    })
+    return next({ name: 'user-login', query: { redirect: to.fullPath } })
   }
 
   next()

@@ -19,4 +19,7 @@ public interface OrdersRepository extends JpaRepository<Orders, Integer> {
     // 3. 僅查詢已取消、已退款的訂單
     @Query("SELECT o FROM Orders o WHERE o.orderStatus IN ('已取消', '已退款')")
     List<Orders> findCancelAndRefundedOrders();
+    
+    // 4. 根據付款狀態查詢訂單
+    List<Orders> findByPaymentStatus(String paymentStatus);
 }

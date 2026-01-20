@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import bookstore.bean.OrderItem;
 import bookstore.bean.Orders;
 import bookstore.bean.UserBean;
+import bookstore.aop.BusinessException;
 import bookstore.bean.BooksBean;
 import bookstore.bean.Cart;
 import bookstore.bean.CouponBean;
@@ -21,8 +22,6 @@ import bookstore.repository.OrdersRepository;
 import bookstore.repository.UserRepository;
 import bookstore.repository.CouponRepository;
 import bookstore.dto.CheckoutRequest;
-
-import bookstore.exceptionCenter.BusinessException;
 
 @Service
 @Transactional

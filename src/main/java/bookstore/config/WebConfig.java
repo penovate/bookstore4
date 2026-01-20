@@ -38,6 +38,7 @@ public class WebConfig implements WebMvcConfigurer {
 					.excludePathPatterns("/login", "/api/login")
 					.excludePathPatterns("/api/**")
 					.excludePathPatterns("/logout")
+					
 					.excludePathPatterns("/static/**", "/css/**", "/js/**", "/images/**");
 		}
 
@@ -45,7 +46,13 @@ public class WebConfig implements WebMvcConfigurer {
 			registry.addInterceptor(jwtInterceptor)
 					.addPathPatterns("/cart/api/**")
 					.addPathPatterns("/orders/**");
-			;
+//					.addPathPatterns("/api/books**")
+//					.addPathPatterns("/api/**")
+//					.excludePathPatterns("/api/books/getAllBooks",
+//										  "api/books/getBook/**",
+//										  "api/books/isbnCheck",
+//										   "api/books/genres");
+			
 		}
 	}
 
@@ -54,4 +61,6 @@ public class WebConfig implements WebMvcConfigurer {
 		registry.addResourceHandler("/upload-images/**")
 				.addResourceLocations("file:" + uploadDir);
 	}
+	
+	
 }

@@ -50,22 +50,22 @@ const router = createRouter({
           component: () => import('../views/admin/books/getBook.vue'),
         },
 
-        //進貨管理
-        // {
-        //   path: 'logs',
-        //   name: 'admin-logs',
-        //   component: () => import('../views/admin/logs/StockLogsHome.vue'),
-        // },
-        // {
-        //   path: 'logs/:id',
-        //   name: 'admin-logs-detail',
-        //   component: () => import('../views/admin/logs/StockLogDetail.vue'),
-        // },
-        // {
-        //   path: 'logs/insert',
-        //   name: 'admin-logs-insert',
-        //   component: () => import('../views/admin/logs/InsertStockLog.vue'),
-        // },
+        // 進貨管理
+        {
+          path: 'logs',
+          name: 'admin-logs',
+          component: () => import('../views/admin/logs/StockLogsHome.vue'),
+        },
+        {
+          path: 'logs/:id',
+          name: 'admin-logs-detail',
+          component: () => import('../views/admin/logs/StockLogDetail.vue'),
+        },
+        {
+          path: 'logs/insert',
+          name: 'admin-logs-insert',
+          component: () => import('../views/admin/logs/InsertStockLog.vue'),
+        },
         // 2. 用戶管理
         {
           path: 'users',
@@ -119,16 +119,16 @@ const router = createRouter({
           name: 'orderDetail-admin',
           component: () => import('../views/admin/orders/OrderDetail.vue'),
         },
-        // {
-        //   path: 'logs/update/:id',
-        //   name: 'admin-logs-update',
-        //   component: () => import('../views/admin/logs/updateLogDetail.vue'),
-        // },
-        // {
-        //   path: 'reports',
-        //   name: 'admin-reports',
-        //   component: () => import('../views/admin/logs/SalesData.vue'),
-        // },
+        {
+          path: 'logs/update/:id',
+          name: 'admin-logs-update',
+          component: () => import('../views/admin/logs/updateLogDetail.vue'),
+        },
+        {
+          path: 'reports',
+          name: 'admin-reports',
+          component: () => import('../views/admin/logs/SalesData.vue'),
+        },
         {
           path: 'bookclubs',
           name: 'admin-bookclubs',

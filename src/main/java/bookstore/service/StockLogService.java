@@ -39,6 +39,7 @@ public class StockLogService {
 	private static final String STATUS_PAID = "已付款";
 	private static final String STATUS_UNPAID = "未付款";
 
+	@Transactional
 	public List<StockLogBean> getAllStockLogs() {
 		List<StockLogBean> stockLogList = stockLogRepository.findAll();
 		if (stockLogList.isEmpty()) {
@@ -48,6 +49,7 @@ public class StockLogService {
 		return stockLogList;
 	}
 
+	@Transactional
 	public StockLogBean getStock(Integer logId) {
 		if (logId == null) {
 			log.warn("查詢失敗 - 貨單ID不可為空白");
@@ -59,6 +61,17 @@ public class StockLogService {
 			return opt.get();
 		}
 		throw new BusinessException(404, "查無ID" + logId + "相關資料");
+	}
+	
+	@Transactional
+	public void deleteStockLog(Integer logId) {
+		Optional<StockLogBean> opt = stockLogRepository.findById(logId);
+		if(opt.isEmpty()) {
+		log.warn("查無ID:{}貨單資料",logId);
+			throw new BusinessException(404, "查無ID:"+logId+"貨單資料");
+		}
+		stockLogRepository.deleteById(logId);
+		
 	}
 
 	@Transactional

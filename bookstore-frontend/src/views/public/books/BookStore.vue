@@ -37,7 +37,9 @@
        <div class="footer-actions">
            <button class="back-btn" @click="router.push('/home')">回後台首頁</button>
        </div>
-
+        <div class="review-section-wrapper">
+         <BookReviews :book-id="1" />
+      </div>
     </div>
   </div>
 </template>
@@ -47,6 +49,7 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
+import BookReviews from '@/views/public/reviews/BookReviews.vue'
 
 const router = useRouter()
 const books = ref([])
@@ -293,5 +296,10 @@ h2 {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+}
+.review-section-wrapper {
+  margin-top: 50px;       
+  padding-top: 30px;      
+  border-top: 1px solid #e0d9c9; 
 }
 </style>

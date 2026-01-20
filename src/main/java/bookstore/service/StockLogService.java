@@ -1,6 +1,7 @@
 package bookstore.service;
 
 import java.math.BigDecimal;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,11 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import bookstore.aop.BusinessException;
 import bookstore.bean.BooksBean;
 import bookstore.bean.LogItemBean;
+import bookstore.bean.OrderItem;
+import bookstore.bean.Orders;
 import bookstore.bean.StockLogBean;
-import bookstore.exceptionCenter.BusinessException;
 import bookstore.repository.BookRepository;
+import bookstore.repository.OrderItemRepository;
+import bookstore.repository.OrdersRepository;
 import bookstore.repository.StockLogRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,10 +30,19 @@ public class StockLogService {
 	@Autowired
 	private BookRepository bookRepository;
 
+	@Autowired
+	private OrderItemRepository orderItemRepository;
+
+	@Autowired
+	private OrdersRepository ordersRepository;
+
+	private static final String STATUS_PAID = "已付款";
+	private static final String STATUS_UNPAID = "未付款";
+
 	public List<StockLogBean> getAllStockLogs() {
 		List<StockLogBean> stockLogList = stockLogRepository.findAll();
 		if (stockLogList.isEmpty()) {
-			 log.warn("查無任何貨單"); // Consider removing warning for normal empty state
+			log.warn("查無任何貨單"); // Consider removing warning for normal empty state
 		}
 		log.info("查詢貨單成功，取得 {} 筆資料", stockLogList.size());
 		return stockLogList;
@@ -103,4 +117,78 @@ public class StockLogService {
 		return stockLogRepository.save(stockLogBean);
 	}
 
+	// 取得已付款營業額
+	public BigDecimal paidTotalSales() {
+		BigDecimal totalSales = BigDecimal.ZERO;
+
+		List<Orders> ordersList = ordersRepository.findByPaymentStatus(STATUS_PAID);
+		for (Orders orders : ordersList) {
+			totalSales.add(orders.getTotalAmount());
+		}
+		return totalSales;
+	}
+
+	@Transactional
+	public StockLogBean returnStockLog(StockLogBean inputBean) {
+		Integer logId = inputBean.getLogId();
+		if (logId == null) {
+			throw new BusinessException(400, "貨單ID不可為空白");
+		}
+
+		// 1. 查詢原單據
+		Optional<StockLogBean> opt = stockLogRepository.findById(logId);
+		if (!opt.isPresent()) {
+			throw new BusinessException(404, "查無此貨單 ID:" + logId);
+		}
+
+		StockLogBean logBean = opt.get();
+
+		// 2. 驗證是否已經是退貨單
+		if (logBean.getStockType() == 2) {
+			throw new BusinessException(400, "此貨單已經是退貨單，不可重複退貨");
+		}
+
+		// 3. 處理庫存回沖 (原本是進貨+，現在要變成退貨-，所以要減去原數量)
+		List<LogItemBean> items = logBean.getLogItemBeans();
+		if (items != null) {
+			for (LogItemBean item : items) {
+				if (item.getBooksBean() != null) {
+					BooksBean book = item.getBooksBean();
+					// 重新查詢書籍以確保庫存最新
+					Optional<BooksBean> bookOpt = bookRepository.findById(book.getBookId());
+					if (bookOpt.isPresent()) {
+						book = bookOpt.get();
+						Integer currentStock = book.getStock();
+						Integer qtyToRevert = item.getChangeQty() != null ? item.getChangeQty() : 0;
+
+						// 檢查庫存是否足夠扣除
+						if (currentStock < qtyToRevert) {
+							throw new BusinessException(400, "書籍 [" + book.getBookName() + "] 目前庫存(" + currentStock
+									+ ")不足以執行退貨(" + qtyToRevert + ")");
+						}
+
+						// 扣除庫存
+						book.setStock(currentStock - qtyToRevert);
+						bookRepository.save(book);
+					}
+				}
+			}
+		}
+
+		// 4. 更新單據狀態為退貨 (StockType = 2)
+		logBean.setStockType(2); // 2: 退貨
+		// 也可以更新時間或其他備註 if needed
+
+		return stockLogRepository.save(logBean);
+	}
+
+	// 取得未付款營業額
+	public BigDecimal unpaidtotalSales() {
+		BigDecimal totalSales = BigDecimal.ZERO;
+		List<Orders> ordersList = ordersRepository.findByPaymentStatus(STATUS_UNPAID);
+		for (Orders orders : ordersList) {
+			totalSales.add(orders.getTotalAmount());
+		}
+		return totalSales;
+	}
 }

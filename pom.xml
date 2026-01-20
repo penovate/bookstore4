@@ -99,11 +99,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-aop</artifactId>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>HibernateWebProject</groupId>
 			<artifactId>HibernateWebProject</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
+		</dependency>-->
 
 		<!-- Source:
 		https://mvnrepository.com/artifact/org.springframework.security/spring-security-core -->

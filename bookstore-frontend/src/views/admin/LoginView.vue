@@ -161,6 +161,16 @@ const handleLogin = async () => {
     })
 
     if (response.data.success) {
+      if (response.data.role === 'USER') {
+        Swal.fire({
+          icon: 'error',
+          title: '權限不足',
+          text: '您沒有權限進入後台管理系統！',
+          confirmButtonColor: '#B05252',
+        })
+        return
+      }
+
       localStorage.setItem('userToken', response.data.token)
       localStorage.setItem('userRole', response.data.role)
       localStorage.setItem('userName', response.data.userName || '')
@@ -179,7 +189,7 @@ const handleLogin = async () => {
     } else {
       Swal.fire({
         icon: 'error',
-        title: '登入失敗',
+        title: '帳號停權',
         text: response.data.message,
         confirmButtonColor: '#B05252',
       })

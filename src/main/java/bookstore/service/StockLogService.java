@@ -43,7 +43,8 @@ public class StockLogService {
 	public List<StockLogBean> getAllStockLogs() {
 		List<StockLogBean> stockLogList = stockLogRepository.findAll();
 		if (stockLogList.isEmpty()) {
-			log.warn("查無任何貨單"); // Consider removing warning for normal empty state
+			log.warn("查無任何貨單"); 
+			return null;
 		}
 		log.info("查詢貨單成功，取得 {} 筆資料", stockLogList.size());
 		return stockLogList;
@@ -113,6 +114,7 @@ public class StockLogService {
 						} else if (stockLogBean.getStockType() == 2) {
 							newStock = currentStock - changeQty;
 							if (newStock < 0) {
+								log.warn("庫存不足，無法退貨");
 								throw new BusinessException(400, "書籍 " + book.getBookName() + " 庫存不足，無法退貨");
 							}
 						}
@@ -120,6 +122,7 @@ public class StockLogService {
 						book.setStock(newStock);
 						bookRepository.save(book);
 					} else {
+						log.warn("查無ID:{}相關書籍資料",bookId);
 						throw new BusinessException(404, "查無書籍ID: " + bookId);
 					}
 				}
@@ -145,12 +148,14 @@ public class StockLogService {
 	public StockLogBean returnStockLog(StockLogBean inputBean) {
 		Integer logId = inputBean.getLogId();
 		if (logId == null) {
+			log.warn("貨單ID不可空白");
 			throw new BusinessException(400, "貨單ID不可為空白");
 		}
 
 		// 1. 查詢原單據
 		Optional<StockLogBean> opt = stockLogRepository.findById(logId);
 		if (!opt.isPresent()) {
+			log.warn("查無ID:{}貨單相關資料",logId);
 			throw new BusinessException(404, "查無此貨單 ID:" + logId);
 		}
 
@@ -176,6 +181,7 @@ public class StockLogService {
 
 						// 檢查庫存是否足夠扣除
 						if (currentStock < qtyToRevert) {
+					log.warn("書籍:{} 目前庫存不足以執行退貨");
 							throw new BusinessException(400, "書籍 [" + book.getBookName() + "] 目前庫存(" + currentStock
 									+ ")不足以執行退貨(" + qtyToRevert + ")");
 						}
@@ -190,7 +196,6 @@ public class StockLogService {
 
 		// 4. 更新單據狀態為退貨 (StockType = 2)
 		logBean.setStockType(2); // 2: 退貨
-		// 也可以更新時間或其他備註 if needed
 
 		return stockLogRepository.save(logBean);
 	}

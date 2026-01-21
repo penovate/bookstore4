@@ -24,9 +24,6 @@ const getAuthHeaders = () => {
 export default {
     // --- 購物車操作 ---
 
-    // 未使用或舊版？通常購物車是根據 session/token 針對每個使用者的
-    // getCartItems() { ... } 
-
     // 取得購物車項目
     getCartItems() {
         return apiClient.get('/cart/api/items', getAuthHeaders());

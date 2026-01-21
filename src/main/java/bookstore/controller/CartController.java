@@ -24,13 +24,13 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    // View page - now just returns the JSP, data loaded via AJAX
+    // JSP 頁面，資料改為透過 AJAX 非同步載入，改用下面vue畫面路徑，JSP舊路徑先保留。
     @GetMapping
     public String viewCartPage() {
         return "cart/cart";
     }
 
-    // API to get cart items
+    // 取得購物車項目的 API
     @GetMapping("/api/items")
     @ResponseBody
     public Map<String, Object> getCartItems(HttpServletRequest request) {
@@ -46,6 +46,7 @@ public class CartController {
         List<Cart> cartItems = cartService.getUserCart(userId);
         response.put("cartItems", cartItems);
 
+        // 使用Steam API來計算購物車中所有「有效商品」的總金額
         int totalAmount = cartItems.stream()
                 .filter(item -> isValid(item))
                 .mapToInt(item -> item.getBooksBean().getPrice().intValue() * item.getQuantity())
@@ -56,10 +57,11 @@ public class CartController {
         return response;
     }
 
+    //檢查書籍是否有效
     private boolean isValid(Cart item) {
         return item.getBooksBean().getOnShelf() != null
-                && item.getBooksBean().getOnShelf() == 1
-                && item.getBooksBean().getStock() >= item.getQuantity();
+                && item.getBooksBean().getOnShelf() == 1 // 判斷是否上架
+                && item.getBooksBean().getStock() >= item.getQuantity(); //判斷購買量是否超過庫存量
     }
 
     @PostMapping("/api/add")
@@ -69,24 +71,19 @@ public class CartController {
         Map<String, Object> response = new HashMap<>();
 
         Integer userId = (Integer) request.getAttribute("userId");
+        
+        //檢查是否有userId(使用JWT理論上不會有問題，但還是檢查一下)
         if (userId == null) {
-
-            // Fallback for non-API calls or mixed usage (not expected with full JWT but
-            // just in case)
-            // But interceptor should have handled it or blocked it?
-            // If interceptor blocks, it sends error code.
-            // If we are here, userId might be null if interceptor didn't set it (e.g.
-            // pattern mismatch)
             response.put("success", false);
             response.put("message", "請先登入");
             return response;
         }
 
         try {
-            cartService.addToCart(userId, bookId, quantity); // Use extracted userId
+            cartService.addToCart(userId, bookId, quantity); // 使用從請求中提取出來的 userId
             response.put("success", true);
 
-            // Return updated total count or similar if needed
+            // 回傳更新後的購物車品項數
             List<Cart> cartItems = cartService.getUserCart(userId);
             response.put("cartCount", cartItems.size());
 
@@ -102,20 +99,7 @@ public class CartController {
         return response;
     }
 
-    // Legacy buyNow removed or converted?
-    // Plan said: "Buy Now... redirect to /cart"
-    // Since we want JWT, Buy Now button on frontend should be an AJAX call to add,
-    // then JS redirects.
-    // So we don't strictly need a backend /buyNow endpoint that does logic +
-    // redirect if we change frontend to:
-    // 1. AJAX Add
-    // 2. JS Redirect to /cart
-    // BUT, if we want a single atomic action (add and go), we can just use the add
-    // API.
-    // So I won't implement a specific /api/buyNow unless needed.
-    // The previous /buyNow was @PostMapping and returned String (view).
-    // I will let Frontend handle the flow.
-
+    // 更新購物車商品數量
     @PostMapping("/api/update")
     @ResponseBody
     public Map<String, Object> updateQuantity(@RequestParam("cartId") Integer cartId,
@@ -123,6 +107,8 @@ public class CartController {
         Map<String, Object> response = new HashMap<>();
 
         Integer userId = (Integer) request.getAttribute("userId");
+        
+        //檢查是否有userId(使用JWT理論上不會有問題，但還是檢查一下)
         if (userId == null) {
             response.put("success", false);
             response.put("message", "請先登入");
@@ -130,26 +116,18 @@ public class CartController {
         }
 
         try {
-            // Check ownership? Service updateQuantity doesn't check owner currently,
-            // but finding by ID is usually safe enough if IDs are random/long, but integers
-            // are guessable.
-            // Ideally Service should check if Cart belongs to UserId.
-            // For now I'll stick to existing Service logic but we might want to improve it
-            // later.
-
             Cart cart = cartService.updateQuantity(cartId, quantity);
-            // Verify ownership if needed, but let's assume valid session user implies valid
-            // access for now or service handles it.
-            // Actually service.updateQuantity just does repo.findById(cartId).
-
+            
             response.put("success", true);
             response.put("quantity", cart.getQuantity());
             int subtotal = cart.getBooksBean().getPrice().intValue() * cart.getQuantity();
             response.put("subtotal", subtotal);
 
             List<Cart> cartItems = cartService.getUserCart(userId);
+            
+            // 重新計算購物車商品總計
             int total = cartItems.stream()
-                    .filter(item -> isValid(item)) // Re-use validation logic
+                    .filter(item -> isValid(item)) // 檢查有效商品
                     .mapToInt(item -> item.getBooksBean().getPrice().intValue() * item.getQuantity())
                     .sum();
             response.put("totalAmount", total);
@@ -161,12 +139,15 @@ public class CartController {
         return response;
     }
 
+    //移除購物車商品
     @PostMapping("/api/remove")
     @ResponseBody
     public Map<String, Object> remove(@RequestParam("cartId") Integer cartId, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
 
         Integer userId = (Integer) request.getAttribute("userId");
+        
+        //檢查是否有userId(使用JWT理論上不會有問題，但還是檢查一下)
         if (userId == null) {
             response.put("success", false);
             return response;
@@ -177,8 +158,10 @@ public class CartController {
             response.put("success", true);
 
             List<Cart> cartItems = cartService.getUserCart(userId);
+           
+            // 移除後重新計算商品總計
             int total = cartItems.stream()
-                    .filter(item -> isValid(item))
+                    .filter(item -> isValid(item)) // 檢查有效商品
                     .mapToInt(item -> item.getBooksBean().getPrice().intValue() * item.getQuantity())
                     .sum();
             response.put("totalAmount", total);

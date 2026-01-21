@@ -60,7 +60,7 @@ const form = reactive({
 const submit = async () => {
   // ✅ reactive → 直接用 form.xxx
   if (!form.userId || !form.bookId || !form.rating || !form.comment) {
-    alert('請填寫所有欄位')
+    alert('欄位不能為空')
     return
   }
 

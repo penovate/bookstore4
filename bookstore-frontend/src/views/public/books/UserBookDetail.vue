@@ -240,7 +240,7 @@ onMounted(() => {
       </div>
 
       <div class="review-section-wrapper">
-        <BookReviews :book-id="1" />
+        <BookReviews v-if="bookId" :book-id="bookId" />
       </div>
     </v-card>
 

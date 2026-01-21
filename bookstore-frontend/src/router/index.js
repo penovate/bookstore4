@@ -149,12 +149,12 @@ const router = createRouter({
           name: 'orderItemUpdate',
           component: () => import('../views/admin/orders/OrderItemUpdate.vue'),
         },
+        // 4.評價管理
         {
           path: 'reviews',
           name: 'admin-reviews',
           component: () => import('../views/admin/reviews/ReviewList.vue'),
         },
-        // 暫用開始行
         {
           path: 'reviews/:id',
           name: 'review-detail',
@@ -170,7 +170,6 @@ const router = createRouter({
           name: 'review-update',
           component: () => import('../views/admin/reviews/ReviewUpdate.vue'),
         },
-        // 暫用結束行
       ],
     },
     // --- 前台網站區域 ---

@@ -45,14 +45,13 @@ public class WebConfig implements WebMvcConfigurer {
 		if (jwtInterceptor != null) {
 			registry.addInterceptor(jwtInterceptor)
 					.addPathPatterns("/cart/api/**")
-					.addPathPatterns("/orders/**");
-//					.addPathPatterns("/api/books**")
-//					.addPathPatterns("/api/**")
-//					.excludePathPatterns("/api/books/getAllBooks",
-//										  "api/books/getBook/**",
-//										  "api/books/isbnCheck",
-//										   "api/books/genres");
-			
+					.addPathPatterns("/orders/**")
+					.addPathPatterns("/api/books/**")
+					.excludePathPatterns("/api/books/getAllBooks",
+										  "/api/books/getBook/**",
+										  "/api/books/isbnCheck",
+										   "/api/books/genres");
+//			
 		}
 	}
 

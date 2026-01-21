@@ -141,7 +141,7 @@ public class UserController {
 	    
 	    if (user.getUserType() != null && user.getUserType() == 2) {
 	        response.put("success", false);
-	        response.put("message", "新增失敗！後台系統禁止直接建立一般會員，請引導使用者至前台註冊。");
+	        response.put("message", "新增失敗！後台系統禁止直接建立一般會員，請引導使用者至前台註冊！");
 	        return response;
 	    }
 

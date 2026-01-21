@@ -151,6 +151,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import Swal from 'sweetalert2';
 import reviewService from '@/api/reviewService.js';
+import { useUserStore } from '@/stores/userStore';
 
 const props = defineProps({
   bookId: {
@@ -159,10 +160,26 @@ const props = defineProps({
   }
 });
 
+// --- JWT 解碼小工具 (不用改其他檔案的關鍵！) ---
+const parseJwt = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+};
+
 // --- 狀態 ---
 const reviews = ref([]);
 const isSubmitting = ref(false);
 const valid = ref(false);
+const userStore = useUserStore();
+
 const newReview = ref({
   rating: 0,
   comment: ""
@@ -261,16 +278,65 @@ const submitReview = async () => {
 
   isSubmitting.value = true;
   
+  // 從 Pinia 狀態管理中取得當前登入者資訊
+  let currentUserId = userStore.userId || localStorage.getItem('userId');
+  let currentUserName = userStore.userName || localStorage.getItem('userName');
+
+
+  // 2. 如果真的都沒有 (因為沒存到)，我們就去解碼 Token！
+  if (!currentUserId) {
+      const token = localStorage.getItem('userToken');
+      if (token) {
+          const decoded = parseJwt(token);
+          // 試著從解碼後的資料抓 ID，通常欄位名稱是 'userId', 'id', 或 'sub'
+          if (decoded) {
+              console.log("Token 解碼結果:", decoded); // 可以在 F12 偷看 Token 裡有什麼
+              currentUserId = decoded.userId || decoded.id || decoded.sub; 
+              
+              // 如果名字也沒有，順便抓名字
+              if (!currentUserName) {
+                  currentUserName = decoded.userName || decoded.name || decoded.sub;
+              }
+          }
+      }
+  }
+
+
+  // 防呆：如果 Store 裡沒有 ID (代表可能沒登入或狀態遺失)
+  if (!currentUserId) {
+      Swal.fire({
+          icon: 'warning',
+          title: '請先登入',
+          text: '登入後才能發表評論',
+          confirmButtonText: '前往登入',
+          confirmButtonColor: '#2E5C43'
+      }).then((result) => {
+          if (result.isConfirmed) {
+              // 這裡假設你有 router，如果沒有請在上面 const router = useRouter()
+              // router.push('/login'); 
+              window.location.href = '/dev/user/login'; // 或是直接跳轉
+          }
+      });
+      isSubmitting.value = false;
+      return;
+  }
+
   // 準備要送給後端的資料
   const payload = {
-    userId: 1, // ★★★ 之後記得改成動態抓取當前使用者的 ID
+    userId: Number(currentUserId), 
     bookId: props.bookId,
     rating: newReview.value.rating,
     comment: newReview.value.comment
   };
+  
   try {
     const response = await reviewService.createReview(payload);
+    const newReviewData = response.data;
     
+    if (!newReviewData.userName && currentUserName) {
+    newReviewData.userName = currentUserName;
+    }
+
     // 成功後，把回傳的新資料加到列表最上方
     reviews.value.unshift(response.data);
 
@@ -302,7 +368,7 @@ const submitReview = async () => {
 const handleReport = async (review) => {
   const { value: reason } = await Swal.fire({
     title: '檢舉評論',
-    text: `您確定要檢舉 User ${review.userId} 的評論嗎？請選擇原因：`,
+    text: `您確定要檢舉 ${review.userName || 'User ' + review.userId} 的評論嗎？請選擇原因：`,
     input: 'select',
     inputOptions: {
       'spam': '垃圾廣告訊息',

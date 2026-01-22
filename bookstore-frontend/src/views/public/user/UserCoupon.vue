@@ -3,11 +3,12 @@
     <v-container class="py-10">
       <div class="text-center mb-8">
         <h2 class="forest-main-title">我的優惠券</h2>
+        <!-- v-divider分隔線，標題下方的小灰線-->
         <v-divider class="mx-auto mt-4" length="60" thickness="4" color="primary"></v-divider>
       </div>
 
       <!-- 領取優惠券區塊 -->
-      <v-card class="forest-card rounded-xl overflow-hidden mb-8 pa-6" elevation="2">
+      <v-card class="forest-card rounded-xl overflow-hidden mb-8 pa-6" elevation="2"> <!-- elevation="2"陰影深度 -->
         <div class="d-flex align-center gap-4 flex-wrap justify-center">
             <v-text-field
                 v-model="couponCode"

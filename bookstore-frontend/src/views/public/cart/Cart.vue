@@ -78,7 +78,7 @@
           <!-- 數量控制 -->
           <template v-slot:item.quantity="{ item }">
              <div class="d-flex align-center justify-center gap-2" style="width: 140px; margin: 0 auto;">
-                <!-- 內部的減號是用於數量調整。使用者要求移除按鈕要有 "-" 符號，但我們在最左側已有移除按鈕。這裡保留數量調整功能。 --> 
+                <!-- 商品數量扣除按鈕(數量少於1或書本未上架不能用)--> 
                 <v-btn
                   icon="mdi-minus"
                   size="x-small"
@@ -88,7 +88,8 @@
                   @click="adjustQuantity(item, -1)"
                 ></v-btn>
                 
-                <v-text-field
+				<!-- 商品數量填寫框(庫存量為0或書本未上架不能用)-->
+				<v-text-field
                    v-model.number="item.quantity"
                    type="number"
                    variant="outlined"
@@ -100,6 +101,7 @@
                    @change="updateQuantity(item)"
                 ></v-text-field>
 
+				<!-- 商品數量增加按鈕(數量高於庫存量或書本未上架不能用)-->
                 <v-btn
                   icon="mdi-plus"
                   size="x-small"
@@ -156,7 +158,9 @@
           </v-btn>
         </v-col>
         <v-col cols="12" sm="auto">
-          <v-btn
+          
+			<!-- 結帳按鈕(如果購物車沒有商品或有無效商品則無法結帳) -->
+			<v-btn
              size="large"
              color="primary"
              class="px-10 rounded-lg font-weight-bold button-shadow"

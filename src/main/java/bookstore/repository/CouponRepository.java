@@ -9,11 +9,10 @@ import bookstore.bean.CouponBean;
 
 @Repository
 public interface CouponRepository extends JpaRepository<CouponBean, Integer> {
-    List<CouponBean> findByUserId(Integer userId);
+	
+	// 根據用戶 ID 查詢其擁有的所有優惠券
+	List<CouponBean> findByUserId(Integer userId);
 
-    // Check if user already claimed this specific code logic (optional constraint)
-    // For this implementation, maybe we allow multiples or check manually in
-    // service.
-    // Let's allow fetching by userId and code to check duplicates.
+    // 透過用戶 ID 與優惠券代碼進行查詢，以判斷是否存在重複領取的情況。
     List<CouponBean> findByUserIdAndCouponCode(Integer userId, String couponCode);
 }

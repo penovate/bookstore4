@@ -4,7 +4,7 @@
       <div class="d-flex align-center justify-space-between mb-6">
         <h2 class="text-h4 font-weight-black" style="color: #2e5c43">
           <v-icon icon="mdi-clipboard-text-clock-outline" class="mr-2"></v-icon>
-          管理員操作日誌
+          {{ currentUserRole === 'SUPER_ADMIN' ? '管理員操作日誌（全系統）' : '我的操作日誌' }}
         </h2>
 
         <div>
@@ -74,6 +74,7 @@ import * as XLSX from 'xlsx'
 const router = useRouter()
 const logs = ref([])
 const loading = ref(true)
+const currentUserRole = localStorage.getItem('userRole')
 
 const headers = [
   { title: '操作時間', key: 'actionTime', width: '25%', align: 'start' },

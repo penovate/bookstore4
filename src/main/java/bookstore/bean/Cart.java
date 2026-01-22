@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @DynamicInsert
 @DynamicUpdate
-@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })//避免在 JSON 轉換時，因為 Hibernate 的延遲加載（Lazy Loading）產生循環引用或代理物件報錯
 public class Cart implements Serializable {
 	private static final long serialVersionUID = 1L;
 

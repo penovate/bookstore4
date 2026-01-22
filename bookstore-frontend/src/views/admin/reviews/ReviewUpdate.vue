@@ -44,7 +44,6 @@
       </table>
     </div>
 
-    <!-- 按鈕區 -->
     <div class="action-buttons">
       <button class="system-button primary-action-button" @click="submit">修改評價</button>
       <button class="system-button back-button" @click="goBack">返回所有評價</button>
@@ -59,7 +58,6 @@ import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
 const route = useRoute()
 
-// 表單資料（一定要 reactive）
 const form = reactive({
   reviewId: '',
   userId: '',
@@ -70,10 +68,8 @@ const form = reactive({
   comment: '',
 })
 
-// 取得網址上的 reviewId
 const reviewId = route.params.id
 
-// 進頁面時：抓單筆評價資料
 onMounted(async () => {
   try {
     const res = await fetch(`/api/public/admin/reviews/${reviewId}`)
@@ -84,7 +80,6 @@ onMounted(async () => {
 
     const data = await res.json()
 
-    // 塞進表單
     form.reviewId = data.reviewId
     form.userId = data.userId
     form.userName = data.userName
@@ -98,7 +93,6 @@ onMounted(async () => {
   }
 })
 
-// 送出修改
 const submit = async () => {
   if (!form.rating || !form.comment) {
     alert('評價內容不能為空')
@@ -172,7 +166,7 @@ const goBack = () => {
 .detail-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed; /* ⭐ 防止欄位亂撐 */
+  table-layout: fixed; 
 }
 
 .detail-table th {
@@ -199,7 +193,7 @@ const goBack = () => {
 .detail-table select,
 .detail-table textarea {
   width: 100%;
-  box-sizing: border-box; /* ⭐ 關鍵 */
+  box-sizing: border-box; 
   padding: 8px 10px;
   border: 1px solid #dcd5c7;
   border-radius: 4px;
@@ -210,7 +204,6 @@ textarea {
   resize: vertical;
 }
 
-/* 按鈕 */
 .action-buttons {
   margin-top: 30px;
   text-align: center;

@@ -21,7 +21,7 @@ const items = ref([
       { title: '書籍列表', to: '/dev/admin/books', icon: 'mdi-format-list-bulleted' },
       { title: '進退貨管理', to: '/dev/admin/logs', icon: 'mdi-swap-horizontal-bold' },
       { title: '數據報表分析', to: '/dev/admin/reports', icon: 'mdi-chart-bar' },
-    ]
+    ],
   },
   {
     title: '優惠券管理',
@@ -84,7 +84,7 @@ const handleLogout = () => {
     <v-navigation-drawer v-model="drawer" color="primary">
       <v-list-item title="BookStore" subtitle="後台管理系統" class="py-4" to="/home">
         <template v-slot:prepend>
-          <v-icon icon="mdi-leaf" class="me-2"></v-icon>
+          <v-icon icon="mdi-book-open-variant" class="me-2"></v-icon>
         </template>
       </v-list-item>
 
@@ -95,11 +95,22 @@ const handleLogout = () => {
           <!-- 子選單 -->
           <v-list-group v-if="item.children" :value="item.title">
             <template v-slot:activator="{ props }">
-              <v-list-item v-bind="props" :prepend-icon="item.icon" :title="item.title"></v-list-item>
+              <v-list-item
+                v-bind="props"
+                :prepend-icon="item.icon"
+                :title="item.title"
+              ></v-list-item>
             </template>
 
-            <v-list-item v-for="(child, k) in item.children" :key="k" :title="child.title" :prepend-icon="child.icon"
-              :to="child.to" :value="child.title" color="accent"></v-list-item>
+            <v-list-item
+              v-for="(child, k) in item.children"
+              :key="k"
+              :title="child.title"
+              :prepend-icon="child.icon"
+              :to="child.to"
+              :value="child.title"
+              color="accent"
+            ></v-list-item>
           </v-list-group>
 
           <!-- 一般選單 -->
@@ -111,12 +122,21 @@ const handleLogout = () => {
 
       <template v-slot:append>
         <div class="pa-2">
-          <v-btn block color="accent" variant="tonal" prepend-icon="mdi-storefront-outline" class="mb-2" style="
+          <v-btn
+            block
+            color="accent"
+            variant="tonal"
+            prepend-icon="mdi-storefront-outline"
+            class="mb-2"
+            style="
               color: #ffffff !important;
               font-weight: 500 !important;
               background-color: rgba(var(--v-theme-accent), 0.3) !important;
               filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.2));
-            " href="/dev/user/home" target="_blank">
+            "
+            href="/dev/user/home"
+            target="_blank"
+          >
             前台網頁
           </v-btn>
 
@@ -128,7 +148,11 @@ const handleLogout = () => {
     </v-navigation-drawer>
 
     <v-app-bar elevation="0" class="bg-background" density="compact">
-      <v-app-bar-nav-icon variant="text" color="primary" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon
+        variant="text"
+        color="primary"
+        @click.stop="drawer = !drawer"
+      ></v-app-bar-nav-icon>
 
       <v-spacer></v-spacer>
 

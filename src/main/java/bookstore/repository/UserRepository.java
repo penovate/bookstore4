@@ -36,4 +36,6 @@ public interface UserRepository extends JpaRepository<UserBean, Integer> {
 	boolean existsByPhoneNumAndUserIdNot(String phoneNum, Integer userId);
 	boolean existsByEmail(String email);
 	boolean existsByPhoneNum(String phoneNum);
+	
+	
 }

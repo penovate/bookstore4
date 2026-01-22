@@ -26,9 +26,21 @@ const imagePreview = ref(null); // URL for preview
 
 // Rules
 const rules = {
-    required: value => !!value || '此欄位為必填',
+    required: value => (value !== null && value !== undefined && value !== '') || '此欄位為必填',
     positive: value => value >= 0 || '數值必須大於等於 0',
-    isbn: value => /^\d{13}$/.test(value) || 'ISBN 必須為 13 位數字'
+    isbnFormat: value => /^\d{13}$/.test(value) || 'ISBN 必須為 13 位數字',
+    isbnUnique: async (value) => {
+        if (!value || !/^\d{13}$/.test(value)) return true; // 格式錯誤交由其他規則處理
+        try {
+            const response = await bookService.checkIsbn(value);
+            // 假設後端回傳 true 代表存在 (重複)，false 代表可用
+            // 原有API邏輯: checkIsbn -> bookService.existsByIsbn -> Returns true if exists
+            return response.data === false || '此 ISBN 已存在，請檢查是否重複輸入';
+        } catch (error) {
+            console.error('ISBN 驗證失敗:', error);
+            return '無法驗證 ISBN';
+        }
+    }
 };
 
 const form = ref(null);
@@ -72,7 +84,7 @@ const generateRandomBook = () => {
         press: `出版社 ${randomSuffix}`,
         price: Math.floor(Math.random() * 901) + 100, // 100-1000
         isbn: isbn,
-        stock: Math.floor(Math.random() * 91) + 10, // 10-100
+        // stock: Math.floor(Math.random() * 91) + 10, // 10-100
         shortDesc: `這是一本隨機生成的書籍介紹 ${randomSuffix}。內容豐富，值得一讀。`,
         onShelf: 0
     };
@@ -95,12 +107,19 @@ const clearForm = () => {
         isbn: '',
         stock: null,
         shortDesc: '',
+<<<<<<< HEAD
         onShelf: 0 
+=======
+        onShelf: 0
+>>>>>>> cb9e07284845b8268143b1628db076959fc9732b
     };
     selectedGenreIds.value = [];
     imageFile.value = null;
     imagePreview.value = null;
+<<<<<<< HEAD
     form.value.resetValidation();
+=======
+>>>>>>> cb9e07284845b8268143b1628db076959fc9732b
 };
 
 const submit = async () => {
@@ -131,7 +150,7 @@ const submit = async () => {
                     <div style="margin-bottom: 4px;"><strong>出版社：</strong> ${newBook.press}</div>
                     <div style="margin-bottom: 4px;"><strong>定價：</strong> $${newBook.price}</div>
                     <div style="margin-bottom: 4px;"><strong>庫存：</strong> ${newBook.stock}</div>
-                    <div><strong>ISBN：</strong> ${newBook.isbn}</div>
+                    <div validate-on="blur"><strong>ISBN：</strong> ${newBook.isbn}</div>
                 </div>
             </div>
         `;
@@ -155,11 +174,13 @@ const submit = async () => {
         router.push('/dev/admin/books');
 
     } catch (error) {
+        console.error(`[GlobalHandler] Error Code: ${code}, Message: ${message}`);
+
         console.error(error);
         Swal.fire({
             icon: 'error',
             title: '新增失敗',
-            text: '發生錯誤，請稍後再試。',
+            text: error.message || '發生錯誤，請稍後再試。',
             confirmButtonColor: '#d33'
         });
     } finally {
@@ -214,19 +235,15 @@ const submit = async () => {
                                     variant="outlined" color="primary"></v-select>
                             </v-col>
                             <v-col cols="12" md="6">
-                                <v-text-field v-model.number="book.price" label="價錢" type="number"
+                                <v-text-field v-model.number="book.price" label="售價" type="number"
                                     :rules="[rules.required, rules.positive]" prefix="$" variant="outlined"
                                     color="primary"></v-text-field>
                             </v-col>
-                            <v-col cols="12" md="6">
-                                <v-text-field v-model.number="book.stock" label="庫存" type="number"
-                                    :rules="[rules.required, rules.positive]" variant="outlined"
-                                    color="primary"></v-text-field>
-                            </v-col>
+
                             <v-col cols="12">
                                 <v-text-field v-model="book.isbn" label="ISBN (13碼)"
-                                    :rules="[rules.required, rules.isbn]" counter="13" variant="outlined"
-                                    color="primary"></v-text-field>
+                                    :rules="[rules.required, rules.isbnFormat, rules.isbnUnique]" counter="13"
+                                    variant="outlined" color="primary"></v-text-field>
                             </v-col>
                             <v-col cols="12">
                                 <v-textarea v-model="book.shortDesc" label="書籍簡介" rows="3" variant="outlined"
@@ -236,12 +253,23 @@ const submit = async () => {
                         </v-row>
 
                         <div class="d-flex justify-space-between mt-4">
+<<<<<<< HEAD
                             <div>
                                 <v-btn color="info" variant="tonal" prepend-icon="mdi-flash" @click="generateRandomBook" class="mr-2">
                                     一鍵輸入
                                 </v-btn>
                                 <v-btn color="error" variant="tonal" prepend-icon="mdi-eraser" @click="clearForm">
                                     清空
+=======
+                            <div class="d-flex gap-2">
+                                <v-btn color="info" variant="tonal" prepend-icon="mdi-flash"
+                                    @click="generateRandomBook">
+                                    一鍵輸入
+                                </v-btn>
+                                <v-btn color="error" variant="tonal" prepend-icon="mdi-delete-sweep" class="ml-2"
+                                    @click="clearForm">
+                                    清空欄位
+>>>>>>> cb9e07284845b8268143b1628db076959fc9732b
                                 </v-btn>
                             </div>
                             <div>

@@ -1,11 +1,44 @@
 /* src/services/bookService.js */
 import axios from 'axios';
 // 設定 Base URL (與 Vite Proxy 配合)
-const API_URL = '/books';
+const API_URL = '/api/books';
 const apiClient = axios.create({
     baseURL: API_URL,
     withCredentials: true, // 保持 Session
 });
+
+// Request interceptor: 自動帶入 JWT Token
+apiClient.interceptors.request.use(
+    config => {
+        const token = localStorage.getItem('userToken');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    error => {
+        return Promise.reject(error);
+    }
+);
+
+// 攔截器：統一處理後端 GlobalExceptionHandler 回傳的格式
+apiClient.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response && error.response.data) {
+            const { code, message } = error.response.data;
+            if (code && message) {
+                // 將後端錯誤代碼與訊息組裝，讓前端組件可以直接顯示
+                console.error(`[GlobalHandler] Error Code: ${code}, Message: ${message}`);
+                const formattedError = new Error(`[${code}] ${message}`);
+                formattedError.originalError = error;
+                return Promise.reject(formattedError);
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default {
     // 取得全列表
     getAllBooks() {

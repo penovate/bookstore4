@@ -2,7 +2,6 @@ package bookstore.bean;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -25,13 +24,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Entity
 @Table(name = "books")
@@ -47,30 +44,30 @@ public class BooksBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer bookId; // 序號
 
-//	@NotBlank(message = "書名不可為空白")
-//	@Size(max = 50, message = "書名長度不可超過50字")
+	// @NotBlank(message = "書名不可為空白")
+	// @Size(max = 50, message = "書名長度不可超過50字")
 	@Column(name = "book_name")
 	private String bookName; // 書名
 
-//	@NotBlank(message = "作者不可為空白")
+	// @NotBlank(message = "作者不可為空白")
 	@Column(name = "author")
 	private String author; // 作者
 
 	@Column(name = "translator")
 	private String translator; // 譯者
 
-//	@NotBlank(message = "價錢不可為空白")
-//	@DecimalMin(value = "0.0",inclusive = true,message = "價格不能小0且不可為負數")
+	// @NotBlank(message = "價錢不可為空白")
+	// @DecimalMin(value = "0.0",inclusive = true,message = "價格不能小0且不可為負數")
 	@Column(name = "price")
 	private BigDecimal price; // 價錢
 
-//	@NotBlank(message = "ISBN不可為空白")
-//	@Pattern(regexp = "^\\d{13}$",message = "格式驗證失敗，必須為13位數字")
+	// @NotBlank(message = "ISBN不可為空白")
+	// @Pattern(regexp = "^\\d{13}$",message = "格式驗證失敗，必須為13位數字")
 	@Column(name = "isbn")
 	private String isbn; // 書本身分證
 
-//	@NotNull(message = "庫存量不可為空")
-//	@Min(value = 0,message = "庫存量不可小於0")
+	// @NotNull(message = "庫存量不可為空")
+	// @Min(value = 0,message = "庫存量不可小於0")
 	@Column(name = "stock")
 	private Integer stock; // 庫存量
 
@@ -80,7 +77,7 @@ public class BooksBean {
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt; // 建立時間
 
-//	@NotBlank(message = "出版社不可為空白")
+	// @NotBlank(message = "出版社不可為空白")
 	@Column(name = "press")
 	private String press; // 出版社
 
@@ -100,9 +97,7 @@ public class BooksBean {
 	@JsonManagedReference
 	private BookImageBean bookImageBean;
 
-
 	// -------Constructor--------
-
 
 	// --------getter/setter-------
 	public Integer getBookId() {

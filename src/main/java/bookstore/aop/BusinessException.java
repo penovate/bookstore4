@@ -1,4 +1,4 @@
-package bookstore.exceptionCenter;
+package bookstore.aop;
 
 public class BusinessException extends RuntimeException {
 

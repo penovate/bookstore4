@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,15 +18,14 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import bookstore.aop.BusinessException;
 import bookstore.bean.BooksBean;
 import bookstore.bean.GenreBean;
-import bookstore.exceptionCenter.BusinessException;
 import bookstore.service.bookService;
 
 @RestController
-@RequestMapping("/books")
+@RequestMapping("/api/books")
 public class BookController {
 
 	@Autowired
@@ -43,8 +41,17 @@ public class BookController {
 		List<BooksBean> bookList = bookService.selectAllBooks();
 		return ResponseEntity.ok(bookList);
 	}
-	
-	
+
+	// @GetMapping("/getBooksPaged")
+	// public ResponseEntity<Page<BooksBean>> getBooksPaged(
+	// @RequestParam(defaultValue = "0") int page,
+	// @RequestParam(defaultValue = "10") int size,
+	// @RequestParam(defaultValue = "bookId") String sortBy,
+	// @RequestParam(defaultValue = "false") boolean sortDesc) {
+	// Page<BooksBean> bookPage = bookService.selectBooksPaged(page, size, sortBy,
+	// sortDesc);
+	// return ResponseEntity.ok(bookPage);
+	// }
 
 	@GetMapping("/getBook/{bookId}")
 	public ResponseEntity<BooksBean> selectBookById(@PathVariable("bookId") Integer bookId) {
@@ -71,7 +78,6 @@ public class BookController {
 		return ResponseEntity.ok(newBook);
 	}
 
-
 	@PutMapping("/update/{bookId}")
 	public ResponseEntity<BooksBean> updateBook(@PathVariable Integer bookId, @RequestPart("book") BooksBean book,
 			@RequestPart(value = "file", required = false) MultipartFile file)
@@ -82,7 +88,7 @@ public class BookController {
 
 	@PutMapping("/updateStatus/{bookId}/{newStatus}")
 	public ResponseEntity<BooksBean> updateOnShelf(@PathVariable Integer bookId, @PathVariable Integer newStatus) {
-	BooksBean book = bookService.updateOnShelfStatus(bookId, newStatus);
+		BooksBean book = bookService.updateOnShelfStatus(bookId, newStatus);
 		return ResponseEntity.ok(book);
 	}
 
@@ -99,16 +105,21 @@ public class BookController {
 		return ResponseEntity.ok(exists);
 	}
 
+	@PutMapping("/updateStock/{bookId}/{newStock}")
+	public ResponseEntity<BooksBean> updateStock(@PathVariable Integer bookId, @PathVariable Integer newStock) {
+		BooksBean book = bookService.updateStock(bookId, newStock);
+		return ResponseEntity.ok(book);
+	}
 
 	@PutMapping("/archiveBook/{bookId}")
 	public ResponseEntity<BooksBean> archiveBook(@PathVariable("bookId") Integer bookId) {
-	BooksBean book=	bookService.archiveBook(bookId);
+		BooksBean book = bookService.archiveBook(bookId);
 		return ResponseEntity.ok(book);
 	}
 
 	@PutMapping("/unarchiveBook/{bookId}")
 	public ResponseEntity<BooksBean> unarchiveBook(@PathVariable("bookId") Integer bookId) {
-	BooksBean book=	bookService.unarchiveBook(bookId);
+		BooksBean book = bookService.unarchiveBook(bookId);
 		return ResponseEntity.ok(book);
 	}
 }

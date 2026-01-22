@@ -16,6 +16,7 @@ export default defineConfig({
     },
   },
   server: {
+    port: 5173,
     proxy: {
       '/books': {
         target: 'http://localhost:8080', // 後端位址
@@ -26,7 +27,11 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-      }
+      },
+      '/cart': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
     }
   }
 })

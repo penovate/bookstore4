@@ -1,20 +1,54 @@
 <template>
-  <div class="dashboard-body">
-    <div class="container dashboard-container">
-      <h1 class="main-title">網路書店後台系統</h1>
-      <h2 class="sub-title">功能選單</h2>
-      <div class="button-group">
-        <button class="menu-button" @click="goTo('/users')">會員中心</button>
-        <button class="menu-button" @click="goTo('/dev/admin/books')">書籍資料處理</button>
-        <button class="menu-button" @click="goTo('/orders')">訂單與購物車系統</button>
-        <button class="menu-button" @click="goTo('/reviews')">評價管理</button>
-      </div>
-      <hr class="divider" />
-      <div>
-        <button class="logout-button" @click="handleLogout">登出系統</button>
-      </div>
-    </div>
-  </div>
+  <v-app>
+    <v-main class="forest-home-bg">
+      <v-container class="fill-height d-flex flex-column justify-center align-center" fluid>
+        <div class="text-center mb-10">
+          <h1 class="forest-main-title mb-2">網路書店後台系統</h1>
+          <p class="forest-subtitle">核心管理選單</p>
+        </div>
+
+        <v-row class="menu-grid" justify="center">
+          <v-col
+            v-for="menu in menuItems"
+            :key="menu.title"
+            cols="12"
+            sm="6"
+            md="3"
+            lg="3"
+            class="pa-3"
+          >
+            <v-hover v-slot="{ isHovering, props }">
+              <v-card
+                v-bind="props"
+                :elevation="isHovering ? 12 : 2"
+                class="menu-tile d-flex flex-column align-center justify-center transition-swing rounded-xl"
+                @click="handleMenuClick(menu)"
+              >
+                <v-icon :icon="menu.icon" size="42" color="primary" class="mb-3"></v-icon>
+                <div class="menu-text font-weight-bold">
+                  {{ menu.title }}
+                </div>
+                <div class="tile-indicator"></div>
+              </v-card>
+            </v-hover>
+          </v-col>
+        </v-row>
+
+        <v-btn
+          variant="tonal"
+          color="primary"
+          prepend-icon="mdi-logout"
+          size="large"
+          class="mt-12 px-10 rounded-lg font-weight-bold"
+          @click="handleLogout"
+        >
+          登出系統
+        </v-btn>
+
+        <div class="text-caption text-grey-darken-1 mt-6">© 2026 BookStore Management System</div>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script setup>
@@ -24,151 +58,104 @@ import Swal from 'sweetalert2'
 
 const router = useRouter()
 
-const goTo = (path) => {
-  router.push(path)
-}
+const menuItems = [
+  { title: '會員管理', icon: 'mdi-account-group', path: '/dev/admin/users' },
+  { title: '書籍管理', icon: 'mdi-book-open-page-variant', path: '/dev/admin/books' },
+  { title: '訂單管理', icon: 'mdi-clipboard-list-outline', path: '/dev/admin/orders' },
+  { title: '評價管理', icon: 'mdi-star-half-full', path: '/dev/admin/reviews' },
+  { title: '進退貨管理', icon: 'mdi-swap-horizontal-bold', path: '/returns' },
+  { title: '數據報表分析', icon: 'mdi-chart-bar', path: '/reports' },
+  { title: '讀書會管理', icon: 'mdi-book-multiple', path: '/bookclubs' },
+  { title: '網路書店前台', icon: 'mdi-storefront-outline', path: 'dev/user/home' },
+]
 
-const handleLogout = async () => {
+const handleLogout = () => {
   Swal.fire({
     title: '確定要登出嗎？',
     text: '登出後將返回登入介面',
     icon: 'question',
     showCancelButton: true,
-    confirmButtonColor: '#b0957b',
-    cancelButtonColor: '#e8e4dc',
+    confirmButtonColor: '#2e5c43',
+    cancelButtonColor: '#aaa',
     confirmButtonText: '登出',
     cancelButtonText: '取消',
   }).then(async (result) => {
     if (result.isConfirmed) {
-      try {
-        await axios.get('http://localhost:8080/api/logout', { withCredentials: true })
-
-        router.push('/login?logout=true')
-      } catch (error) {
-        console.error('登出失敗', error)
-        router.push('/login?logout=true')
-      }
+      localStorage.clear()
+      router.push('/login?logout=true')
     }
   })
 }
+
+const handleMenuClick = (menu) => {
+  if (menu.title === '網路書店前台') {
+    const url = menu.path.startsWith('http') ? menu.path : '/' + menu.path
+    window.open(url, '_blank')
+  } else {
+    router.push(menu.path)
+  }
+}
 </script>
 
-<style scoped>
-.dashboard-body {
-  font-family: '微軟正黑體', 'Arial', sans-serif;
-  background-color: #fcf8f0;
-  color: #4a4a4a;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+<style scoped lang="scss">
+.forest-home-bg {
+  background: linear-gradient(135deg, #fcf8f0 0%, #ede0d4 100%);
 }
 
-.dashboard-container {
-  width: 600px; /* 這裡確保容器寬度夠大 */
-  max-width: 90%;
-  padding: 35px 45px;
-  border: 1px solid #dcd5c7;
-  border-radius: 6px;
-  background-color: #ffffff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  box-sizing: border-box;
+.forest-main-title {
+  color: #2e5c43;
+  font-size: 2.8rem;
+  font-weight: 900;
+  letter-spacing: 4px;
 }
 
-.main-title {
-  color: #7b5e47;
-  font-size: 26px;
-  margin-bottom: 5px;
-  border-bottom: 1px solid #e0d9c9;
-  padding-bottom: 15px;
-  letter-spacing: 1px;
+.forest-subtitle {
+  color: #5d7a66;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
 }
 
-.sub-title {
-  color: #9c8470;
-  font-size: 19px;
-  margin-top: 0;
-  margin-bottom: 30px;
-  font-weight: normal;
+.menu-grid {
+  width: 100%;
+  max-width: 1200px;
 }
 
-.button-group {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.menu-button {
-  flex: 0 0 calc(50% - 8px);
-  height: 90px;
-  padding: 10px 15px;
-  background-color: #b0957b;
-  color: white;
-  border: none;
-  border-radius: 8px;
+.menu-tile {
+  background-color: white !important;
+  height: 160px;
   cursor: pointer;
-  font-size: 18px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  box-sizing: border-box;
+  border: 1px solid rgba(46, 92, 67, 0.1) !important;
+  position: relative;
+  overflow: hidden;
+
+  .menu-text {
+    font-size: 1.1rem;
+    color: #2e5c43;
+  }
+
+  .tile-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background-color: #2e5c43;
+    opacity: 0.8;
+    transform: translateY(6px);
+    transition: transform 0.3s ease;
+  }
+
+  &:hover {
+    .tile-indicator {
+      transform: translateY(0);
+    }
+    .v-icon {
+      transform: scale(1.1);
+    }
+  }
 }
 
-.menu-button:hover {
-  background-color: #a5886d;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-}
-
-.logout-button {
-  height: 45px;
-  padding: 0 30px;
-  background-color: #e8e4dc;
-  color: #6d6d6d;
-  border: 1px solid #dcd5c7;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  margin-top: 20px;
-}
-
-.divider {
-  border: 0;
-  height: 1px;
-  background-color: #e0d9c9;
-  margin-top: 35px;
-}
-
-.logout-button {
-  height: 45px;
-  padding: 0 30px;
-  background-color: #e8e4dc;
-  color: #6d6d6d;
-  border: 1px solid #dcd5c7;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: normal;
-  letter-spacing: 1px;
-  transition: all 0.2s ease-in-out;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.logout-button:hover {
-  background-color: #dcd5c7;
-  color: #4a4a4a;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.logout-button:active {
-  background-color: #cec7b9;
-  transform: translateY(0);
+.transition-swing {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
 </style>

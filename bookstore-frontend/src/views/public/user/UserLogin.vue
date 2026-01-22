@@ -90,7 +90,7 @@ const quickLogin = (type) => {
   const accounts = {
     SUPER_ADMIN: { email: 'pen@bookstore.com', pass: '12345' },
     ADMIN: { email: 'alice.lee@mail.com', pass: '123456' },
-    USER: { email: 'vip.reader@test.com', pass: 'vip777' },
+    USER: { email: 'vip.reader@test.com', pass: '1234' },
     BANNED: { email: 'super@bookstore.com', pass: '123' },
   }
   loginForm.email = accounts[type].email

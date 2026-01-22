@@ -189,7 +189,7 @@ const handleLogin = async () => {
     } else {
       Swal.fire({
         icon: 'error',
-        title: '帳號停權',
+        title: '無法登入',
         text: response.data.message,
         confirmButtonColor: '#B05252',
       })

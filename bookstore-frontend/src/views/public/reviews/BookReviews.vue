@@ -54,7 +54,7 @@
             variant="outlined"
             rows="3"
             auto-grow
-            counter="500"
+            counter="250"
             :error="errors.comment"
             :error-messages="errors.comment ? '請填寫評論內容' : ''"
           ></v-textarea>
@@ -79,7 +79,7 @@
 
     <div v-if="reviews.length > 0">
       <v-card
-        v-for="review in reviews"
+        v-for="review in paginatedReviews"
         :key="review.reviewId"
         class="mb-4"
         variant="flat"
@@ -134,6 +134,16 @@
           </div>
         </v-card-text>
       </v-card>
+
+      <div class="d-flex justify-center mt-6">
+        <v-pagination
+          v-model="page"
+          :length="totalPages"
+          :total-visible="7"
+          color="primary"
+          rounded="circle"
+        ></v-pagination>
+      </div>
     </div>
 
     <v-sheet
@@ -179,6 +189,8 @@ const reviews = ref([]);
 const isSubmitting = ref(false);
 const valid = ref(false);
 const userStore = useUserStore();
+const page = ref(1);        // 目前在第幾頁
+const itemsPerPage = 5;    // 每頁顯示幾筆
 
 const newReview = ref({
   rating: 0,
@@ -201,6 +213,9 @@ const fetchReviews = async () => {
     // 依照時間排序 (新的在上面)
     reviews.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+    // ★ 每次重新抓資料時，回到第一頁
+    page.value = 1;
+
   } catch (error) {
     console.error("取得評論失敗:", error);
   }
@@ -221,6 +236,19 @@ const averageRating = computed(() => {
   if (reviews.value.length === 0) return 0;
   const sum = reviews.value.reduce((acc, curr) => acc + curr.rating, 0);
   return (sum / reviews.value.length).toFixed(1);
+});
+
+// ★ 修改點 4: 計算分頁邏輯
+// 總共有幾頁
+const totalPages = computed(() => {
+  return Math.ceil(reviews.value.length / itemsPerPage);
+});
+
+// 計算目前這一頁該顯示哪些資料 (切菜刀)
+const paginatedReviews = computed(() => {
+  const start = (page.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return reviews.value.slice(start, end);
 });
 
 // --- 格式化日期 ---
@@ -339,6 +367,9 @@ const submitReview = async () => {
 
     // 成功後，把回傳的新資料加到列表最上方
     reviews.value.unshift(response.data);
+
+    // ★ 送出新評論後，自動切回第一頁，讓使用者看到自己的評論
+    page.value = 1;
 
     Swal.fire({
       icon: 'success',

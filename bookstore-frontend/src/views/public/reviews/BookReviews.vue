@@ -95,33 +95,65 @@
 
             <div class="flex-grow-1">
               <div class="d-flex justify-space-between align-start">
+                
                 <div>
-                  <div class="text-subtitle-1 font-weight-bold">
-                    {{ review.userName || `User ${review.userId}` }}
+                  <div class="d-flex align-center">
+                    <div class="text-subtitle-1 font-weight-bold">
+                      {{ review.userName || `User ${review.userId}` }}
+                    </div>
+                    <v-rating
+                      :model-value="review.rating"
+                      color="amber-darken-2"
+                      density="comfortable"
+                      readonly
+                      size="x-small"
+                      class="ml-2"
+                    ></v-rating>
                   </div>
-                  <div class="text-caption text-grey">
+
+                  <div class="text-caption text-grey mt-1">
                     {{ formatDate(review.createdAt) }}
+                    <span v-if="review.updatedAt && review.updatedAt !== review.createdAt" class="ml-2 text-grey-lighten-1">
+                      (已編輯)
+                    </span>
                   </div>
                 </div>
                 
                 <div class="d-flex align-center">
-                  <v-rating
-                    :model-value="review.rating"
-                    color="amber-darken-2"
-                    density="compact"
-                    readonly
-                    size="small"
-                  ></v-rating>
+                  <template v-if="isOwner(review)">
+                    <v-btn
+                      variant="text"
+                      size="small"
+                      color="primary"
+                      icon
+                      class="mr-1"
+                      @click="openEditDialog(review)"
+                    >
+                      <v-icon>mdi-pencil</v-icon>
+                      <v-tooltip activator="parent" location="top">編輯</v-tooltip>
+                    </v-btn>
+
+                    <v-btn
+                      variant="text"
+                      size="small"
+                      color="error"
+                      icon
+                      class="mr-1"
+                      @click="handleDelete(review)"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                      <v-tooltip activator="parent" location="top">刪除</v-tooltip>
+                    </v-btn>
+                  </template>
 
                   <v-btn
                     variant="text"
                     size="small"
                     color="grey-lighten-1"
-                    class="ml-2"
                     icon
                     @click="handleReport(review)"
                   >
-                    <span class="mdi mdi-alert" style="font-size: 20px;"></span>
+                    <span class="mdi mdi-alert-circle-outline" style="font-size: 20px;"></span>
                     <v-tooltip activator="parent" location="top">檢舉</v-tooltip>
                   </v-btn>
                 </div>
@@ -154,6 +186,38 @@
       <div>目前還沒有評論，搶先成為第一個評論者吧！</div>
     </v-sheet>
 
+    <v-dialog v-model="editDialog" max-width="500">
+      <v-card>
+        <v-card-title class="bg-primary text-white">編輯評論</v-card-title>
+        <v-card-text class="pt-4">
+          <v-form ref="editForm">
+            <div class="mb-2">
+              <div class="text-subtitle-1 mb-1">調整評分</div>
+              <v-rating
+                v-model="editingData.rating"
+                color="amber-darken-2"
+                hover
+                density="comfortable"
+              ></v-rating>
+            </div>
+            <v-textarea
+              v-model="editingData.comment"
+              label="評論內容"
+              variant="outlined"
+              rows="3"
+              counter="500"
+              auto-grow
+            ></v-textarea>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="grey" variant="text" @click="editDialog = false">取消</v-btn>
+          <v-btn color="primary" variant="elevated" @click="submitEdit" :loading="isUpdating">儲存編輯</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-container>
 </template>
 
@@ -170,6 +234,35 @@ const props = defineProps({
   }
 });
 
+const userStore = useUserStore();
+
+// --- 狀態 ---
+const reviews = ref([]);
+const isSubmitting = ref(false);
+const valid = ref(false);
+
+// --- 分頁 ---
+const page = ref(1);        
+const itemsPerPage = 5;
+
+// --- 編輯 ---
+const editDialog = ref(false);
+const isUpdating = ref(false);
+const editingData = ref({
+  reviewId: null,
+  rating: 0,
+  comment: ''
+});
+
+const newReview = ref({
+  rating: 0,
+  comment: ""
+});
+const errors = ref({
+  rating: false,
+  comment: false
+});
+
 // --- JWT 解碼小工具 (不用改其他檔案的關鍵！) ---
 const parseJwt = (token) => {
   try {
@@ -184,22 +277,24 @@ const parseJwt = (token) => {
   }
 };
 
-// --- 狀態 ---
-const reviews = ref([]);
-const isSubmitting = ref(false);
-const valid = ref(false);
-const userStore = useUserStore();
-const page = ref(1);        // 目前在第幾頁
-const itemsPerPage = 5;    // 每頁顯示幾筆
+// 統一取得當前登入者 ID 的 Computed 屬性
+const currentUserId = computed(() => {
+  let id = userStore.userId || localStorage.getItem('userId');
+  if (!id) {
+    const token = localStorage.getItem('userToken');
+    if (token) {
+      const decoded = parseJwt(token);
+      if (decoded) id = decoded.userId || decoded.id || decoded.sub;
+    }
+  }
+  return id ? Number(id) : null;
+});
 
-const newReview = ref({
-  rating: 0,
-  comment: ""
-});
-const errors = ref({
-  rating: false,
-  comment: false
-});
+// 判斷評論是否為當前登入者所有
+const isOwner = (review) => {
+  if (!currentUserId.value) return false;
+  return review.userId === currentUserId.value;
+};
 
 // --- 從後端撈資料 ---
 const fetchReviews = async () => {
@@ -213,7 +308,7 @@ const fetchReviews = async () => {
     // 依照時間排序 (新的在上面)
     reviews.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    // ★ 每次重新抓資料時，回到第一頁
+    // 每次重新抓資料時，回到第一頁
     page.value = 1;
 
   } catch (error) {
@@ -238,13 +333,12 @@ const averageRating = computed(() => {
   return (sum / reviews.value.length).toFixed(1);
 });
 
-// ★ 修改點 4: 計算分頁邏輯
-// 總共有幾頁
+// 分頁計算邏輯
 const totalPages = computed(() => {
   return Math.ceil(reviews.value.length / itemsPerPage);
 });
 
-// 計算目前這一頁該顯示哪些資料 (切菜刀)
+// 目前這一頁該顯示哪些資料
 const paginatedReviews = computed(() => {
   const start = (page.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
@@ -256,8 +350,8 @@ const formatDate = (dateArrayOrString) => {
   if (!dateArrayOrString) return '';
   
   let date;
+
   if (Array.isArray(dateArrayOrString)) {
-    // 處理 Java 陣列格式 [year, month, day, hour, minute, second]
     date = new Date(
       dateArrayOrString[0],
       dateArrayOrString[1] - 1,
@@ -281,54 +375,28 @@ const formatDate = (dateArrayOrString) => {
 
 // --- 送出評論 ---
 const submitReview = async () => {
+  
   // 1. 重置錯誤狀態
   errors.value.rating = false;
   errors.value.comment = false;
 
-  let hasError = false;
-
   // 2. 驗證 Rating (必填)
   if (newReview.value.rating === 0) {
     errors.value.rating = true;
-    hasError = true;
   }
 
   // 3. ▼▼▼ 新增驗證：Comment (必填且不能只有空白) ▼▼▼
   if (!newReview.value.comment || !newReview.value.comment.trim()) {
     errors.value.comment = true;
-    hasError = true;
   }
 
   // 如果有任何錯誤，就停止執行
-  if (hasError) {
-    return;
-  }
+  if (errors.value.rating || errors.value.comment) return;
 
   isSubmitting.value = true;
   
   // 從 Pinia 狀態管理中取得當前登入者資訊
-  let currentUserId = userStore.userId || localStorage.getItem('userId');
-  let currentUserName = userStore.userName || localStorage.getItem('userName');
-
-
-  // 2. 如果真的都沒有 (因為沒存到)，我們就去解碼 Token！
-  if (!currentUserId) {
-      const token = localStorage.getItem('userToken');
-      if (token) {
-          const decoded = parseJwt(token);
-          // 試著從解碼後的資料抓 ID，通常欄位名稱是 'userId', 'id', 或 'sub'
-          if (decoded) {
-              console.log("Token 解碼結果:", decoded); // 可以在 F12 偷看 Token 裡有什麼
-              currentUserId = decoded.userId || decoded.id || decoded.sub; 
-              
-              // 如果名字也沒有，順便抓名字
-              if (!currentUserName) {
-                  currentUserName = decoded.userName || decoded.name || decoded.sub;
-              }
-          }
-      }
-  }
-
+  let userName = userStore.userName || localStorage.getItem('userName');
 
   // 防呆：如果 Store 裡沒有 ID (代表可能沒登入或狀態遺失)
   if (!currentUserId) {
@@ -339,10 +407,8 @@ const submitReview = async () => {
           confirmButtonText: '前往登入',
           confirmButtonColor: '#2E5C43'
       }).then((result) => {
-          if (result.isConfirmed) {
-              // 這裡假設你有 router，如果沒有請在上面 const router = useRouter()
-              // router.push('/login'); 
-              window.location.href = '/dev/user/login'; // 或是直接跳轉
+          if (result.isConfirmed) { 
+              window.location.href = '/dev/user/login'; // 直接跳轉
           }
       });
       isSubmitting.value = false;
@@ -351,7 +417,7 @@ const submitReview = async () => {
 
   // 準備要送給後端的資料
   const payload = {
-    userId: Number(currentUserId), 
+    userId: Number(currentUserId.value), 
     bookId: props.bookId,
     rating: newReview.value.rating,
     comment: newReview.value.comment
@@ -361,14 +427,14 @@ const submitReview = async () => {
     const response = await reviewService.createReview(payload);
     const newReviewData = response.data;
     
-    if (!newReviewData.userName && currentUserName) {
-    newReviewData.userName = currentUserName;
+    if (!newReviewData.userName && userName) {
+    newReviewData.userName = userName;
     }
 
     // 成功後，把回傳的新資料加到列表最上方
-    reviews.value.unshift(response.data);
+    reviews.value.unshift(newReviewData);
 
-    // ★ 送出新評論後，自動切回第一頁，讓使用者看到自己的評論
+    // 送出後跳回第一頁
     page.value = 1;
 
     Swal.fire({
@@ -393,6 +459,93 @@ const submitReview = async () => {
   } finally {
     isSubmitting.value = false;
   }
+};
+
+// 編輯功能邏輯
+const openEditDialog = (review) => {
+  editingData.value = {
+    reviewId: review.reviewId,
+    rating: review.rating,
+    comment: review.comment
+  };
+  editDialog.value = true;
+};
+
+const submitEdit = async () => {
+  if (!editingData.value.comment || !editingData.value.comment.trim()) {
+     Swal.fire({ icon: 'error', title: '內容不能為空', timer: 1500, showConfirmButton: false });
+     return;
+  }
+
+  isUpdating.value = true;
+  try {
+    // 呼叫 updateReview (對應 reviewService.js)
+    const payload = {
+      bookId: props.bookId, 
+      userId: currentUserId.value,
+      rating: editingData.value.rating,
+      comment: editingData.value.comment
+    };
+
+    await reviewService.updateReview(editingData.value.reviewId, payload);
+
+    // 更新前端資料
+    const targetReview = reviews.value.find(r => r.reviewId === editingData.value.reviewId);
+    if (targetReview) {
+      targetReview.rating = editingData.value.rating;
+      targetReview.comment = editingData.value.comment;
+      targetReview.updatedAt = new Date().toISOString(); // 更新時間
+    }
+
+    editDialog.value = false;
+    Swal.fire({ icon: 'success', title: '修改成功', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+
+  } catch (error) {
+    console.error(error);
+    Swal.fire('錯誤', '更新失敗，請稍後再試。', 'error');
+  } finally {
+    isUpdating.value = false;
+  }
+};
+
+// =======================
+// ★ 新增: 刪除功能邏輯
+// =======================
+const handleDelete = (review) => {
+  Swal.fire({
+    title: '確定要刪除嗎？',
+    text: "刪除後將無法復原這則評論！",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#aaa',
+    confirmButtonText: '是的，刪除',
+    cancelButtonText: '取消'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        // 呼叫 deleteReview (對應 reviewService.js)
+        await reviewService.deleteReview(review.reviewId);
+        
+        // 前端移除資料
+        const index = reviews.value.findIndex(r => r.reviewId === review.reviewId);
+        if (index !== -1) {
+          reviews.value.splice(index, 1);
+        }
+
+        Swal.fire('已刪除', '您的評論已成功刪除。', 'success');
+        
+        // 檢查分頁：若刪除後該頁為空，且不是第一頁，往前跳一頁
+        if (paginatedReviews.value.length === 0 && page.value > 1) {
+          page.value--;
+        }
+
+      } catch (error) {
+        console.error(error);
+        Swal.fire('錯誤', '刪除失敗，請稍後再試。', 'error');
+      }
+    }
+  });
 };
 
 // 處理檢舉
@@ -432,7 +585,6 @@ const handleReport = async (review) => {
 </script>
 
 <style scoped>
-/* Vuetify 已經處理大部分樣式，這裡只需微調 */
 .text-error {
   animation: shake 0.3s;
 }

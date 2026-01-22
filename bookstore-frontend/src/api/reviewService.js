@@ -13,7 +13,12 @@ export default {
     return axios.post(API_URL, reviewData)
   },
 
-  // 3. 刪除評論 (未來可能用到)
+  // 3. 編輯評論 
+  updateReview(id, reviewData) {
+    return axios.put(`${API_URL}/${id}`, reviewData)
+  },
+
+  // 4. 刪除評論
   deleteReview(id) {
     return axios.delete(`${API_URL}/${id}`)
   }

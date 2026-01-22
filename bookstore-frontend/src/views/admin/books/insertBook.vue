@@ -85,6 +85,24 @@ const generateRandomBook = () => {
     }
 };
 
+const clearForm = () => {
+    book.value = {
+        bookName: '',
+        author: '',
+        translator: '',
+        press: '',
+        price: null,
+        isbn: '',
+        stock: null,
+        shortDesc: '',
+        onShelf: 0 
+    };
+    selectedGenreIds.value = [];
+    imageFile.value = null;
+    imagePreview.value = null;
+    form.value.resetValidation();
+};
+
 const submit = async () => {
     const { valid } = await form.value.validate();
     if (!valid) return;
@@ -218,9 +236,14 @@ const submit = async () => {
                         </v-row>
 
                         <div class="d-flex justify-space-between mt-4">
-                            <v-btn color="info" variant="tonal" prepend-icon="mdi-flash" @click="generateRandomBook">
-                                一鍵輸入
-                            </v-btn>
+                            <div>
+                                <v-btn color="info" variant="tonal" prepend-icon="mdi-flash" @click="generateRandomBook" class="mr-2">
+                                    一鍵輸入
+                                </v-btn>
+                                <v-btn color="error" variant="tonal" prepend-icon="mdi-eraser" @click="clearForm">
+                                    清空
+                                </v-btn>
+                            </div>
                             <div>
                                 <v-btn variant="text" class="mr-2" @click="router.back()">取消</v-btn>
                                 <v-btn type="submit" color="primary" :loading="loading" elevation="2"

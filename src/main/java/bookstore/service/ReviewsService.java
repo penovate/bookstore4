@@ -18,14 +18,30 @@ public class ReviewsService {
 
     // 查詢全部
     public List<ReviewBean> findAllReviews() {
-        return reviewRepository.findAll();
+    	
+    	List<ReviewBean> reviews = reviewRepository.findAll();
+    	
+    	for (ReviewBean review : reviews) {
+            if (review.getUser() != null) {
+                review.setUserType(review.getUser().getUserType());
+            }
+        }
+    	
+        return reviews;
     }
 
     // 查詢單筆（含 user、book）
     public ReviewBean findById(Integer reviewId) {
-        return reviewRepository
+
+    	ReviewBean review = reviewRepository
                 .findByIdWithUserAndBook(reviewId)
                 .orElse(null);
+        
+        if (review != null && review.getUser() != null) {
+            review.setUserType(review.getUser().getUserType());
+        }
+        
+        return review;
     }
 
     // 新增 / 更新（JPA save 兩用）
@@ -33,7 +49,14 @@ public class ReviewsService {
         if (review.getCreatedAt() == null) {
             review.setCreatedAt(LocalDateTime.now());
         }
-        return reviewRepository.save(review);
+        
+        ReviewBean savedReview = reviewRepository.save(review);
+        
+        if (savedReview.getUser() != null) {
+            savedReview.setUserType(savedReview.getUser().getUserType());
+        }
+        
+        return savedReview;
     }
 
     // 刪除

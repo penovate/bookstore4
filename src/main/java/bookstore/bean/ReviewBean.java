@@ -18,8 +18,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+@Data
 @Entity
 @Table(name = "reviews")
 @Component
@@ -40,11 +43,14 @@ public class ReviewBean implements Serializable {
 	@JoinColumn(name = "user_id", insertable = false, updatable = false)
 	@JsonIgnore
 	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
 	private UserBean user;
-//
+
 	@ManyToOne(fetch = FetchType.LAZY )
 	@JoinColumn(name = "book_id", nullable = false)
 	@JsonIgnore
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
 	private BooksBean book;
 
 	@Column(name = "user_id", nullable = false)
@@ -70,27 +76,11 @@ public class ReviewBean implements Serializable {
 
 	@Transient
 	private String bookName;
+	
+	@Transient
+	private Integer userType;
 
 	// ===== getter / setter =====
-	public Integer getReviewId() {
-		return reviewId;
-	}
-
-	public void setReviewId(Integer reviewId) {
-		this.reviewId = reviewId;
-	}
-
-	public Integer getUserId() {
-		return userId;
-	}
-
-	public void setUserId(Integer userId) {
-		this.userId = userId;
-	}
-
-	public Integer getBookId() {
-		return bookId;
-	}
 
 	public void setBookId(Integer bookId) {
 		if (this.book == null) {
@@ -98,47 +88,9 @@ public class ReviewBean implements Serializable {
 		}
 		this.book.setBookId(bookId);
 	}
-
-	public UserBean getUser() {
-		return user;
-	}
-
-	// 這個現在可用可不用
-	public void setUser(UserBean user) {
-		this.user = user;
-	}
-
-	public BooksBean getBook() {
-		return book;
-	}
-
-	// 這個現在可用可不用
-	public void setBook(BooksBean book) {
-		this.book = book;
-	}
-
-	public Integer getRating() {
-		return rating;
-	}
-
-	public void setRating(Integer rating) {
-		this.rating = rating;
-	}
-
-	public String getComment() {
-		return comment;
-	}
-
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
-
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
+	
+	public void setUserType(Integer userType) {
+	    this.userType = userType;
 	}
 
 	// ✅ 舊 JSP 仍可用：優先從關聯拿名稱（不會再一直 null）
@@ -146,23 +98,12 @@ public class ReviewBean implements Serializable {
 		return (user != null) ? user.getUserName() : userName;
 	}
 
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-
 	public String getBookName() {
 		return (book != null) ? book.getBookName() : bookName;
 	}
-
-	public void setBookName(String bookName) {
-		this.bookName = bookName;
-	}
-
-	@Override
-	public String toString() {
-		return "ReviewBean [reviewId=" + reviewId + ", user=" + user + ", book=" + book + ", userId=" + userId
-				+ ", rating=" + rating + ", comment=" + comment + ", createdAt=" + createdAt + ", userName=" + userName
-				+ ", bookName=" + bookName + "]";
+	
+	public Integer getUserType() {
+	    return userType;
 	}
 
 }

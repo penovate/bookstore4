@@ -107,19 +107,12 @@ const clearForm = () => {
         isbn: '',
         stock: null,
         shortDesc: '',
-<<<<<<< HEAD
         onShelf: 0 
-=======
-        onShelf: 0
->>>>>>> cb9e07284845b8268143b1628db076959fc9732b
     };
     selectedGenreIds.value = [];
     imageFile.value = null;
     imagePreview.value = null;
-<<<<<<< HEAD
     form.value.resetValidation();
-=======
->>>>>>> cb9e07284845b8268143b1628db076959fc9732b
 };
 
 const submit = async () => {
@@ -253,14 +246,6 @@ const submit = async () => {
                         </v-row>
 
                         <div class="d-flex justify-space-between mt-4">
-<<<<<<< HEAD
-                            <div>
-                                <v-btn color="info" variant="tonal" prepend-icon="mdi-flash" @click="generateRandomBook" class="mr-2">
-                                    一鍵輸入
-                                </v-btn>
-                                <v-btn color="error" variant="tonal" prepend-icon="mdi-eraser" @click="clearForm">
-                                    清空
-=======
                             <div class="d-flex gap-2">
                                 <v-btn color="info" variant="tonal" prepend-icon="mdi-flash"
                                     @click="generateRandomBook">
@@ -269,7 +254,6 @@ const submit = async () => {
                                 <v-btn color="error" variant="tonal" prepend-icon="mdi-delete-sweep" class="ml-2"
                                     @click="clearForm">
                                     清空欄位
->>>>>>> cb9e07284845b8268143b1628db076959fc9732b
                                 </v-btn>
                             </div>
                             <div>

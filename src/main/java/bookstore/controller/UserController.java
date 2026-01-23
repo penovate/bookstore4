@@ -84,7 +84,7 @@ public class UserController {
             return response;
         } else {
             response.put("success", false);
-            response.put("message", "帳號或密碼錯誤！");
+            response.put("message", "您無權進入後台系統或帳號或密碼錯誤！");
             return response;
         }
     }

@@ -5,7 +5,7 @@
     </div>
 
     <v-row class="mb-4" align="center">
-      <v-col cols="auto">
+      <v-col cols="auto" class="d-flex ga-3">
         <v-btn
           v-if="currentUserRole === 'SUPER_ADMIN'"
           color="primary"
@@ -16,8 +16,6 @@
         >
           新增會員資料
         </v-btn>
-      </v-col>
-      <v-col cols="auto">
         <v-btn
           color="secondary"
           prepend-icon="mdi-clipboard-text-clock-outline"

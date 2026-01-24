@@ -1,48 +1,46 @@
 <template>
-  <v-container>
-    <v-row class="mb-4">
-      <v-col cols="12">
-        <div class="d-flex align-center">
-          <h2 class="text-h4 font-weight-bold mr-4">書籍評價</h2>
-          <v-chip color="primary" variant="outlined">
-            共 {{ reviews.length }} 則評價
-          </v-chip>
+  <v-container class="reviews-container">
+    <div class="reviews-header">
+      <div class="header-left">
+        <h2 class="main-title">書籍評價</h2>
+        <v-chip color="primary" variant="outlined" class="count-chip">
+          共 {{ reviews.length }} 則評價
+        </v-chip>
+      </div>
+      
+      <div class="rating-summary">
+        <span class="score-text">
+          {{ averageRating }}
+        </span>
+        <div class="stars-wrapper">
+          <v-rating
+            :model-value="Number(averageRating)"
+            color="amber-darken-2"
+            density="compact"
+            half-increments
+            readonly
+            size="small"
+          ></v-rating>
+          <div class="caption-text">平均星等</div>
         </div>
-        
-        <div class="d-flex align-center mt-2">
-          <span class="text-h3 font-weight-bold text-amber-darken-2 mr-2">
-            {{ averageRating }}
-          </span>
-          <div>
-            <v-rating
-              :model-value="Number(averageRating)"
-              color="amber-darken-2"
-              density="compact"
-              half-increments
-              readonly
-              size="small"
-            ></v-rating>
-            <div class="text-caption text-grey">平均星等</div>
-          </div>
-        </div>
-      </v-col>
-    </v-row>
+      </div>
+    </div>
 
-    <v-card class="mb-6" elevation="2" border>
-      <v-card-title class="bg-grey-lighten-4">
+    <v-card class="write-review-card" elevation="2" border>
+      <v-card-title class="card-header">
         撰寫評價
       </v-card-title>
-      <v-card-text class="pt-4">
+      <v-card-text class="card-body">
         <v-form ref="form" v-model="valid">
-          <div class="mb-2">
-            <div class="text-subtitle-1 mb-1">您的評分 (必填)</div>
+          <div class="rating-input-group">
+            <div class="input-label">您的評分 (必填)</div>
             <v-rating
               v-model="newReview.rating"
               color="amber-darken-2"
               hover
               density="comfortable"
             ></v-rating>
-            <div v-if="errors.rating" class="text-caption text-red">
+            <div v-if="errors.rating" class="error-msg">
               請點選星星給予評分
             </div>
           </div>
@@ -61,7 +59,7 @@
         </v-form>
       </v-card-text>
       
-      <v-card-actions class="px-4 pb-4">
+      <v-card-actions class="card-actions">
         <v-spacer></v-spacer>
         <v-btn
           color="primary"
@@ -75,60 +73,67 @@
       </v-card-actions>
     </v-card>
 
-    <v-divider class="my-6"></v-divider>
+    <v-divider class="section-divider"></v-divider>
 
-    <div v-if="reviews.length > 0">
+    <div v-if="reviews.length > 0" class="reviews-list">
       <v-card
         v-for="review in paginatedReviews"
         :key="review.reviewId"
-        class="mb-4"
-        variant="flat"
+        class="review-item-card"
+        :class="{ 'is-hidden': review.status === 0 }"
         border
       >
         <v-card-text>
-          <div class="d-flex flex-row">
-            <div class="mr-4">
+          <div class="review-content-wrapper">
+            <div class="avatar-col">
               <v-avatar color="secondary" size="48">
-                <span class="text-h6 text-white">{{ (review.userName && review.userName[0]) || review.userId }}</span>
+                <span class="avatar-text">{{ (review.userName && review.userName[0]) || review.userId }}</span>
               </v-avatar>
             </div>
 
-            <div class="flex-grow-1">
-              <div class="d-flex justify-space-between align-start">
+            <div class="content-col">
+              <div class="meta-row">
                 
-                <div>
-                  <div class="d-flex align-center">
-                    <div class="text-subtitle-1 font-weight-bold">
+                <div class="user-info-group">
+                  <div class="user-name-row">
+                    <div class="user-name">
                       {{ review.userName || `User ${review.userId}` }}
                     </div>
-                    <div class="text-caption text-grey ml-2">
+                    <div class="user-role">
                       {{ getRoleName(review.userType) }}
                     </div>
+                    
+                    <v-chip
+                        v-if="review.status === 0"
+                        color="error"
+                        size="x-small"
+                        variant="flat"
+                        class="hidden-tag"
+                    >
+                        已隱藏
+                    </v-chip>
                   </div>
 
-                  <div class="d-flex align-center mt-1">
-                    
+                  <div class="rating-date-row">
                     <v-rating
                       :model-value="review.rating"
                       color="amber-darken-2"
                       density="comfortable"
                       readonly
                       size="x-small"
-                      class="ml-n1"
+                      class="mini-rating"
                     ></v-rating>
                   
-                    <div class="text-caption text-grey ml-2">
+                    <div class="date-text">
                       {{ formatDate(review.createdAt) }}
-                      <span v-if="review.updatedAt && review.updatedAt !== review.createdAt" class="ml-1 text-grey-lighten-1">
+                      <span v-if="review.updatedAt && review.updatedAt !== review.createdAt" class="edited-mark">
                         (已編輯)
                       </span>
                     </div>
-
                   </div>
-                    
                 </div>
                 
-                <div class="d-flex align-center">
+                <div class="action-btn-group">
                     
                     <v-btn
                       v-if="isOwner(review)"
@@ -136,7 +141,7 @@
                       size="small"
                       color="primary"
                       icon
-                      class="mr-1"
+                      class="icon-btn"
                       @click="openEditDialog(review)"
                     >
                       <v-icon>mdi-pencil</v-icon>
@@ -149,28 +154,44 @@
                       size="small"
                       color="error"
                       icon
-                      class="mr-1"
+                      class="icon-btn"
                       @click="handleDelete(review)"
                     >
                       <v-icon>mdi-delete</v-icon>
                       <v-tooltip activator="parent" location="top">刪除</v-tooltip>
                     </v-btn>
 
-                  <v-btn
-                    v-if="!isOwner(review)"
-                    variant="text"
-                    size="small"
-                    color="grey-lighten-1"
-                    icon
-                    @click="handleReport(review)"
-                  >
-                    <span class="mdi mdi-alert-circle-outline" style="font-size: 20px;"></span>
-                    <v-tooltip activator="parent" location="top">檢舉</v-tooltip>
-                  </v-btn>
+                    <v-btn
+                      v-if="canToggleStatus(review)"
+                      variant="text"
+                      size="small"
+                      :color="review.status === 1 ? 'warning' : 'success'"
+                      icon
+                      class="icon-btn status-btn"
+                      @click="handleToggleStatus(review)"
+                    >
+                      <v-icon>{{ review.status === 1 ? 'mdi-eye-off' : 'mdi-eye' }}</v-icon>
+                      <v-tooltip activator="parent" location="top">
+                        {{ review.status === 1 ? '隱藏' : '顯示' }}
+                      </v-tooltip>
+                    </v-btn>
+
+                    <v-btn
+                        v-if="!isOwner(review) && !canToggleStatus(review)"
+                        variant="text"
+                        size="small"
+                        color="grey-lighten-1"
+                        icon
+                        class="report-btn"
+                        @click="handleReport(review)"
+                    >
+                        <v-icon>mdi-alert-circle-outline</v-icon>
+                        <v-tooltip activator="parent" location="top">檢舉</v-tooltip>
+                    </v-btn>
                 </div>
               </div>
 
-              <div class="mt-3 text-body-1">
+              <div class="comment-body">
                 {{ review.comment || "此使用者未填寫文字評價。" }}
               </div>
             </div>
@@ -178,7 +199,7 @@
         </v-card-text>
       </v-card>
 
-      <div class="d-flex justify-center mt-6">
+      <div class="pagination-wrapper">
         <v-pagination
           v-model="page"
           :length="totalPages"
@@ -191,19 +212,19 @@
 
     <v-sheet
       v-else
-      class="d-flex flex-column align-center justify-center py-8 text-grey"
+      class="empty-state"
     >
-      <v-icon icon="mdi-message-text-outline" size="64" class="mb-2"></v-icon>
-      <div>目前還沒有評價，搶先成為第一個評價者吧！</div>
+      <v-icon icon="mdi-message-text-outline" size="64" class="empty-icon"></v-icon>
+      <div class="empty-text">目前還沒有評價，搶先成為第一個評價者吧！</div>
     </v-sheet>
 
     <v-dialog v-model="editDialog" max-width="750">
       <v-card>
-        <v-card-title class="bg-primary text-white">編輯評價</v-card-title>
-        <v-card-text class="pt-4">
+        <v-card-title class="dialog-header">編輯評價</v-card-title>
+        <v-card-text class="dialog-body">
           <v-form ref="editForm">
-            <div class="mb-2">
-              <div class="text-subtitle-1 mb-1">調整評分</div>
+            <div class="rating-input-group">
+              <div class="input-label">調整評分</div>
               <v-rating
                 v-model="editingData.rating"
                 color="amber-darken-2"
@@ -278,13 +299,12 @@ const errors = ref({
   commentMsg: ''
 });
 
-// 編輯用的錯誤狀態
 const editErrors = ref({
   comment: false,
   commentMsg: ''
 });
 
-// --- JWT 解碼小工具 (不用改其他檔案的關鍵！) ---
+// --- JWT Helper ---
 const parseJwt = (token) => {
   try {
     const base64Url = token.split('.')[1];
@@ -298,14 +318,12 @@ const parseJwt = (token) => {
   }
 };
 
-// --- 取得使用者身分名稱 ---
 const getRoleName = (type) => {
   if (type === 0) return '超級管理員';
   if (type === 1) return '一般管理員';
   return '一般會員';
 };
 
-// 統一取得當前登入者 ID 的 Computed 屬性
 const currentUserId = computed(() => {
   let id = userStore.userId || localStorage.getItem('userId');
   if (!id) {
@@ -318,82 +336,69 @@ const currentUserId = computed(() => {
   return id ? Number(id) : null;
 });
 
-// 取得當前登入者權限
 const currentUserRole = computed(() => {
-  // 1. 優先從 Pinia 拿，沒有才找 LocalStorage
   let role = userStore.role;
-
-  // 2. 防呆：如果抓到的是字串 "undefined" 或 "null" (髒資料)，直接回傳 null
   if (role === undefined || role === null || role === '') {
     role = localStorage.getItem('userRole');
   }
-
   if (role === undefined || role === null || role === '' || role === 'undefined' || role === 'null') {
     return null;
   }
-
-  // 3. 轉型並檢查是否為有效數字
   if (role === 'SUPER_ADMIN') return 0; 
   if (role === 'ADMIN') return 1;       
   if (role === 'USER') return 2;        
-  
-  // 如果轉出來是 NaN，就回傳 null，否則回傳數字
   const roleNumber = Number(role);
   return isNaN(roleNumber) ? null : roleNumber;
 });
 
-// 判斷評價是否為當前登入者所有
 const isOwner = (review) => {
   if (!currentUserId.value) return false;
   return review.userId === currentUserId.value;
 };
 
-// 刪除權限判斷邏輯
 const canDelete = (review) => {
-  // 沒登入就不能刪
-  
-  // 本人可以刪
   if (currentUserId.value && review.userId === currentUserId.value) {
     return true;
-  }
-
-  if (currentUserRole.value === null) return false;
-
-
-  // 取得我的身分 & 對方身分
-  const myRole = currentUserRole.value;
-  const targetRole = review.userType; 
-
-  // 超級管理員
-  if (myRole === 0) {
-    return true;
-  }
-
-  // 5. 一般管理員
-  if (myRole === 1) {
-
-    if (targetRole === undefined || targetRole === null) return false;
-    if (targetRole === 1 || targetRole === 2) {
-      return true;
-    }
   }
   return false;
 };
 
+// 狀態管理權限：判斷誰可以執行「隱藏/顯示」
+const canToggleStatus = (review) => {
+  if (currentUserRole.value === null) return false;
 
-// --- 從後端撈資料 ---
+  const myRole = currentUserRole.value;
+  const targetRole = review.userType; 
+
+  // 如果這則留言是我自己的，我不應該隱藏它，而是用編輯或刪除
+  // 但如果你希望自己也能隱藏自己，可以拿掉這行，不過通常自己是走刪除路線
+  if (currentUserId.value && review.userId === currentUserId.value) {
+      return false;
+  }
+
+  if (myRole === 0) {
+      if (targetRole === 1 || targetRole === 2) return true;
+  }
+
+  if (myRole === 1) {
+      if (targetRole === 2) return true;
+  }
+
+  return false;
+};
+
 const fetchReviews = async () => {
   try {
     const response = await reviewService.getAllReviews();
     const allReviews = response.data;
     
-    // 過濾出目前這本書的評價
-    reviews.value = allReviews.filter(r => r.bookId == props.bookId);
+    reviews.value = allReviews.filter(r => {
+      const isCurrentBook = r.bookId == props.bookId;
+      const isVisible = r.status === 1 || (currentUserId.value && r.userId === currentUserId.value) || canToggleStatus(r);
+      return isCurrentBook && isVisible;
+    });
 
-    // 依照時間排序 (新的在上面)
     reviews.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    // 每次重新抓資料時，回到第一頁
     page.value = 1;
 
   } catch (error) {
@@ -401,41 +406,35 @@ const fetchReviews = async () => {
   }
 };
 
-// --- 監聽 bookId 改變 ---
 watch(() => props.bookId, () => {
   fetchReviews();
 });
 
-// --- 初始化 ---
 onMounted(() => {
   fetchReviews();
 });
 
-// --- 計算平均分數 ---
 const averageRating = computed(() => {
+  const activeReviews = reviews.value.filter(r => r.status === 1);
+  if (activeReviews.length === 0) return 0;
   if (reviews.value.length === 0) return 0;
   const sum = reviews.value.reduce((acc, curr) => acc + curr.rating, 0);
   return (sum / reviews.value.length).toFixed(1);
 });
 
-// 分頁計算功能
 const totalPages = computed(() => {
   return Math.ceil(reviews.value.length / itemsPerPage);
 });
 
-// 當前頁該顯示哪些資料
 const paginatedReviews = computed(() => {
   const start = (page.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   return reviews.value.slice(start, end);
 });
 
-// --- 格式化日期 ---
 const formatDate = (dateArrayOrString) => {
   if (!dateArrayOrString) return '';
-  
   let date;
-
   if (Array.isArray(dateArrayOrString)) {
     date = new Date(
       dateArrayOrString[0],
@@ -448,7 +447,6 @@ const formatDate = (dateArrayOrString) => {
   } else {
     date = new Date(dateArrayOrString);
   }
-
   return date.toLocaleString('zh-TW', {
     year: 'numeric',
     month: '2-digit',
@@ -458,10 +456,7 @@ const formatDate = (dateArrayOrString) => {
   });
 };
 
-// --- 送出評價 ---
 const submitReview = async () => {
-
-  // 如果 Store 裡沒有 ID (代表可能沒登入或狀態遺失)
   if (!currentUserId.value) {
       Swal.fire({
           icon: 'warning',
@@ -471,24 +466,21 @@ const submitReview = async () => {
           confirmButtonColor: '#2E5C43'
       }).then((result) => {
           if (result.isConfirmed) { 
-              window.location.href = '/dev/user/login'; // 跳轉登入畫面
+              window.location.href = '/dev/user/login'; 
           }
       });
       isSubmitting.value = false;
       return;
   }
 
-  // 1. 重置錯誤狀態
   errors.value.rating = false;
   errors.value.comment = false;
   errors.value.commentMsg = '';
 
-  // 2. 驗證 Rating (必填)
   if (newReview.value.rating === 0) {
     errors.value.rating = true;
   }
 
-  // 3. 驗證：Comment (必填且不能空白) 
   const comment = newReview.value.comment;
 
   if (!comment || !comment.trim()) {
@@ -499,17 +491,11 @@ const submitReview = async () => {
     errors.value.commentMsg = '評價內容不能超過 250 字';
   }
 
-  // 有錯誤，就停止執行
   if (errors.value.rating || errors.value.comment) return;
 
   isSubmitting.value = true;
-  
-  // 從 Pinia 狀態管理中取得當前登入者資訊
   let userName = userStore.userName || localStorage.getItem('userName');
 
-  
-
-  // 給後端的資料
   const payload = {
     userId: Number(currentUserId.value), 
     bookId: props.bookId,
@@ -521,64 +507,40 @@ const submitReview = async () => {
     const response = await reviewService.createReview(payload);
     const newReviewData = response.data;
     
-    if (!newReviewData.userName && userName) {
-    newReviewData.userName = userName;
-    }
-
+    if (!newReviewData.userName && userName) newReviewData.userName = userName;
     if (newReviewData.userType === undefined || newReviewData.userType === null) {
         newReviewData.userType = currentUserRole.value;
     }
+    if (newReviewData.status === undefined) newReviewData.status = 1; 
 
-    // 新資料加到列表最上方
     reviews.value.unshift(newReviewData);
-
-    // 送出後回到第一頁
     page.value = 1;
 
-    Swal.fire({
-      icon: 'success',
-      title: '評價已送出',
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 1500
-    });
-
-    // 重置表單
+    Swal.fire({ icon: 'success', title: '評價已送出', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
     newReview.value.rating = 0;
     newReview.value.comment = "";
   } catch (error) {
     console.error(error);
-    Swal.fire({
-      icon: 'error',
-      title: '評價失敗',
-      text: '系統發生錯誤，請稍後再試'
-    });
+    Swal.fire({ icon: 'error', title: '評價失敗', text: '系統發生錯誤，請稍後再試' });
   } finally {
     isSubmitting.value = false;
   }
 };
 
-  // 編輯功能
-  const openEditDialog = (review) => {
+const openEditDialog = (review) => {
   editingData.value = {
     reviewId: review.reviewId,
     rating: review.rating,
     comment: review.comment
   };
-
-  // 把上次的錯誤清空
   editErrors.value.comment = false;
   editErrors.value.commentMsg = '';
-
   editDialog.value = true;
 };
 
 const submitEdit = async () => {
-
   editErrors.value.comment = false;
   editErrors.value.commentMsg = '';
-
   const comment = editingData.value.comment;
 
   if (!comment || !comment.trim()) {
@@ -589,34 +551,25 @@ const submitEdit = async () => {
     editErrors.value.commentMsg = '評價內容不能超過 250 字';
   }
 
-  // 錯誤就直接 return
-  if (editErrors.value.comment) {
-    return;
-  }
+  if (editErrors.value.comment) return;
 
   isUpdating.value = true;
   try {
-    // 呼叫 updateReview (對應 reviewService.js)
     const payload = {
       bookId: props.bookId, 
       userId: currentUserId.value,
       rating: editingData.value.rating,
       comment: editingData.value.comment
     };
-
     await reviewService.updateReview(editingData.value.reviewId, payload);
-
-    // 更新前端資料
     const targetReview = reviews.value.find(r => r.reviewId === editingData.value.reviewId);
     if (targetReview) {
       targetReview.rating = editingData.value.rating;
       targetReview.comment = editingData.value.comment;
       targetReview.updatedAt = new Date().toISOString(); 
     }
-
     editDialog.value = false;
     Swal.fire({ icon: 'success', title: '修改成功', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
-
   } catch (error) {
     console.error(error);
     Swal.fire('錯誤', '編輯失敗，請稍後再試。', 'error');
@@ -625,7 +578,6 @@ const submitEdit = async () => {
   }
 };
 
-// 刪除功能
 const handleDelete = (review) => {
   Swal.fire({
     title: '確定要刪除嗎？',
@@ -639,22 +591,11 @@ const handleDelete = (review) => {
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        // 呼叫 deleteReview (對應 reviewService.js)
         await reviewService.deleteReview(review.reviewId);
-        
-        // 前端移除資料
         const index = reviews.value.findIndex(r => r.reviewId === review.reviewId);
-        if (index !== -1) {
-          reviews.value.splice(index, 1);
-        }
-
+        if (index !== -1) reviews.value.splice(index, 1);
         Swal.fire('已刪除', '您的評價已成功刪除。', 'success');
-        
-        // 檢查分頁：若刪除後該頁為空，且不是第一頁，往前跳一頁
-        if (paginatedReviews.value.length === 0 && page.value > 1) {
-          page.value--;
-        }
-
+        if (paginatedReviews.value.length === 0 && page.value > 1) page.value--;
       } catch (error) {
         console.error(error);
         Swal.fire('錯誤', '刪除失敗，請稍後再試。', 'error');
@@ -663,67 +604,298 @@ const handleDelete = (review) => {
   });
 };
 
-// 處理檢舉
-const handleReport = async (review) => {
+const handleToggleStatus = (review) => {
+  const newStatus = review.status === 1 ? 0 : 1;
+  const actionText = newStatus === 0 ? '隱藏' : '顯示';
+  const confirmColor = newStatus === 0 ? '#d33' : '#4CAF50';
 
+  Swal.fire({
+    title: `確定要${actionText}這則評價嗎？`,
+    text: newStatus === 0 ? "隱藏後，一般使用者將無法看到此評論" : "該評論將重新顯示於前台",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: `確定`,
+    cancelButtonText: '取消',
+    confirmButtonColor: confirmColor,
+    cancelButtonColor: '#aaa',
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const payload = {
+          ...review,
+          status: newStatus
+        };
+
+        await reviewService.updateReview(review.reviewId, payload);
+        
+        review.status = newStatus;
+        
+        Swal.fire({ 
+            icon: 'success', 
+            title: '更新成功', 
+            timer: 1000, 
+            showConfirmButton: false 
+        });
+      } catch (error) {
+        console.error('更新狀態失敗:', error);
+        Swal.fire({ 
+            icon: 'error', 
+            title: '更新失敗', 
+            text: '請稍後再試' 
+        });
+      }
+    }
+  });
+};
+
+const handleReport = async (review) => {
   if (!currentUserId.value) {
-      Swal.fire({
-          icon: 'warning',
-          title: '請先登入',
-          text: '登入後才能檢舉',
-          confirmButtonText: '前往登入',
-          confirmButtonColor: '#2E5C43'
-      }).then((result) => {
-          if (result.isConfirmed) { 
-              window.location.href = '/dev/user/login';
-          }
-      });
+      Swal.fire({ icon: 'warning', title: '請先登入', text: '登入後才能檢舉', confirmButtonText: '前往登入', confirmButtonColor: '#2E5C43' })
+        .then((result) => { if (result.isConfirmed) window.location.href = '/dev/user/login'; });
       return; 
   }
-
   const { value: reason } = await Swal.fire({
     title: '檢舉評價',
     text: `您確定要檢舉 ${review.userName || 'User ' + review.userId} 的評價嗎？請選擇原因：`,
     input: 'select',
-    inputOptions: {
-      'spam': '垃圾廣告訊息',
-      'inappropriate': '不當內容或人身攻擊',
-      'spoiler': '劇透未標示',
-      'other': '其他原因'
-    },
+    inputOptions: { 'spam': '垃圾廣告訊息', 'inappropriate': '不當內容或人身攻擊', 'spoiler': '劇透未標示', 'other': '其他原因' },
     inputPlaceholder: '請選擇檢舉原因',
     showCancelButton: true,
     confirmButtonText: '送出檢舉',
     cancelButtonText: '取消',
     confirmButtonColor: '#d33',
     cancelButtonColor: '#aaa',
-    inputValidator: (value) => {
-      return !value && '請選擇一個原因！'
-    }
+    inputValidator: (value) => !value && '請選擇一個原因！'
   });
-
-  if (reason) {
-    console.log(`已檢舉評價 ID: ${review.reviewId}, 原因: ${reason}`);
-    Swal.fire({
-      icon: 'success',
-      title: '檢舉已送出',
-      text: '我們會盡快審核您的回報，謝謝！',
-      timer: 2000,
-      showConfirmButton: false
-    });
-  }
+  if (reason) Swal.fire({ icon: 'success', title: '檢舉已送出', text: '我們會盡快審核您的回報，謝謝！', timer: 2000, showConfirmButton: false });
 };
 </script>
 
-<style scoped>
-.text-error {
-  animation: shake 0.3s;
+<style scoped lang="scss">
+// ===== 變數定義 =====
+$primary-color: #2E5C43;
+$secondary-color: #4CAF50;
+$error-color: #FF5252;
+$warning-color: #FB8C00;
+$text-grey: #757575;
+$text-light-grey: #BDBDBD;
+$bg-light: #F5F5F5;
+$amber-color: #F57C00;
+
+.reviews-container {
+  /* padding */
 }
 
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-  100% { transform: translateX(0); }
+// ===== Header 區域 =====
+.reviews-header {
+  margin-bottom: 1.5rem; 
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    
+    .main-title {
+      font-size: 2.125rem; 
+      font-weight: 700;
+      margin-right: 1rem;
+    }
+
+    .count-chip {
+      font-weight: 500;
+    }
+  }
+
+  .rating-summary {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+
+    .score-text {
+      font-size: 3rem; 
+      font-weight: 700;
+      color: $amber-color;
+      margin-right: 0.5rem;
+    }
+
+    .stars-wrapper {
+      .caption-text {
+        font-size: 0.75rem;
+        color: $text-grey;
+      }
+    }
+  }
+}
+
+// ===== 撰寫評價卡片 =====
+.write-review-card {
+  margin-bottom: 1.5rem; 
+
+  .card-header {
+    background-color: $bg-light;
+    font-weight: 600;
+  }
+
+  .card-body {
+    padding-top: 1rem; 
+
+    .rating-input-group {
+      margin-bottom: 0.5rem;
+
+      .input-label {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+      }
+
+      .error-msg {
+        font-size: 0.75rem;
+        color: $error-color;
+        margin-top: 0.25rem;
+      }
+    }
+  }
+
+  .card-actions {
+    padding: 0 1rem 1rem 1rem; 
+  }
+}
+
+.section-divider {
+  margin: 1.5rem 0; 
+}
+
+// ===== 評價列表區 =====
+.reviews-list {
+  .review-item-card {
+    margin-bottom: 1rem; 
+    
+    &.is-hidden {
+      border-color: $error-color !important;
+      background-color: transparent !important;
+      opacity: 0.9; 
+    }
+
+    .review-content-wrapper {
+      display: flex;
+      flex-direction: row;
+
+      .avatar-col {
+        margin-right: 1rem;
+        
+        .avatar-text {
+          font-size: 1.25rem; 
+          color: white;
+        }
+      }
+
+      .content-col {
+        flex-grow: 1;
+
+        .meta-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+
+          .user-info-group {
+            .user-name-row {
+              display: flex;
+              align-items: center;
+
+              .user-name {
+                font-size: 1rem;
+                font-weight: 700;
+              }
+
+              .user-role {
+                font-size: 0.75rem;
+                color: $text-grey;
+                margin-left: 0.5rem;
+              }
+
+              .hidden-tag {
+                margin-left: 0.5rem;
+                font-weight: 700;
+              }
+            }
+
+            .rating-date-row {
+              display: flex;
+              align-items: center;
+              margin-top: 0.25rem;
+
+              .mini-rating {
+                margin-left: -0.25rem; 
+              }
+
+              .date-text {
+                font-size: 0.75rem;
+                color: $text-grey;
+                margin-left: 0.5rem;
+
+                .edited-mark {
+                  margin-left: 0.25rem;
+                  color: $text-light-grey;
+                }
+              }
+            }
+          }
+
+          .action-btn-group {
+            display: flex;
+            align-items: center;
+
+            .icon-btn {
+              margin-right: 0.25rem;
+            }
+            
+            .status-btn {
+            }
+            
+            .report-btn {
+              .v-icon {
+                 font-size: 1.25rem; 
+              }
+            }
+          }
+        }
+
+        .comment-body {
+          margin-top: 0.75rem;
+          font-size: 1rem; 
+          line-height: 1.5;
+        }
+      }
+    }
+  }
+
+  .pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+  }
+}
+
+// ===== 空狀態與 Dialog =====
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+  color: $text-grey;
+
+  .empty-icon {
+    margin-bottom: 0.5rem;
+  }
+}
+
+.dialog-header {
+  background-color: $primary-color;
+  color: white;
+}
+
+.dialog-body {
+  padding-top: 1rem;
 }
 </style>

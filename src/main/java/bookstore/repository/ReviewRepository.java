@@ -20,9 +20,10 @@ public interface ReviewRepository extends JpaRepository<ReviewBean, Integer> {
 	Optional<ReviewBean> findByIdWithUserAndBook(@Param("id") Integer id);
 
 	// 統計數量 
-	Integer countByBook_BookId(Integer bookId);
+	@Query("SELECT COUNT(r) FROM ReviewBean r WHERE r.book.bookId = :bookId AND r.status = 1")
+    Integer countByBook_BookId(@Param("bookId") Integer bookId);
 
 	// 計算平均分 
-	@Query("SELECT AVG(r.rating) FROM ReviewBean r WHERE r.book.bookId = :bookId")
-	Double findAvgRatingByBookId(@Param("bookId") Integer bookId);
+	@Query("SELECT AVG(r.rating) FROM ReviewBean r WHERE r.book.bookId = :bookId AND r.status = 1")
+    Double findAvgRatingByBookId(@Param("bookId") Integer bookId);
 }

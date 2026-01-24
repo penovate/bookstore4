@@ -54,6 +54,11 @@ public class ReviewsService {
 			review.setCreatedAt(LocalDateTime.now());
 		}
 
+		// 如果是新增 (ID 為 null) 且沒有特別指定狀態，預設設為 1 (正常顯示)
+		if (review.getReviewId() == null && review.getStatus() == null) {
+			review.setStatus(1);
+		}
+
 		ReviewBean savedReview = reviewRepository.save(review);
 
 		if (savedReview.getUser() != null) {
@@ -90,7 +95,7 @@ public class ReviewsService {
 			Integer count = reviewRepository.countByBook_BookId(book.getBookId());
 			Double avg = reviewRepository.findAvgRatingByBookId(book.getBookId());
 
-			// 5. 填入數據 
+			// 5. 填入數據
 			dto.setReviewCount(count != null ? count : 0);
 			dto.setAvgRating(avg != null ? avg : 0.0);
 

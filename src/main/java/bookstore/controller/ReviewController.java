@@ -244,6 +244,11 @@ public class ReviewController {
 		dbReview.setRating(review.getRating());
 		dbReview.setComment(review.getComment());
 
+		// 如果前端有傳 status 來，就更新狀態
+		if (review.getStatus() != null) {
+			dbReview.setStatus(review.getStatus());
+		}
+
 		reviewsService.save(dbReview);
 
 		return dbReview;

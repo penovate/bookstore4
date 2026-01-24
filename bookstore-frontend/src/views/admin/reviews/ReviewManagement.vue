@@ -100,7 +100,7 @@ const headers = [
     // 新增評價相關欄位 (需確認後端 DTO 是否有這兩個欄位，若無暫時會是空的)
     { title: '總評價數', key: 'reviewCount', sortable: true, align: 'center' }, 
     { title: '平均評分', key: 'avgRating', sortable: true, align: 'center' },
-    { title: '操作', key: 'actions', sortable: false, align: 'center' },
+    { title: '書籍評價', key: 'actions', sortable: false, align: 'center' },
 ];
 
 // 讀取書籍資料

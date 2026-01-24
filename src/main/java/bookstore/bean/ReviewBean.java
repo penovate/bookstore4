@@ -69,6 +69,9 @@ public class ReviewBean implements Serializable {
 
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
+	
+	@Column(name = "status")
+	private Integer status;
 
 	// ====== 過渡期：舊 JSP 可能用到 ======
 	@Transient

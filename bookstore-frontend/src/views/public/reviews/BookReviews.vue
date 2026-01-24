@@ -417,9 +417,8 @@ onMounted(() => {
 const averageRating = computed(() => {
   const activeReviews = reviews.value.filter(r => r.status === 1);
   if (activeReviews.length === 0) return 0;
-  if (reviews.value.length === 0) return 0;
-  const sum = reviews.value.reduce((acc, curr) => acc + curr.rating, 0);
-  return (sum / reviews.value.length).toFixed(1);
+  const sum = activeReviews.reduce((acc, curr) => acc + curr.rating, 0);
+  return (sum / activeReviews.length).toFixed(1);
 });
 
 const totalPages = computed(() => {
@@ -611,7 +610,7 @@ const handleToggleStatus = (review) => {
 
   Swal.fire({
     title: `確定要${actionText}這則評價嗎？`,
-    text: newStatus === 0 ? "隱藏後，一般使用者將無法看到此評論" : "該評論將重新顯示於前台",
+    text: newStatus === 0 ? "隱藏後，一般使用者將無法看到此評價" : "該評價將重新顯示於前台",
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: `確定`,

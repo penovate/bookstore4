@@ -97,7 +97,6 @@ const headers = [
     { title: '書籍名稱', key: 'bookName', sortable: true, align: 'start', width: '25%' },
     { title: '作者', key: 'author', sortable: true, align: 'center' },
     { title: '出版社', key: 'press', sortable: true, align: 'center' },
-    // 新增評價相關欄位 (需確認後端 DTO 是否有這兩個欄位，若無暫時會是空的)
     { title: '總評價數', key: 'reviewCount', sortable: true, align: 'center' }, 
     { title: '平均評分', key: 'avgRating', sortable: true, align: 'center' },
     { title: '書籍評價', key: 'actions', sortable: false, align: 'center' },
@@ -120,11 +119,17 @@ const loadBooks = async () => {
 // 跳轉到該書籍的評價列表
 const bookReviews = (item) => {
     // router 的 name: 'BookReviews' 或是路徑
-    router.push(`reviews/book/${item.bookId}`);
+    router.push({ 
+        name: 'admin-book-reviews', 
+        params: { bookId: item.bookId } 
+    });
 };
 
 const bookDetails = (item) => {
-    router.push(`books/get/${item.bookId}`);
+    router.push({
+        name: 'admin-books-get', // 假設你有這個 name
+        params: { id: item.bookId }
+    });
 };
 
 onMounted(() => {

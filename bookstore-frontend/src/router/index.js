@@ -150,11 +150,6 @@ const router = createRouter({
           component: () => import('../views/admin/orders/OrderItemUpdate.vue'),
         },
         // 4.評價管理
-        // {
-        //   path: 'reviews',
-        //   name: 'admin-reviews',
-        //   component: () => import('../views/admin/reviews/ReviewList.vue'),
-        // },
         {
           path: 'reviews',
           name: 'admin-reviews',

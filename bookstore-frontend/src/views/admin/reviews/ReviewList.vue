@@ -23,7 +23,7 @@
     <v-card class="table-card">
         <v-data-table 
             :headers="headers" 
-            :items="reviews" 
+            :items="filteredReviews" 
             :loading="loading" 
             item-value="reviewId"
             class="forest-table"
@@ -97,7 +97,7 @@ const headers = [
     { title: '評價 ID', key: 'reviewId', align: 'start', sortable: true },
     { title: '會員 ID', key: 'userId', align: 'start', sortable: true },
     { title: '評分', key: 'rating', align: 'center', sortable: true },
-    { title: '評論內容', key: 'comment', align: 'start', sortable: false, width: '40%' },
+    { title: '評價內容', key: 'comment', align: 'start', sortable: false, width: '40%' },
     { title: '評價時間', key: 'createdAt', align: 'center', sortable: true },
     { title: '狀態', key: 'status', align: 'center', sortable: true },
     { title: '操作', key: 'actions', align: 'center', sortable: false },

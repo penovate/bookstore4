@@ -36,7 +36,7 @@ public class ReviewBean implements Serializable {
 	@Column(name = "review_id")
 	private Integer reviewId;
 
-	// ===== FK → ManyToOne（關鍵）=====
+	// ===== FK → ManyToOne =====
 
 	// ✅ ManyToOne：同一個欄位做關聯，但設為「只讀」，避免重複 mapping
 	@ManyToOne(fetch = FetchType.LAZY)

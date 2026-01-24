@@ -184,13 +184,15 @@ public class bookService {
 
 	// update Check
 	private void updateBasicFields(BooksBean existing, BooksBean incoming) {
-		// 書名
 
+		
+		// 書名
 		if (incoming.getBookName() != null) {
 			if (incoming.getBookName().trim().isEmpty())
 				throw new BusinessException(400, "書名不可為空白");
 			existing.setBookName(incoming.getBookName());
 		}
+
 		// 作者
 		if (incoming.getAuthor() != null) {
 			if (incoming.getAuthor().trim().isEmpty())

@@ -132,7 +132,7 @@ const router = createRouter({
         {
           path: 'bookclubs',
           name: 'admin-bookclubs',
-          component: () => import('../views/admin/bookClubs/ClubList.vue'),
+          component: () => import('../views/admin/bookClubs/AdminBookClub.vue'),
         },
         {
           path: 'orders/update/:id',

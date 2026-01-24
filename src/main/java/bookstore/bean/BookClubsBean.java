@@ -68,7 +68,7 @@ public class BookClubsBean {
 	private Integer currentParticipants;
 
 	@Column(name = "status")
-	private Short status;
+	private Integer status;
 
 	@Column(name = "rejection_reason", length = 500)
 	private String rejectionReason;

@@ -697,9 +697,9 @@ input[type='text'] {
 }
 
 .total-row {
-  font-size: 18px;
-  font-weight: bold;
-  color: #d33;
+  font-size: 20px;
+  font-weight: 900;
+  color: #2e5a44;
 }
 
 .btn-checkout {
@@ -797,7 +797,7 @@ input[type='text'] {
 }
 
 .item-subtotal {
-  color: #d33;
+  font-size: 16px;
   font-weight: bold;
 }
 </style>

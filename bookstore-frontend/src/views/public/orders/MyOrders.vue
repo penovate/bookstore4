@@ -64,7 +64,7 @@
                     
                     <v-col cols="12" sm="6" class="text-right">
                       <div class="text-caption text-grey">實付金額</div>
-                      <div class="text-h5 text-error font-weight-bold">${{ item.raw.finalAmount }}</div>
+                      <div class="text-h5 text-primary font-weight-bold">${{ item.raw.finalAmount }}</div>
                     </v-col>
                   </v-row>
                 </v-card-text>
@@ -100,43 +100,184 @@
         </v-data-iterator>
 
         <!-- 訂單明細 Dialog -->
-        <v-dialog v-model="detailsDialog" max-width="700px">
+        <v-dialog v-model="detailsDialog" max-width="1200px" scrollable>
           <v-card class="rounded-lg">
-            <v-card-title class="bg-primary text-white d-flex justify-space-between align-center">
-              <span>訂單明細 #{{ selectedOrderId }}</span>
+            <v-card-title class="bg-primary text-white d-flex justify-space-between align-center px-6 py-4">
+              <span class="text-h6 font-weight-bold">訂單明細 #{{ selectedOrderId }}</span>
               <v-btn icon="mdi-close" variant="text" color="white" @click="detailsDialog = false"></v-btn>
             </v-card-title>
-            <v-card-text class="pa-4">
-              <div v-if="detailsLoading" class="text-center py-4">
-                <v-progress-circular indeterminate color="primary"></v-progress-circular>
+            
+            <v-card-text class="pa-6 bg-grey-lighten-5" style="max-height: 80vh;">
+              <div v-if="detailsLoading" class="text-center py-10">
+                <v-progress-circular indeterminate color="primary" size="48"></v-progress-circular>
+                <div class="mt-4 text-grey-darken-1">載入中...</div>
               </div>
+              
               <div v-else>
-                <v-table density="compact">
-                  <thead>
-                    <tr>
-                      <th class="text-left">書籍名稱</th>
-                      <th class="text-center">單價</th>
-                      <th class="text-center">數量</th>
-                      <th class="text-right">小計</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="item in currentOrderItems" :key="item.orderItemId">
-                      <td>{{ item.booksBean ? item.booksBean.bookName : '未知書籍' }}</td>
-                      <td class="text-center">${{ item.price }}</td>
-                      <td class="text-center">{{ item.quantity }}</td>
-                      <td class="text-right font-weight-bold">${{ item.subtotal }}</td>
-                    </tr>
-                  </tbody>
-                </v-table>
-                <v-divider class="my-4"></v-divider>
-                <div class="d-flex justify-end">
-                   <div class="text-right">
-                     <div class="text-subtitle-2 text-grey">運費: ${{ currentOrder?.shippingFee || 0 }}</div>
-                     <div v-if="currentOrder?.discount > 0" class="text-subtitle-2 text-error">折扣: -${{ currentOrder?.discount }}</div>
-                     <div class="text-h6 text-error font-weight-bold">總計: ${{ currentOrder?.finalAmount || 0 }}</div>
-                   </div>
+                <!-- 四大區塊 Grid -->
+                <v-row class="mb-2">
+                  <!-- 1. 訂單資料 -->
+                  <v-col cols="12" md="6">
+                    <v-card flat class="h-100 border rounded-lg">
+                      <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center bg-white border-b py-3">
+                        <v-icon color="primary" class="mr-2">mdi-file-document-outline</v-icon>
+                        訂單資料
+                      </v-card-title>
+                      <v-card-text class="pt-4">
+                        <div class="info-row d-flex justify-space-between mb-2">
+                          <span class="text-grey-darken-1">訂單編號</span>
+                          <span class="font-weight-medium">#{{ currentOrder?.orderId }}</span>
+                        </div>
+                        <div class="info-row d-flex justify-space-between mb-2">
+                          <span class="text-grey-darken-1">訂購日期</span>
+                          <span class="font-weight-medium">{{ formatDate(currentOrder?.createdAt) }}</span>
+                        </div>
+                        <div class="info-row d-flex justify-space-between align-center">
+                          <span class="text-grey-darken-1">訂單狀態</span>
+                          <v-chip :color="getStatusColor(currentOrder?.orderStatus)" size="small" label class="font-weight-bold">
+                            {{ currentOrder?.orderStatus }}
+                          </v-chip>
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+
+                  <!-- 2. 配送資料 -->
+                  <v-col cols="12" md="6">
+                    <v-card flat class="h-100 border rounded-lg">
+                      <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center bg-white border-b py-3">
+                        <v-icon color="primary" class="mr-2">mdi-truck-outline</v-icon>
+                        配送資料
+                      </v-card-title>
+                      <v-card-text class="pt-4">
+                        <div class="info-row d-flex justify-space-between mb-2">
+                          <span class="text-grey-darken-1">收件人</span>
+                          <span class="font-weight-medium">{{ currentOrder?.recipientAt }}</span>
+                        </div>
+                        <div class="info-row d-flex justify-space-between mb-2">
+                          <span class="text-grey-darken-1">聯絡電話</span>
+                          <span class="font-weight-medium">{{ currentOrder?.phone }}</span>
+                        </div>
+                        <div class="info-row d-flex justify-space-between mb-2">
+                          <span class="text-grey-darken-1 mb-1">收件地址/門市</span>
+                          <span class="font-weight-medium">{{ currentOrder?.address }}</span>
+                        </div>
+                         <div class="info-row d-flex justify-space-between">
+                          <span class="text-grey-darken-1">配送方式</span>
+                          <span class="font-weight-medium">{{ currentOrder?.deliveryMethod }}</span>
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+
+                  <!-- 3. 付款資料 -->
+                  <v-col cols="12" md="6">
+                    <v-card flat class="h-100 border rounded-lg">
+                      <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center bg-white border-b py-3">
+                        <v-icon color="primary" class="mr-2">mdi-credit-card-outline</v-icon>
+                        付款資料
+                      </v-card-title>
+                      <v-card-text class="pt-4">
+                        <div class="info-row d-flex justify-space-between mb-2">
+                          <span class="text-grey-darken-1">付款方式</span>
+                          <span class="font-weight-medium">{{ currentOrder?.paymentMethod }}</span>
+                        </div>
+                        <div class="info-row d-flex justify-space-between align-center mb-2">
+                          <span class="text-grey-darken-1">付款狀態</span>
+                           <v-chip
+                            :color="currentOrder?.paymentStatus === '已付款' ? 'success' : 'warning'"
+                            size="x-small"
+                            variant="outlined"
+                            class="font-weight-bold"
+                          >
+                            {{ currentOrder?.paymentStatus }}
+                          </v-chip>
+                        </div>
+                         <div class="info-row d-flex justify-space-between" v-if="currentOrder?.paidAt">
+                          <span class="text-grey-darken-1">付款時間</span>
+                          <span class="font-weight-medium">{{ formatDate(currentOrder?.paidAt) }}</span>
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+
+                  <!-- 4. 金額明細 -->
+                  <v-col cols="12" md="6">
+                    <v-card flat class="h-100 border rounded-lg">
+                      <v-card-title class="text-subtitle-1 font-weight-bold d-flex align-center bg-white border-b py-3">
+                        <v-icon color="primary" class="mr-2">mdi-currency-usd</v-icon>
+                        金額明細
+                      </v-card-title>
+                      <v-card-text class="pt-4">
+                        <div class="info-row d-flex justify-space-between mb-2">
+                          <span class="text-grey-darken-1">商品總額</span>
+                          <!-- 若無 totalAmount 欄位，可改用計算屬性或後端補欄位，這裡暫時顯示 finalAmount 若無 totalAmount -->
+                          <span class="font-weight-medium">${{ currentOrder?.totalAmount || currentOrder?.finalAmount }}</span>
+                        </div>
+                        <div class="info-row d-flex justify-space-between mb-2">
+                          <span class="text-grey-darken-1">運費</span>
+                          <span class="font-weight-medium">${{ currentOrder?.shippingFee || 0 }}</span>
+                        </div>
+                         <div class="info-row d-flex justify-space-between mb-2 text-error" v-if="currentOrder?.discount > 0">
+                          <span class="text-grey-darken-1">優惠折扣</span>
+                          <span class="font-weight-bold">-${{ currentOrder?.discount }}</span>
+                        </div>
+                        <v-divider class="my-3"></v-divider>
+                        <div class="info-row d-flex justify-space-between align-center">
+                          <span class="font-weight-bold text-h6">實付金額</span>
+                          <span class="text-h5 text-primary font-weight-bold">${{ currentOrder?.finalAmount || 0 }}</span>
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+
+                <!-- 商品明細列表 -->
+                <div class="mt-6">
+                  <h3 class="text-h6 text-grey-darken-3 font-weight-bold mb-3 d-flex align-center">
+                    <v-icon class="mr-2">mdi-format-list-bulleted</v-icon>
+                    訂單內容
+                  </h3>
+                  <v-card flat class="border rounded-lg overflow-hidden">
+                    <v-table>
+                      <thead class="bg-grey-lighten-4">
+                        <tr>
+                          <th class="text-left font-weight-bold text-grey-darken-2" style="width: 80px">圖片</th>
+                          <th class="text-left font-weight-bold text-grey-darken-2">書籍名稱</th>
+                          <th class="text-center font-weight-bold text-grey-darken-2" style="width: 100px">單價</th>
+                          <th class="text-center font-weight-bold text-grey-darken-2" style="width: 80px">數量</th>
+                          <th class="text-right font-weight-bold text-grey-darken-2" style="width: 120px">小計</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="item in currentOrderItems" :key="item.orderItemId" class="hover-row">
+                          <td class="py-2">
+                             <div class="rounded border overflow-hidden bg-white" style="width: 50px; height: 70px;">
+                                <v-img
+                                  :src="item.booksBean && item.booksBean.bookImageBean ? `http://localhost:8080/upload-images/${item.booksBean.bookImageBean.imageUrl}` : '/no-image.png'"
+                                  cover
+                                  height="100%"
+                                ></v-img>
+                             </div>
+                          </td>
+                          <td class="font-weight-bold text-body-2 text-grey-darken-3 py-3">
+                            <span 
+                              class="book-link cursor-pointer"
+                              @click="goToBookDetail(item.booksBean ? item.booksBean.bookId : null)"
+                            >
+                              {{ item.booksBean ? item.booksBean.bookName : '未知書籍' }}
+                            </span>
+                            <div class="text-caption text-grey mt-1">{{ item.booksBean ? item.booksBean.author : '' }}</div>
+                          </td>
+                          <td class="text-center text-body-2">${{ item.price }}</td>
+                          <td class="text-center text-body-2">{{ item.quantity }}</td>
+                          <td class="text-right font-weight-bold text-body-1">${{ item.subtotal }}</td>
+                        </tr>
+                      </tbody>
+                    </v-table>
+                  </v-card>
                 </div>
+
               </div>
             </v-card-text>
           </v-card>
@@ -183,6 +324,12 @@ const getStatusColor = (status) => {
     case '已完成': return 'success'
     case '已取消': return 'error'
     default: return 'grey'
+  }
+}
+
+const goToBookDetail = (bookId) => {
+  if (bookId) {
+    router.push({ name: 'user-book-detail', params: { id: bookId } })
   }
 }
 
@@ -287,5 +434,14 @@ onMounted(() => {
 .forest-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(46, 92, 67, 0.15) !important;
+}
+
+.book-link {
+  transition: color 0.2s;
+}
+
+.book-link:hover {
+  color: #2e5c43 !important; /* 主題綠色 */
+  text-decoration: underline;
 }
 </style>

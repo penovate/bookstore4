@@ -57,7 +57,12 @@
               </div>
               <div>
                 <div class="font-weight-bold text-h6 text-primary mb-1">
-                  {{ item.booksBean ? item.booksBean.bookName : '未知書籍' }}
+                  <span
+                    class="book-link cursor-pointer"
+                    @click="goToBookDetail(item.booksBean ? item.booksBean.bookId : null)"
+                  >
+                    {{ item.booksBean ? item.booksBean.bookName : '未知書籍' }}
+                  </span>
                 </div>
                 <div class="text-caption text-grey">
                   {{ item.booksBean ? item.booksBean.author : '' }}
@@ -158,7 +163,7 @@
           <v-row align="center" justify="end">
             <v-col cols="12" md="auto" class="text-right">
               <div class="text-subtitle-1 text-grey-darken-1 mb-1">總金額</div>
-              <div class="text-h4 font-weight-bold text-error">
+              <div class="text-h4 font-weight-bold text-error" style="color: #2e5a44">
                 ${{ totalAmount }} <span class="text-h6 text-grey">元</span>
               </div>
             </v-col>
@@ -346,6 +351,12 @@ const removeItem = (item) => {
   })
 }
 
+const goToBookDetail = (bookId) => {
+  if (bookId) {
+    router.push({ name: 'user-book-detail', params: { id: bookId } })
+  }
+}
+
 const goToCheckout = () => {
   router.push({ name: 'checkout' })
 }
@@ -407,5 +418,14 @@ onMounted(() => {
 
 .cart-table :deep(.disabled-row .v-chip) {
   color: white !important; /* 恢復 Chip 文字顏色（如果有被影響） */
+}
+
+.book-link {
+  transition: color 0.2s;
+}
+
+.book-link:hover {
+  color: #2e5a44 !important; /* 主題綠色 */
+  text-decoration: underline;
 }
 </style>

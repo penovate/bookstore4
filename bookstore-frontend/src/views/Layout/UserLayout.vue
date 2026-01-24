@@ -134,7 +134,7 @@ onMounted(() => {
             <v-list>
               <v-list-item
                 prepend-icon="mdi-account-circle"
-                title="個人檔案"
+                title="會員中心"
                 to="/dev/user/profile"
               ></v-list-item>
               <v-list-item

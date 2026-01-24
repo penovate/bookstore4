@@ -133,8 +133,10 @@ import { reactive, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
+import { useUserStore } from '@/stores/userStore'
 
 const router = useRouter()
+const userStore = useUserStore()
 const loginForm = reactive({
   email: '',
   password: '',
@@ -144,7 +146,7 @@ const quickLogin = (type) => {
   const accounts = {
     SUPER_ADMIN: { email: 'pen@bookstore.com', pass: '12345' },
     ADMIN: { email: 'alice.lee@mail.com', pass: '123456' },
-    USER: { email: 'vip.reader@test.com', pass: 'vip777' },
+    USER: { email: 'testuser_m@abc.com', pass: 'testtest' },
     BANNED: { email: 'super@bookstore.com', pass: '123' },
   }
   loginForm.email = accounts[type].email
@@ -170,6 +172,8 @@ const handleLogin = async () => {
         })
         return
       }
+
+      userStore.login(response.data)
 
       localStorage.setItem('userToken', response.data.token)
       localStorage.setItem('userRole', response.data.role)

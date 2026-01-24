@@ -24,7 +24,7 @@ public class CartService {
     @Autowired
     private BookRepository bookRepository;
 
-    //商品加入購物車
+    // 商品加入購物車
     public Cart addToCart(Integer userId, Integer bookId, Integer quantity) {
         BooksBean book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BusinessException(400, "找不到該書籍"));
@@ -35,11 +35,11 @@ public class CartService {
 
         // 如果書未上架，拋出異常
         if (onShelf != 1) {
-                throw new BusinessException(400, "該書籍目前未上架");
+            throw new BusinessException(400, "該書籍目前未上架");
         }
 
         if (quantity > stock) {
-            throw new BusinessException(400, "庫存不足，僅剩 " + stock + " 本");
+            throw new BusinessException(400, "庫存不足");
         }
 
         Optional<Cart> existingCart = cartRepository.findByUserIdAndBookId(userId, bookId);
@@ -63,7 +63,7 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
-    //修改購物車內個別商品數量
+    // 修改購物車內個別商品數量
     public Cart updateQuantity(Integer cartId, Integer quantity) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new BusinessException(400, "找不到該購物車項目"));
@@ -86,12 +86,12 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
-    //將商品從購物車移除
+    // 將商品從購物車移除
     public void removeFromCart(Integer cartId) {
         cartRepository.deleteById(cartId);
     }
 
-    //取得用戶購物車明細資料(並且要將當前購物車資料修正到與書籍資料表資料一致---上架狀態檢查、庫存量檢查)
+    // 取得用戶購物車明細資料(並且要將當前購物車資料修正到與書籍資料表資料一致---上架狀態檢查、庫存量檢查)
     public List<Cart> getUserCart(Integer userId) {
         List<Cart> cartItems = cartRepository.findByUserId(userId);
 

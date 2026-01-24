@@ -27,16 +27,15 @@
           :items-per-page="-1"
           :item-class="rowClass"
         >
-
           <!-- 移除按鈕 (最左側) -->
           <template v-slot:item.remove="{ item }">
-             <v-btn
-                icon="mdi-minus-circle"
-                variant="text"
-                color="error"
-                size="small"
-                @click="removeItem(item)"
-             ></v-btn>
+            <v-btn
+              icon="mdi-minus-circle"
+              variant="text"
+              color="error"
+              size="small"
+              @click="removeItem(item)"
+            ></v-btn>
           </template>
 
           <!-- 書籍名稱 -->
@@ -48,7 +47,7 @@
               <div class="text-caption text-grey">
                 {{ item.booksBean ? item.booksBean.author : '' }}
               </div>
-               <!-- 顯示無庫存或下架警告 -->
+              <!-- 顯示無庫存或下架警告 -->
               <v-chip
                 v-if="item.cartStatus === 'OFF_SHELF'"
                 color="error"
@@ -77,69 +76,78 @@
 
           <!-- 數量控制 -->
           <template v-slot:item.quantity="{ item }">
-             <div class="d-flex align-center justify-center gap-2" style="width: 140px; margin: 0 auto;">
-                <!-- 商品數量扣除按鈕(數量少於1或書本未上架不能用)--> 
-                <v-btn
-                  icon="mdi-minus"
-                  size="x-small"
-                  variant="outlined"
-                  color="grey"
-                  :disabled="item.quantity <= 1 || item.cartStatus === 'OFF_SHELF' || item.quantity === 0"
-                  @click="adjustQuantity(item, -1)"
-                ></v-btn>
-                
-				<!-- 商品數量填寫框(庫存量為0或書本未上架不能用)-->
-				<v-text-field
-                   v-model.number="item.quantity"
-                   type="number"
-                   variant="outlined"
-                   density="compact"
-                   hide-details
-                   class="centered-input"
-                   style="width: 60px; text-align: center;"
-                   :disabled="item.cartStatus === 'OFF_SHELF' || item.quantity === 0"
-                   @change="updateQuantity(item)"
-                ></v-text-field>
+            <div
+              class="d-flex align-center justify-center gap-2"
+              style="width: 140px; margin: 0 auto"
+            >
+              <!-- 商品數量扣除按鈕(數量少於1或書本未上架不能用)-->
+              <v-btn
+                icon="mdi-minus"
+                size="x-small"
+                variant="outlined"
+                color="grey"
+                :disabled="
+                  item.quantity <= 1 || item.cartStatus === 'OFF_SHELF' || item.quantity === 0
+                "
+                @click="adjustQuantity(item, -1)"
+              ></v-btn>
 
-				<!-- 商品數量增加按鈕(數量高於庫存量或書本未上架不能用)-->
-                <v-btn
-                  icon="mdi-plus"
-                  size="x-small"
-                  variant="outlined"
-                  color="primary"
-                  :disabled="(item.booksBean && item.quantity >= item.booksBean.stock) || item.cartStatus === 'OFF_SHELF' || item.quantity === 0"
-                  @click="adjustQuantity(item, 1)"
-                ></v-btn>
-             </div>
+              <!-- 商品數量填寫框(庫存量為0或書本未上架不能用)-->
+              <v-text-field
+                v-model.number="item.quantity"
+                type="number"
+                variant="outlined"
+                density="compact"
+                hide-details
+                class="centered-input"
+                style="width: 60px; text-align: center"
+                :disabled="item.cartStatus === 'OFF_SHELF' || item.quantity === 0"
+                @change="updateQuantity(item)"
+              ></v-text-field>
+
+              <!-- 商品數量增加按鈕(數量高於庫存量或書本未上架不能用)-->
+              <v-btn
+                icon="mdi-plus"
+                size="x-small"
+                variant="outlined"
+                color="primary"
+                :disabled="
+                  (item.booksBean && item.quantity >= item.booksBean.stock) ||
+                  item.cartStatus === 'OFF_SHELF' ||
+                  item.quantity === 0
+                "
+                @click="adjustQuantity(item, 1)"
+              ></v-btn>
+            </div>
           </template>
 
           <!-- 小計 -->
           <template v-slot:item.subtotal="{ item }">
-             <span class="font-weight-bold text-primary text-h6">
-               ${{ (item.booksBean ? item.booksBean.price : 0) * item.quantity }}
-             </span>
+            <span class="font-weight-bold text-primary text-h6">
+              ${{ (item.booksBean ? item.booksBean.price : 0) * item.quantity }}
+            </span>
           </template>
-           
+
           <!-- 空購物車 -->
-           <template v-slot:no-data>
-             <div class="text-center py-10">
-               <v-icon icon="mdi-cart-off" size="64" color="grey-lighten-2" class="mb-4"></v-icon>
-               <div class="text-h6 text-grey">購物車目前是空的</div>
-             </div>
-           </template>
+          <template v-slot:no-data>
+            <div class="text-center py-10">
+              <v-icon icon="mdi-cart-off" size="64" color="grey-lighten-2" class="mb-4"></v-icon>
+              <div class="text-h6 text-grey">購物車目前是空的</div>
+            </div>
+          </template>
         </v-data-table>
-        
+
         <!-- 底部結算區 -->
-         <div v-if="cartItems.length > 0" class="pa-6 bg-grey-lighten-5 border-t">
-           <v-row align="center" justify="end">
-             <v-col cols="12" md="auto" class="text-right">
-                <div class="text-subtitle-1 text-grey-darken-1 mb-1">總金額</div>
-                <div class="text-h4 font-weight-bold text-error">
-                  ${{ totalAmount }} <span class="text-h6 text-grey">元</span>
-                </div>
-             </v-col>
-           </v-row>
-         </div>
+        <div v-if="cartItems.length > 0" class="pa-6 bg-grey-lighten-5 border-t">
+          <v-row align="center" justify="end">
+            <v-col cols="12" md="auto" class="text-right">
+              <div class="text-subtitle-1 text-grey-darken-1 mb-1">總金額</div>
+              <div class="text-h4 font-weight-bold text-error">
+                ${{ totalAmount }} <span class="text-h6 text-grey">元</span>
+              </div>
+            </v-col>
+          </v-row>
+        </div>
       </v-card>
 
       <!-- 按鈕區 -->
@@ -158,22 +166,20 @@
           </v-btn>
         </v-col>
         <v-col cols="12" sm="auto">
-          
-			<!-- 結帳按鈕(如果購物車沒有商品或有無效商品則無法結帳) -->
-			<v-btn
-             size="large"
-             color="primary"
-             class="px-10 rounded-lg font-weight-bold button-shadow"
-             append-icon="mdi-arrow-right"
-             @click="goToCheckout"
-             :disabled="cartItems.length === 0 || hasInvalidItems"
-             height="50"
+          <!-- 結帳按鈕(如果購物車沒有商品或有無效商品則無法結帳) -->
+          <v-btn
+            size="large"
+            color="primary"
+            class="px-10 rounded-lg font-weight-bold button-shadow"
+            append-icon="mdi-arrow-right"
+            @click="goToCheckout"
+            :disabled="cartItems.length === 0 || hasInvalidItems"
+            height="50"
           >
             前往結帳
           </v-btn>
         </v-col>
       </v-row>
-
     </v-container>
   </div>
 </template>
@@ -190,7 +196,7 @@ const totalAmount = ref(0)
 const alertMessage = ref('')
 
 const hasInvalidItems = computed(() => {
-  return cartItems.value.some(item => item.cartStatus === 'OFF_SHELF' || item.quantity === 0)
+  return cartItems.value.some((item) => item.cartStatus === 'OFF_SHELF' || item.quantity === 0)
 })
 
 const headers = [
@@ -239,16 +245,16 @@ const adjustQuantity = (item, delta) => {
   if (newQty < 1) return
 
   if (newQty > stock) {
-     Swal.fire({
-       icon: 'warning',
-       title: '庫存不足',
-       text: `目前庫存僅剩 ${stock} 本`,
-       toast: true,
-       position: 'center',
-       showConfirmButton: false,
-       timer: 1500,
-     })
-     return
+    Swal.fire({
+      icon: 'warning',
+      title: '庫存不足',
+      text: `目前庫存僅剩 ${stock} 本`,
+      toast: true,
+      position: 'center',
+      showConfirmButton: false,
+      timer: 1500,
+    })
+    return
   }
 
   item.quantity = newQty
@@ -256,19 +262,20 @@ const adjustQuantity = (item, delta) => {
 }
 
 const updateQuantity = async (item) => {
+  // 如果前端暫時無法取得庫存量，先假定庫存量充足(9999)，實際後端執行邏輯發現庫存不足時會將結果傳回前端並讓前端更新為正確庫存量
   const stock = item.booksBean ? item.booksBean.stock : 9999
   // 使用本地邏輯進行預檢查，但依賴後端進行實際更新
   if (item.quantity < 1) item.quantity = 1
   if (item.quantity > stock) {
-      Swal.fire({
-       icon: 'warning',
-       title: '庫存不足',
-       text: `目前庫存僅剩 ${stock} 本`,
-       toast: true,
-       position: 'center',
-       showConfirmButton: false,
-       timer: 1500,
-     })
+    Swal.fire({
+      icon: 'warning',
+      title: '庫存不足',
+      text: `目前庫存僅剩 ${stock} 本`,
+      toast: true,
+      position: 'center',
+      showConfirmButton: false,
+      timer: 1500,
+    })
     item.quantity = stock
   }
 
@@ -324,7 +331,7 @@ const removeItem = (item) => {
 }
 
 const goToCheckout = () => {
-    router.push({ name: 'checkout' })
+  router.push({ name: 'checkout' })
 }
 
 onMounted(() => {
@@ -350,13 +357,13 @@ onMounted(() => {
 }
 
 .cart-table :deep(.v-data-table-header) {
-    background-color: #f9fbe7 !important;
+  background-color: #f9fbe7 !important;
 }
 
 .cart-table :deep(.v-data-table-header__content) {
-    font-weight: 800;
-    color: #2e5c43;
-    font-size: 1.1rem;
+  font-weight: 800;
+  color: #2e5c43;
+  font-size: 1.1rem;
 }
 
 .centered-input :deep(input) {
@@ -382,8 +389,7 @@ onMounted(() => {
   color: #9e9e9e !important;
 }
 
-
 .cart-table :deep(.disabled-row .v-chip) {
-   color: white !important; /* 恢復 Chip 文字顏色（如果有被影響） */
+  color: white !important; /* 恢復 Chip 文字顏色（如果有被影響） */
 }
 </style>

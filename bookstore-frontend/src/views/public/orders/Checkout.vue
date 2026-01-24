@@ -64,6 +64,15 @@
             <div class="delivery-detail" v-if="form.deliveryMethod === '超商取貨'">
               <div class="form-group">
                 <label>超商門市 <span class="required">*</span></label>
+                <div style="margin-bottom: 10px">
+                  <label><input type="radio" v-model="cvsType" value="UNIMART" /> 7-11</label>
+                  <label style="margin-left: 10px"
+                    ><input type="radio" v-model="cvsType" value="FAMI" /> 全家</label
+                  >
+                  <label style="margin-left: 10px"
+                    ><input type="radio" v-model="cvsType" value="HILIFE" /> 萊爾富</label
+                  >
+                </div>
                 <div class="store-selector">
                   <input
                     type="text"
@@ -71,7 +80,7 @@
                     placeholder="請選擇您的配送門市"
                     readonly
                   />
-                  <button class="btn-select-store" @click="">請選擇門市</button>
+                  <button class="btn-select-store" @click="selectStore">請選擇門市</button>
                 </div>
               </div>
               <p class="shipping-note">超商取貨未滿 350 元，將酌收訂單處理費 50 元</p>
@@ -86,50 +95,53 @@
                 <input type="radio" v-model="form.paymentMethod" value="信用卡" />
                 信用卡付款
               </label>
-			  <!-- 超商取貨才能使用貨到付款 --> 
-			  <label v-if="canUseCOD">
-                <input type="radio" v-model="form.paymentMethod" value="COD" />
+              <!-- 超商取貨才能使用貨到付款 -->
+              <label v-if="canUseCOD">
+                <input type="radio" v-model="form.paymentMethod" value="貨到付款" />
                 貨到付款
               </label>
             </div>
           </div>
 
-
-          
           <!-- 5. 優惠券 -->
           <div class="section-block">
             <h3>優惠券</h3>
             <div v-if="coupons.length > 0">
-                <div class="radio-group" style="flex-direction: column; gap: 10px;">
-                    <label class="radio-label" :class="{ active: selectedCouponId === null }">
-                        <input type="radio" :value="null" v-model="selectedCouponId" />
-                        不使用優惠券
-                    </label>
-                    <label 
-                        v-for="coupon in coupons" 
-                        :key="coupon.couponId" 
-                        class="radio-label" 
-                        :class="{ active: selectedCouponId === coupon.couponId, 'disabled-coupon': cartTotal < coupon.minSpend }"
+              <div class="radio-group" style="flex-direction: column; gap: 10px">
+                <label class="radio-label" :class="{ active: selectedCouponId === null }">
+                  <input type="radio" :value="null" v-model="selectedCouponId" />
+                  不使用優惠券
+                </label>
+                <label
+                  v-for="coupon in coupons"
+                  :key="coupon.couponId"
+                  class="radio-label"
+                  :class="{
+                    active: selectedCouponId === coupon.couponId,
+                    'disabled-coupon': cartTotal < coupon.minSpend,
+                  }"
+                >
+                  <input
+                    type="radio"
+                    :value="coupon.couponId"
+                    v-model="selectedCouponId"
+                    :disabled="cartTotal < coupon.minSpend"
+                  />
+                  <div class="d-flex justify-space-between w-100 align-center">
+                    <span>
+                      <strong class="text-primary">${{ coupon.discountAmount }} 折價券</strong>
+                      <span class="text-caption text-grey ml-2"
+                        >(滿 ${{ coupon.minSpend }} 可用)</span
+                      >
+                    </span>
+                    <span v-if="cartTotal < coupon.minSpend" class="text-caption text-error"
+                      >未達門檻</span
                     >
-                        <input 
-                            type="radio" 
-                            :value="coupon.couponId" 
-                            v-model="selectedCouponId" 
-                            :disabled="cartTotal < coupon.minSpend"
-                        />
-                        <div class="d-flex justify-space-between w-100 align-center">
-                            <span>
-                                <strong class="text-primary">${{ coupon.discountAmount }} 折價券</strong>
-                                <span class="text-caption text-grey ml-2">(滿 ${{ coupon.minSpend }} 可用)</span>
-                            </span>
-                             <span v-if="cartTotal < coupon.minSpend" class="text-caption text-error">未達門檻</span>
-                        </div>
-                    </label>
-                </div>
+                  </div>
+                </label>
+              </div>
             </div>
-            <div v-else class="text-grey pa-2">
-                無可用優惠券
-            </div>
+            <div v-else class="text-grey pa-2">無可用優惠券</div>
           </div>
         </div>
 
@@ -164,6 +176,8 @@
       </div>
     </div>
   </div>
+  <!-- Hidden Form Container -->
+  <div id="ecpay-form-container" style="display: none"></div>
 </template>
 
 <script setup>
@@ -247,13 +261,13 @@ const initData = async () => {
 
     // 3. 獲取優惠券
     try {
-        const couponRes = await couponService.getMyCoupons()
-        if (couponRes.data.success) {
-            // 只顯示未使用且符合低消的優惠券
-            coupons.value = couponRes.data.coupons.filter(c => c.status === 0)
-        }
+      const couponRes = await couponService.getMyCoupons()
+      if (couponRes.data.success) {
+        // 只顯示未使用且符合低消的優惠券
+        coupons.value = couponRes.data.coupons.filter((c) => c.status === 0)
+      }
     } catch (e) {
-        console.error('Failed to fetch coupons', e)
+      console.error('Failed to fetch coupons', e)
     }
 
     loading.value = false
@@ -277,20 +291,20 @@ const shippingFee = computed(() => {
 const finalAmount = computed(() => {
   let total = cartTotal.value + shippingFee.value
   if (selectedCouponId.value) {
-      const coupon = coupons.value.find(c => c.couponId === selectedCouponId.value)
-      if (coupon) {
-          total -= coupon.discountAmount
-      }
+    const coupon = coupons.value.find((c) => c.couponId === selectedCouponId.value)
+    if (coupon) {
+      total -= coupon.discountAmount
+    }
   }
   return total > 0 ? total : 0
 })
 
 const discountAmount = computed(() => {
-    if (selectedCouponId.value) {
-      const coupon = coupons.value.find(c => c.couponId === selectedCouponId.value)
-      return coupon ? coupon.discountAmount : 0
-    }
-    return 0
+  if (selectedCouponId.value) {
+    const coupon = coupons.value.find((c) => c.couponId === selectedCouponId.value)
+    return coupon ? coupon.discountAmount : 0
+  }
+  return 0
 })
 
 const canUseCreditCard = computed(() => true) // 總是可用
@@ -300,23 +314,68 @@ const canUseCOD = computed(() => form.value.deliveryMethod === '超商取貨') /
 watch(
   () => form.value.deliveryMethod,
   (newVal) => {
-    // 如果切換後的配送方式不支援當前付款方式，則重置付款方式
-    if (newVal === '宅配到府' && form.value.paymentMethod === 'COD') {
-      form.value.paymentMethod = ''
-    }
     // 切換配送方式時清除地址
     form.value.address = ''
   },
 )
 
+// === ECPay Map Listeners ===
+onMounted(() => {
+  initData()
+  window.addEventListener('message', handleMapMessage)
+})
+
+import { onUnmounted } from 'vue'
+onUnmounted(() => {
+  window.removeEventListener('message', handleMapMessage)
+})
+
+const handleMapMessage = (event) => {
+  if (event.data && event.data.type === 'STORE_SELECTED') {
+    const { storeId, storeName, address } = event.data
+    // Format: 7-11(123456) - City... or just address
+    // 儲存門市名稱和地址，這裡簡單串接
+    form.value.address = `${storeName} (${storeId}) - ${address}`
+  }
+}
+
 // === 快速填入方法 ===
+const cvsType = ref('UNIMART')
+
+const selectStore = () => {
+  // 使用 Form Post 方式開啟新視窗 (避免被瀏覽器擋下或跨網域問題)
+  // 目標: POST /orders/ecpay/map params={ logisticsSubType: cvsType.value }
+
+  const width = 800
+  const height = 600
+  const left = (window.screen.width - width) / 2
+  const top = (window.screen.height - height) / 2
+  const windowName = 'SelectStoreWindow'
+
+  // 1. 先開啟空白視窗
+  window.open('', windowName, `width=${width},height=${height},top=${top},left=${left}`)
+
+  // 2. 建立動態 Form 並送出
+  const form = document.createElement('form')
+  form.method = 'POST'
+  form.action = 'http://localhost:8080/orders/ecpay/map'
+  form.target = windowName // 指定送出到剛開的視窗
+
+  const input = document.createElement('input')
+  input.type = 'hidden'
+  input.name = 'logisticsSubType'
+  input.value = cvsType.value
+  form.appendChild(input)
+
+  document.body.appendChild(form)
+  form.submit()
+  document.body.removeChild(form)
+}
 
 const copySubscriberInfo = () => {
   form.value.recipientName = user.value.userName
   form.value.recipientPhone = user.value.userPhone
 }
-
-
 
 const submitOrder = async () => {
   // 驗證
@@ -337,19 +396,6 @@ const submitOrder = async () => {
     return
   }
 
-  if (form.value.paymentMethod === '信用卡') {
-    // 模擬信用卡流程
-    const result = await Swal.fire({
-      title: '進入付款頁面',
-      text: '模擬刷卡中...',
-      timer: 2000,
-      timerProgressBar: true,
-      didOpen: () => {
-        Swal.showLoading()
-      },
-    })
-  }
-
   isSubmitting.value = true
   try {
     const payload = {
@@ -358,22 +404,45 @@ const submitOrder = async () => {
       deliveryMethod: form.value.deliveryMethod,
       address: form.value.address,
       paymentMethod: form.value.paymentMethod,
-      couponId: selectedCouponId.value
+      couponId: selectedCouponId.value,
     }
 
     // 將前端訂單資料傳入後端執行新增
-	const response = await orderService.checkout(payload)
+    const response = await orderService.checkout(payload)
 
     if (response.data.success) {
-      Swal.fire({
-        icon: 'success',
-        title: '訂購成功',
-        text: '您的訂單已建立！',
-        showConfirmButton: false,
-        timer: 1500,
-      }).then(() => {
-        router.push({ name: 'bookStore' }) // 或成功頁面
-      })
+      if (response.data.ecpayParams) {
+        // ECPay 信用卡付款，建立 Form 並送出
+        const container = document.getElementById('ecpay-form-container')
+        container.innerHTML = ''
+
+        const formEl = document.createElement('form')
+        formEl.method = 'POST'
+        formEl.action = response.data.paymentUrl // https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5
+
+        const params = response.data.ecpayParams
+        for (const key in params) {
+          const input = document.createElement('input')
+          input.type = 'hidden'
+          input.name = key
+          input.value = params[key]
+          formEl.appendChild(input)
+        }
+
+        container.appendChild(formEl)
+        formEl.submit()
+      } else {
+        // 一般訂單 (貨到付款)
+        Swal.fire({
+          icon: 'success',
+          title: '訂購成功',
+          text: '您的訂單已建立！',
+          showConfirmButton: false,
+          timer: 1500,
+        }).then(() => {
+          router.push({ name: 'bookStore' }) // 或成功頁面
+        })
+      }
     } else {
       Swal.fire('訂購失敗', response.data.message, 'error')
     }
@@ -384,10 +453,6 @@ const submitOrder = async () => {
     isSubmitting.value = false
   }
 }
-
-onMounted(() => {
-  initData()
-})
 </script>
 
 <style scoped>
@@ -632,11 +697,11 @@ input[type='text'] {
   cursor: pointer;
 }
 .disabled-coupon {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background-color: #f5f5f5;
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f5f5f5;
 }
 .text-error {
-    color: #d33;
+  color: #d33;
 }
 </style>

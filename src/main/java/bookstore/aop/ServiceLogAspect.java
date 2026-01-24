@@ -72,18 +72,19 @@ public class ServiceLogAspect {
 		Object[] args = joinPoint.getArgs();
 		String argString = formatArgs(args);
 
-		log.info("USER:[{}] 呼叫方法:[{}] 參數:[{}]", username, methodName, argString);
+		log.info("呼叫方法:[{}] 參數:[{}]", methodName, argString);
+		log.info(" 呼叫方法:[{}] 參數:[{}]", methodName, argString);
 		Object result;
 
 		try {
 			result = joinPoint.proceed();
 
 			long executionTime = System.currentTimeMillis() - startTime;
-			log.info("User:[{}] 方法:[{}] 執行成功 | 耗時:{} ms | ", username, methodName, executionTime);
+			log.info("方法:[{}] 執行成功 | 耗時:{} ms | ", methodName, executionTime);
 		} catch (Exception ex) {
 			long executionTime = System.currentTimeMillis() - startTime;
 
-			log.warn("User:[{}] 方法:{} 執行失敗 | 耗時:{}ms | 異常訊息:{}", username, methodName, executionTime, ex.getMessage());
+			log.warn("方法:{} 執行失敗 | 耗時:{}ms | 異常訊息:{}", methodName, executionTime, ex.getMessage());
 
 			throw ex;
 		}

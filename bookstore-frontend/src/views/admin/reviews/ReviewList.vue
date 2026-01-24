@@ -51,7 +51,7 @@
         <button class="system-button add-button">新增評價</button>
       </router-link>
       <router-link to="/home">
-        <button class="system-button back-to-center-button">回到首頁</button>
+        <button class="system-button back-to-center-button">回到後台</button>
       </router-link>
     </div>
   </div>
@@ -94,7 +94,6 @@ const deleteReview = async (reviewId) => {
       throw new Error(`HTTP ${res.status}`)
     }
 
-    // 前端即時移除，不影響其他功能
     reviews.value = reviews.value.filter((review) => review.reviewId !== reviewId)
 
     alert('刪除成功')

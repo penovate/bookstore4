@@ -50,27 +50,28 @@ const router = createRouter({
           component: () => import('../views/admin/books/getBook.vue'),
         },
 
-        //進貨管理
-        // {
-        //   path: 'logs',
-        //   name: 'admin-logs',
-        //   component: () => import('../views/admin/logs/StockLogsHome.vue'),
-        // },
-        // {
-        //   path: 'logs/:id',
-        //   name: 'admin-logs-detail',
-        //   component: () => import('../views/admin/logs/StockLogDetail.vue'),
-        // },
-        // {
-        //   path: 'logs/insert',
-        //   name: 'admin-logs-insert',
-        //   component: () => import('../views/admin/logs/InsertStockLog.vue'),
-        // },
+        // 進貨管理
+        {
+          path: 'logs',
+          name: 'admin-logs',
+          component: () => import('../views/admin/logs/StockLogsHome.vue'),
+        },
+        {
+          path: 'logs/:id',
+          name: 'admin-logs-detail',
+          component: () => import('../views/admin/logs/StockLogDetail.vue'),
+        },
+        {
+          path: 'logs/insert',
+          name: 'admin-logs-insert',
+          component: () => import('../views/admin/logs/InsertStockLog.vue'),
+        },
         // 2. 用戶管理
         {
           path: 'users',
           name: 'userList',
           component: () => import('../views/admin/users/UserList.vue'),
+          meta: { title: '會員管理列表' },
         },
         {
           path: 'users/get/:id',
@@ -119,16 +120,16 @@ const router = createRouter({
           name: 'orderDetail-admin',
           component: () => import('../views/admin/orders/OrderDetail.vue'),
         },
-        // {
-        //   path: 'logs/update/:id',
-        //   name: 'admin-logs-update',
-        //   component: () => import('../views/admin/logs/updateLogDetail.vue'),
-        // },
-        // {
-        //   path: 'reports',
-        //   name: 'admin-reports',
-        //   component: () => import('../views/admin/logs/SalesData.vue'),
-        // },
+        {
+          path: 'logs/update/:id',
+          name: 'admin-logs-update',
+          component: () => import('../views/admin/logs/updateLogDetail.vue'),
+        },
+        {
+          path: 'reports',
+          name: 'admin-reports',
+          component: () => import('../views/admin/logs/SalesData.vue'),
+        },
         {
           path: 'bookclubs',
           name: 'admin-bookclubs',
@@ -149,12 +150,12 @@ const router = createRouter({
           name: 'orderItemUpdate',
           component: () => import('../views/admin/orders/OrderItemUpdate.vue'),
         },
+        // 4.評價管理
         {
           path: 'reviews',
           name: 'admin-reviews',
           component: () => import('../views/admin/reviews/ReviewList.vue'),
         },
-        // 暫用開始行
         {
           path: 'reviews/:id',
           name: 'review-detail',
@@ -170,7 +171,6 @@ const router = createRouter({
           name: 'review-update',
           component: () => import('../views/admin/reviews/ReviewUpdate.vue'),
         },
-        // 暫用結束行
       ],
     },
     // --- 前台網站區域 ---
@@ -182,6 +182,26 @@ const router = createRouter({
           path: 'login',
           name: 'user-login',
           component: () => import('../views/public/user/UserLogin.vue'),
+        },
+        {
+          path: 'profile',
+          name: 'user-profile',
+          component: () => import('../views/public/user/UserProfile.vue'),
+        },
+        {
+          path: 'register',
+          name: 'user-register',
+          component: () => import('../views/public/user/UserRegister.vue'),
+        },
+        {
+          path: 'forgetpassword',
+          name: 'user-forget-password',
+          component: () => import('../views/public/user/UserForgetPwd.vue')
+        },
+        {
+          path: 'reset-password-by-email',
+          name: 'user-reset-password-by-email',
+          component: () => import('../views/public/user/ResetPasswordByEmail.vue'),
         },
         {
           path: 'books',
@@ -237,6 +257,11 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('userToken')
   const role = localStorage.getItem('userRole')
+  const pageTitle = to.meta.title
+  document.title = pageTitle
+    ? `${pageTitle} | 
+  網路書店`
+    : '網路書店'
 
   const isAdminRoute = to.path.startsWith('/dev/admin') || to.name === 'home'
 

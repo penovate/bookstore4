@@ -13,6 +13,8 @@ import bookstore.bean.UserBean;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserBean, Integer> {
+	
+	// 後台會員系統
 	UserBean findByEmailAndUserPwd(String email, String userPwd);
 	List<UserBean> findByUserNameContainingAndUserType(String userName, Integer userType);
 	List<UserBean> findByUserNameContaining(String userName);
@@ -36,4 +38,16 @@ public interface UserRepository extends JpaRepository<UserBean, Integer> {
 	boolean existsByPhoneNumAndUserIdNot(String phoneNum, Integer userId);
 	boolean existsByEmail(String email);
 	boolean existsByPhoneNum(String phoneNum);
+	
+	// 前台書店系統
+	
+	UserBean findByEmail(String email);
+	
+	@Query("SELECT u FROM UserBean u WHERE u.email = :email AND FUNCTION('FORMAT', u.birth, 'yyyy-MM-dd') = :birthStr")
+	UserBean findByEmailAndBirthString(
+	    @Param("email") String email, 
+	    @Param("birthStr") String birth
+	);
+	
+	
 }

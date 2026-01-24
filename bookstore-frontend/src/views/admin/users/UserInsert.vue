@@ -230,13 +230,11 @@ const checkEmailUnique = async () => {
 }
 
 const checkPhoneUnique = async () => {
-  // 如果沒填，清空紅字
   if (!formData.phoneNum) {
     phoneError.value = ''
     return
   }
 
-  // 格式正確才發 API 檢查重複
   if (/^09\d{8}$/.test(formData.phoneNum)) {
     try {
       const res = await axios.get('http://localhost:8080/api/users/check-unique', {

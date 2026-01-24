@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +50,12 @@ public class StockLogController {
 	public ResponseEntity<StockLogBean> returnStockLog(@RequestBody StockLogBean stockLogBean) {
 		StockLogBean result = stockLogService.returnStockLog(stockLogBean);
 		return ResponseEntity.ok(result);
+	}
+	@ResponseBody
+	@DeleteMapping("/delete/{logId}")
+	public ResponseEntity<String> deleteStockLog(@PathVariable Integer logId){
+		stockLogService.deleteStockLog(logId);
+		return ResponseEntity.noContent().build();
 	}
 
 	@ResponseBody

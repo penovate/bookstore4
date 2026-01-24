@@ -3,9 +3,11 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import { useUserStore } from '@/stores/userStore'
 
 const router = useRouter()
 const drawer = ref(true)
+const userStore = useUserStore()
 
 // 合併後的選單：補齊了訂單管理路徑，並採用更直觀的圖示
 const items = ref([
@@ -21,7 +23,7 @@ const items = ref([
       { title: '書籍列表', to: '/dev/admin/books', icon: 'mdi-format-list-bulleted' },
       { title: '進退貨管理', to: '/dev/admin/logs', icon: 'mdi-swap-horizontal-bold' },
       { title: '數據報表分析', to: '/dev/admin/reports', icon: 'mdi-chart-bar' },
-    ]
+    ],
   },
   {
     title: '優惠券管理',
@@ -82,10 +84,19 @@ const handleLogout = () => {
 <template>
   <v-layout class="rounded rounded-md">
     <v-navigation-drawer v-model="drawer" color="primary">
-      <v-list-item title="BookStore" subtitle="後台管理系統" class="py-4" to="/home">
+      <v-list-item class="py-4" to="/home">
         <template v-slot:prepend>
-          <v-icon icon="mdi-leaf" class="me-2"></v-icon>
+          <v-avatar color="accent" size="32" class="me-2">
+            <span class="text-white">{{ userStore.name.charAt(0) }}</span>
+          </v-avatar>
         </template>
+
+        <v-list-item-title class="font-weight-bold">
+          {{ userStore.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle>
+          {{ userStore.role === 'SUPER_ADMIN' ? '超級管理員' : '一般管理員' }}
+        </v-list-item-subtitle>
       </v-list-item>
 
       <v-divider></v-divider>
@@ -95,11 +106,22 @@ const handleLogout = () => {
           <!-- 子選單 -->
           <v-list-group v-if="item.children" :value="item.title">
             <template v-slot:activator="{ props }">
-              <v-list-item v-bind="props" :prepend-icon="item.icon" :title="item.title"></v-list-item>
+              <v-list-item
+                v-bind="props"
+                :prepend-icon="item.icon"
+                :title="item.title"
+              ></v-list-item>
             </template>
 
-            <v-list-item v-for="(child, k) in item.children" :key="k" :title="child.title" :prepend-icon="child.icon"
-              :to="child.to" :value="child.title" color="accent"></v-list-item>
+            <v-list-item
+              v-for="(child, k) in item.children"
+              :key="k"
+              :title="child.title"
+              :prepend-icon="child.icon"
+              :to="child.to"
+              :value="child.title"
+              color="accent"
+            ></v-list-item>
           </v-list-group>
 
           <!-- 一般選單 -->
@@ -111,12 +133,21 @@ const handleLogout = () => {
 
       <template v-slot:append>
         <div class="pa-2">
-          <v-btn block color="accent" variant="tonal" prepend-icon="mdi-storefront-outline" class="mb-2" style="
+          <v-btn
+            block
+            color="accent"
+            variant="tonal"
+            prepend-icon="mdi-storefront-outline"
+            class="mb-2"
+            style="
               color: #ffffff !important;
               font-weight: 500 !important;
               background-color: rgba(var(--v-theme-accent), 0.3) !important;
               filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.2));
-            " href="/dev/user/home" target="_blank">
+            "
+            href="/dev/user/home"
+            target="_blank"
+          >
             前台網頁
           </v-btn>
 
@@ -128,14 +159,16 @@ const handleLogout = () => {
     </v-navigation-drawer>
 
     <v-app-bar elevation="0" class="bg-background" density="compact">
-      <v-app-bar-nav-icon variant="text" color="primary" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon
+        variant="text"
+        color="primary"
+        @click.stop="drawer = !drawer"
+      ></v-app-bar-nav-icon>
 
       <v-spacer></v-spacer>
 
       <v-btn icon="mdi-bell-outline" color="secondary" variant="text"></v-btn>
-      <v-avatar class="mx-2" size="32" color="secondary">
-        <span class="text-white text-caption">Admin</span>
-      </v-avatar>
+
     </v-app-bar>
 
     <v-main class="bg-background" style="min-height: 100vh">

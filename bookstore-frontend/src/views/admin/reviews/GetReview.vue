@@ -42,7 +42,6 @@
       </tbody>
     </table>
 
-    <!-- ⭐ 你要求的按鈕 -->
     <div style="margin-top: 20px">
       <button class="system-button back-button" @click="goBack">回到所有評價</button>
     </div>

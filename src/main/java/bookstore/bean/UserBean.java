@@ -26,6 +26,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "users")
@@ -95,6 +96,7 @@ public class UserBean implements java.io.Serializable {
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	@JsonIgnore
 	@Builder.Default
+	@ToString.Exclude
 	private List<ReviewBean> reviews = new ArrayList<>();
 //
 	@OneToMany(mappedBy = "userBean", fetch = FetchType.LAZY)

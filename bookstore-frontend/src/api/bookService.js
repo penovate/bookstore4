@@ -7,6 +7,20 @@ const apiClient = axios.create({
     withCredentials: true, // 保持 Session
 });
 
+// Request interceptor: 自動帶入 JWT Token
+apiClient.interceptors.request.use(
+    config => {
+        const token = localStorage.getItem('userToken');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    error => {
+        return Promise.reject(error);
+    }
+);
+
 // 攔截器：統一處理後端 GlobalExceptionHandler 回傳的格式
 apiClient.interceptors.response.use(
     response => response,

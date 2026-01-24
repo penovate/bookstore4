@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +32,7 @@ public class UserController {
 	private final UsersService userService;
 	private final JwtUtil jwtUtil;
 	private final UserLogService userLogService;
+	private final PasswordEncoder passwordEncoder;
 	
 	@PostMapping("/api/login")
     @ResponseBody 
@@ -46,25 +48,23 @@ public class UserController {
             return response;
         }
         
-        UserBean user = userService.login(email, password);
+        UserBean user = userService.findByEmail(email);
         
-        if (user != null) {
+        
+        if (user != null && passwordEncoder.matches(password, user.getUserPwd())) {
             if (user.getStatus() != null && user.getStatus().equals(2)) {
                 response.put("success", false);
                 response.put("message", "您的帳號已被停權，請聯繫管理員！");
                 return response;
             }
             
-            String role;
-            Integer type = user.getUserType();
-            
-            if (type == 0) {
-            	role = "SUPER_ADMIN";
-            } else if (type == 1) {
-            	role = "ADMIN";
-            } else {
-            	role = "USER";
+            if (user.getUserType() == 2) {
+            	response.put("success", false);
+            	response.put("message", "您無權進入後台系統！");
+            	return response;
             }
+            
+            String role = (user.getUserType() == 0) ? "SUPER_ADMIN" : "ADMIN";
             
             String token = "";
 			try {
@@ -141,7 +141,7 @@ public class UserController {
 	    
 	    if (user.getUserType() != null && user.getUserType() == 2) {
 	        response.put("success", false);
-	        response.put("message", "新增失敗！後台系統禁止直接建立一般會員，請引導使用者至前台註冊。");
+	        response.put("message", "新增失敗！後台系統禁止直接建立一般會員，請引導使用者至前台註冊！");
 	        return response;
 	    }
 
@@ -151,9 +151,9 @@ public class UserController {
 
 	    user.setStatus(1);
 	    user.setPoints(0);
-	    if (user.getUserType() == null) {
-	        user.setUserType(1);
-	    }
+	    
+	    String encodedPassword = passwordEncoder.encode(user.getUserPwd());
+	    user.setUserPwd(encodedPassword);
 
 	    try {
 	        userService.saveUser(user);
@@ -278,8 +278,6 @@ public class UserController {
 	            }
 	        }
 	        
-	        
-	        
 	        StringBuilder diff = new StringBuilder();
 	        
 	        if (!Objects.equals(existingUser.getEmail(), user.getEmail())) {
@@ -287,6 +285,8 @@ public class UserController {
 	        }
 	        
 	        if(user.getUserPwd() != null && !user.getUserPwd().trim().isEmpty()) {
+	        	String encodedPwd = passwordEncoder.encode(user.getUserPwd().trim());
+	        	user.setUserPwd(encodedPwd);
 	        	diff.append("密碼變更｜");
 	        } else {
 	        	user.setUserPwd(existingUser.getUserPwd());

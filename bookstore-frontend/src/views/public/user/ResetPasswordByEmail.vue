@@ -3,9 +3,9 @@
     <v-card width="100%" max-width="500" class="mx-auto pa-10 rounded-xl forest-card">
       <v-card-item class="text-center mb-6">
         <v-icon icon="mdi-email-check-outline" size="48" color="primary" class="mb-2"></v-icon>
-        <v-card-title class="text-h4 font-weight-bold text-primary">驗證碼確認</v-card-title>
+        <v-card-title class="text-h4 font-weight-bold text-primary mb-6">驗證碼確認</v-card-title>
         <p class="text-subtitle-1 text-grey mt-2">
-          驗證碼已寄送到您的信箱：<strong class="text-primary">{{ userEmail }}</strong>
+          驗證碼已寄送到您的信箱：<br> <strong class="text-primary">{{ userEmail }}</strong>
         </p>
       </v-card-item>
 
@@ -147,7 +147,7 @@ const handleVerifyCode = async () => {
         confirmButtonColor: '#2E5C43'
       }).then(() => {
         router.push({ 
-          path: '/set-new-password', 
+          path: '/dev/user/set-new-password', 
           query: { userId: userId.value, resetToken: response.data.resetToken } 
         })
       })
@@ -161,10 +161,12 @@ const handleVerifyCode = async () => {
 }
 
 const redirectToPhoneVerification = () => {
-  clearInterval(countdownTimer) 
-  router.push({ 
-    path: '/forgot-password-phone', 
-    query: { userId: userId.value } 
+  Swal.fire({
+    title: '系統通知',
+    text: '簡訊驗證功能目前進行系統維護中，請繼續使用 Email 驗證完成密碼修改！',
+    icon: 'info',
+    confirmButtonColor: '#2E5C43',
+    confirmButtonText: '我知道了'
   }) 
 }
 

@@ -1,37 +1,49 @@
 <template>
   <v-container class="fill-height d-flex justify-center align-center py-12" fluid>
-    <v-card width="100%" max-width="500" class="mx-auto pa-10 rounded-xl forest-card">
-      <v-card-item class="text-center mb-6">
-        <v-icon icon="mdi-lock-reset" size="48" color="primary" class="mb-2"></v-icon>
+    <v-card width="100%" max-width="550" class="mx-auto pa-12 rounded-xl forest-card shadow-lg">
+      
+      <v-card-item class="text-center mb-8">
+        <v-icon icon="mdi-lock-reset" size="56" color="primary" class="mb-4"></v-icon>
         <v-card-title class="text-h4 font-weight-bold text-primary">重設密碼</v-card-title>
-        <p class="text-subtitle-1 text-grey mt-2">請選擇驗證方式以重核身分</p>
+        <p class="text-subtitle-1 text-grey-darken-1 mt-2">請選擇驗證方式以重核身分</p>
       </v-card-item>
 
-      <v-tabs v-model="verifyMethod" color="primary" grow class="mb-6">
+      <v-tabs v-model="verifyMethod" color="primary" grow class="mb-10" border-bottom>
         <v-tab value="email"><v-icon start>mdi-email</v-icon>電子郵件</v-tab>
         <v-tab value="phone"><v-icon start>mdi-phone</v-icon>手機號碼</v-tab>
       </v-tabs>
 
       <v-form ref="forgotFormRef" @submit.prevent="handleVerify">
-        <v-window v-model="verifyMethod">
+        <v-window 
+          v-model="verifyMethod" 
+          class="py-4" 
+          style="overflow: hidden;" 
+          :touch="false"
+        > 
           <v-window-item value="email">
             <v-text-field
               v-model="formData.email"
-              label="註冊電子信箱"
-              prepend-inner-icon="mdi-email-outline"
+              label="電子信箱"
               variant="outlined"
-              :rules="verifyMethod === 'email' ? [(v) => !!v || 'Email 為必填'] : []"
+              prepend-inner-icon="mdi-email-outline" 
+              class="mb-2"
+              persistent-placeholder
+              persistent-hint
+              :rules="verifyMethod === 'email' ? [v => !!v || 'Email 為必填', v => /.+@.+\..+/.test(v) || 'E-mail 格式不正確'] : []"
             ></v-text-field>
           </v-window-item>
 
           <v-window-item value="phone">
             <v-text-field
               v-model="formData.phoneNum"
-              label="註冊手機號碼"
+              label="手機號碼"
               prepend-inner-icon="mdi-phone-outline"
               variant="outlined"
               maxlength="10"
-              :rules="verifyMethod === 'phone' ? [(v) => !!v || '手機號碼為必填'] : []"
+              class="mb-2"
+              persistent-placeholder
+              persistent-hint
+              :rules="verifyMethod === 'phone' ? [v => !!v || '手機號碼為必填', v => v.length === 10 || '手機格式不正確'] : []"
             ></v-text-field>
           </v-window-item>
         </v-window>
@@ -42,26 +54,41 @@
           type="date"
           prepend-inner-icon="mdi-calendar-range"
           variant="outlined"
-          class="mt-2"
+          class="mb-8" 
+          persistent-placeholder
           :rules="[(v) => !!v || '生日為必填']"
         ></v-text-field>
 
-        <v-row class="mt-6">
+        <v-row class="mt-4">
           <v-col cols="6">
-            <v-btn variant="outlined" block height="50" color="grey" @click="resetForm">
+            <v-btn variant="outlined" block height="54" color="grey-darken-1" @click="resetForm" class="rounded-lg">
               清除重填
             </v-btn>
           </v-col>
           <v-col cols="6">
-            <v-btn type="submit" block height="50" color="primary" class="font-weight-bold">
-              下一步
+            <v-btn type="submit" block height="54" color="primary" class="font-weight-bold rounded-lg shadow-sm">
+              送出
             </v-btn>
           </v-col>
         </v-row>
 
-        <v-btn variant="text" block class="mt-4" @click="router.push('/dev/user/login')">
+        <v-btn variant="text" block class="mt-6 text-grey-darken-1" @click="router.push('/dev/user/login')">
           返回登入
         </v-btn>
+
+        <div class="mt-10">
+          <v-divider class="mb-4"></v-divider>
+          <v-btn
+            variant="text"
+            block
+            color="grey-darken-1"
+            class="text-none font-weight-regular demo-btn"
+            prepend-icon="mdi-auto-fix"
+            @click="fillDemoData"
+          >
+            一鍵輸入
+          </v-btn>
+        </div>
       </v-form>
     </v-card>
   </v-container>
@@ -96,12 +123,22 @@ const handleVerify = async () => {
 
   const payload = {
     birth: formData.birth,
+    method: verifyMethod.value 
   }
 
   if (verifyMethod.value === 'email') {
     payload.email = formData.email
   } else {
-    Swal.fire('提醒', '手機驗證功能開發中，請先使用 Email 驗證', 'info')
+    payload.phoneNum = formData.phoneNum
+  }
+
+  if (verifyMethod.value === 'phone') {
+    Swal.fire({
+      title: '系統通知',
+      text: '手機簡訊驗證功能目前進行系統維護中，請改用電子郵件驗證。',
+      icon: 'info',
+      confirmButtonColor: '#2E5C43'
+    })
     return
   }
 
@@ -111,24 +148,52 @@ const handleVerify = async () => {
     if (response.data.success) {
       Swal.fire({
         icon: 'success',
-        title: '驗證成功',
-        text: '請設定您的新密碼',
+        title: '身分驗證成功',
+        text: '請進行下一步驗證',
         confirmButtonColor: '#2E5C43',
-        }).then(() => {
-        router.push({
-          path: '/dev/user/reset-password-by-email',
-          query: {
-            userId: response.data.userId,
-            email: formData.email,
-          },
-        })
+      }).then(() => {
+        if (verifyMethod.value === 'email') {
+          router.push({
+            path: '/dev/user/reset-password-by-email',
+            query: { userId: response.data.userId, email: formData.email }
+          })
+        } else {
+          router.push({
+            path: '/dev/user/reset-password-by-phone',
+            query: { userId: response.data.userId, phone: formData.phoneNum }
+          })
+        }
       })
     } else {
-      Swal.fire('驗證失敗', response.data.message || '資料不匹配，請重新檢查', 'error')
+      Swal.fire('驗證失敗', response.data.message || '資料不匹配', 'error')
     }
   } catch (error) {
-    console.error(error)
-    Swal.fire('錯誤', '伺服器連線異常，請稍後再試', 'error')
+    Swal.fire('錯誤', '伺服器連線異常', 'error')
   }
 }
+
+const fillDemoData = () => {
+  verifyMethod.value = 'email'
+  formData.email = 'onlinebookstoreforjava@gmail.com'
+  formData.birth = '2001-01-24'
+}
 </script>
+
+<style scoped>
+.forest-card {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08) !important;
+}
+
+:deep(.v-window) {
+  overflow: hidden !important; 
+}
+
+:deep(.v-window__container) {
+  display: flex !important; 
+  transition: transform 0.3s ease-in-out !important;
+}
+
+:deep(.v-field__outline) {
+  --v-field-border-width: 1.5px;
+}
+</style>

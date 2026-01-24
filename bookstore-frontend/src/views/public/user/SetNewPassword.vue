@@ -73,13 +73,13 @@ const confirmReset = async () => {
   if (!valid) return
 
   const result = await Swal.fire({
-    title: '確定重設密碼？',
+    title: '確認修改密碼？',
     text: "重設後請使用新密碼重新登入",
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#2E5C43',
-    cancelButtonColor: '#d33',
-    confirmButtonText: '確定，我要修改',
+    cancelButtonColor: '#aaa',
+    confirmButtonText: '確定',
     cancelButtonText: '取消'
   })
 

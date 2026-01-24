@@ -204,6 +204,11 @@ const router = createRouter({
           component: () => import('../views/public/user/ResetPasswordByEmail.vue'),
         },
         {
+          path: 'set-new-password',
+          name: 'set-new-password',
+          component: () => import('../views/public/user/SetNewPassword.vue'),
+        },
+        {
           path: 'books',
           name: 'user-books',
           component: () => import('../views/public/books/UserBookList.vue'),

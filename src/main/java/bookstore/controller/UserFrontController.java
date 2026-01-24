@@ -288,6 +288,8 @@ public class UserFrontController {
 				user.setUserPwd(passwordEncoder.encode(newPassword));
 				userService.saveUser(user);
 				
+				emailService.sendResetSuccessNotification(user.getEmail());
+				
 				session.removeAttribute("resetToken_" + userId);
 				
 				response.put("success", true);

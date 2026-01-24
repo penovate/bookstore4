@@ -1,6 +1,7 @@
 package bookstore.service;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -517,6 +518,8 @@ public class OrderService {
 
 		if ("已付款".equals(paymentStatus)) {
 			order.setOrderStatus("待出貨"); // 假設付款成功後轉為待出貨
+			order.setPaidAt(new Timestamp(System.currentTimeMillis()));
+			order.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 		}
 
 		ordersRepository.save(order);

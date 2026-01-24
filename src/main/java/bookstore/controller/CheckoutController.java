@@ -78,8 +78,10 @@ public class CheckoutController {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 String tradeDate = sdf.format(order.getCreatedAt());
 
-                // 產生 MerchantTradeNo (長度需在 20 字元內)，使用結帳當前的時間戳，確保不會重複造成無法結帳
-                String merchantTradeNo = "Test" + System.currentTimeMillis();
+                // 產生 MerchantTradeNo (長度需在 20 字元內)
+                // 格式: Book + OrderID + T + TimeStamp(8碼) ex: Book105T12345678
+                // 這樣確保長度不超過 20 且能解析 OrderID
+                String merchantTradeNo = "B" + order.getOrderId() + "T" + (System.currentTimeMillis() % 100000000);
 
                 // 設定回傳網址 (本地測試需透過 ngrok 改為公開網址)
                 String returnURL = "https://unpreferable-unmeteorologic-ruthann.ngrok-free.dev/orders/ecpay/return";
@@ -111,20 +113,32 @@ public class CheckoutController {
     @PostMapping("/ecpay/return")
     @ResponseBody
     public String ecpayReturn(@RequestParam Map<String, String> params) {
+        System.out.println("DEBUG: ECPay Return Params: " + params);
+
         if (!ecPayService.verifyCheckMacValue(params)) {
+            System.out.println("DEBUG: CheckMacValue Verification Failed");
             return "0|CheckMacValue Error";
         }
 
         if ("1".equals(params.get("RtnCode"))) {
             String merchantTradeNo = params.get("MerchantTradeNo");
+            System.out.println("DEBUG: MerchantTradeNo: " + merchantTradeNo);
             try {
                 // 解析 OrderId
-                int tIndex = merchantTradeNo.indexOf('T');
-                Integer orderId = Integer.parseInt(merchantTradeNo.substring(3, tIndex));
+                // 格式: B + OrderID + T + TimeStamp
+                int tIndex = merchantTradeNo.indexOf('T', 1); // 從第1個字元後開始找 T (避開開頭的B)
+                if (tIndex == -1) {
+                    System.out.println("DEBUG: Cannot find 'T' separator");
+                    return "0|Order Parsing Error";
+                }
+                Integer orderId = Integer.parseInt(merchantTradeNo.substring(1, tIndex)); // 從 index 1 開始 (避開 'B')
+                System.out.println("DEBUG: Parsed OrderId: " + orderId);
+
                 orderService.updatePaymentStatus(orderId, "已付款");
                 return "1|OK";
             } catch (Exception e) {
-                return "0|Order Parsing Error";
+                e.printStackTrace();
+                return "0|Order Parsing Error: " + e.getMessage();
             }
         }
         return "1|OK";

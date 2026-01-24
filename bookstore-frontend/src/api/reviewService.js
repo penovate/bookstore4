@@ -21,6 +21,11 @@ export default {
   // 4. 刪除評論
   deleteReview(id) {
     return axios.delete(`${API_URL}/${id}`)
+  },
+
+  // 取得書籍列表與評價統計
+  getBooksWithStats() {
+    return axios.get(`${API_URL}/books-stats`)
   }
 }
 

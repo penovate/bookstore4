@@ -1,156 +1,234 @@
 <template>
-  <div class="center-body">
-    <div align="center">
-      <h2>所有評價</h2>
+  <v-container class="review-container">
+    <v-row class="header-section" align="center">
+      <v-col>
+        <v-btn 
+          variant="text" 
+          prepend-icon="mdi-arrow-left"
+          @click="router.push({ name: 'admin-reviews' })"
+          class="back-btn"
+        >
+          返回評價管理
+        </v-btn>
+        
+        <div class="title-wrapper">
+            <h2 class="page-title">評價詳細列表</h2>
+            <span v-if="currentBookId" class="sub-info">
+                (目前查看書籍 ID: {{ currentBookId }})
+            </span>
+        </div>
+      </v-col>
+    </v-row>
 
-      <table border="1">
-        <thead>
-          <tr>
-            <th class="status-cell">評價編號</th>
-            <th class="status-cell">會員編號</th>
-            <th class="status-cell">會員名稱</th>
-            <th class="status-cell">書本編號</th>
-            <th>書本名稱</th>
-            <th class="status-cell">評分</th>
-            <th>評價</th>
-            <th>創建日期</th>
-            <th>修改資料</th>
-            <th>刪除資料</th>
-          </tr>
-        </thead>
+    <v-card class="table-card">
+        <v-data-table 
+            :headers="headers" 
+            :items="reviews" 
+            :loading="loading" 
+            item-value="reviewId"
+            class="forest-table"
+            hover
+        >
+            <template v-slot:item.rating="{ item }">
+                <v-rating
+                    :model-value="item.rating"
+                    color="amber"
+                    density="compact"
+                    half-increments
+                    readonly
+                    size="small"
+                ></v-rating>
+            </template>
 
-        <tbody>
-          <tr v-for="review in reviews" :key="review.reviewId">
-            <td>
-              <router-link :to="`/dev/admin/reviews/${review.reviewId}`">
-                {{ review.reviewId }}
-              </router-link>
-            </td>
-            <td>{{ review.userId }}</td>
-            <td>{{ review.userName }}</td>
-            <td>{{ review.bookId }}</td>
-            <td>{{ review.bookName }}</td>
-            <td>{{ review.rating }}</td>
-            <td>{{ review.comment }}</td>
-            <td>{{ review.createdAt }}</td>
-            <td>
-              <router-link :to="`/dev/admin/reviews/${review.reviewId}/update`">
-                <button class="update-button">修改</button>
-              </router-link>
-            </td>
-            <td>
-              <button class="delete-button" @click="deleteReview(review.reviewId)">刪除</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            <template v-slot:item.status="{ item }">
+                <v-chip 
+                    :color="getStatusColor(item.status)" 
+                    size="small" 
+                    class="status-chip"
+                >
+                    {{ item.status }}
+                </v-chip>
+            </template>
 
-      <h3>共 {{ reviews.length }} 筆評價資料</h3>
+            <template v-slot:item.actions="{ item }">
+                <v-btn 
+                    icon 
+                    size="small" 
+                    variant="text"
+                    class="action-btn"
+                    @click="console.log('查看/編輯', item.reviewId)"
+                >
+                    <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+            </template>
 
-      <router-link to="/dev/admin/reviews/insert">
-        <button class="system-button add-button">新增評價</button>
-      </router-link>
-      <router-link to="/home">
-        <button class="system-button back-to-center-button">回到後台</button>
-      </router-link>
-    </div>
-  </div>
+            <template v-slot:no-data>
+                <div class="no-data-text">目前沒有評價資料</div>
+            </template>
+        </v-data-table>
+    </v-card>
+  </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-const reviews = ref([])
-const error = ref(null)
-const loading = ref(true)
+const route = useRoute();
+const router = useRouter();
+const reviews = ref([]);
+const loading = ref(false);
 
-onMounted(async () => {
-  try {
-    const res = await fetch('/api/public/admin/reviews')
+// 判斷目前是查看哪本書
+const currentBookId = ref(route.params.bookId); 
 
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`)
-    }
+// 定義表格欄位
+const headers = [
+    { title: '評價 ID', key: 'reviewId', align: 'start', sortable: true },
+    { title: '會員 ID', key: 'memberId', align: 'start', sortable: true },
+    { title: '評分', key: 'rating', align: 'center', sortable: true },
+    { title: '評論內容', key: 'comment', align: 'start', sortable: false, width: '40%' },
+    { title: '評價時間', key: 'reviewDate', align: 'center', sortable: true },
+    { title: '狀態', key: 'status', align: 'center', sortable: true },
+    { title: '操作', key: 'actions', align: 'center', sortable: false },
+];
 
-    reviews.value = await res.json()
-  } catch (err) {
-    console.error('載入評價失敗:', err)
-    error.value = err.message
-  } finally {
-    loading.value = false
+// 顏色判斷
+const getStatusColor = (status) => {
+    return status === '顯示中' ? 'success' : 'grey';
+};
+
+// 讀取資料函式
+const loadReviews = async () => {
+  loading.value = true;
+
+  setTimeout(() => { 
+      reviews.value = [
+          { 
+              reviewId: 101, 
+              memberId: 'user001', 
+              rating: 5, 
+              comment: '這本書寫得太好了！受益良多，對於初學者來說非常友善。', 
+              reviewDate: '2026-01-20', 
+              status: '顯示中' 
+          },
+          { 
+              reviewId: 102, 
+              memberId: 'user002', 
+              rating: 3, 
+              comment: '內容還可以，但範例有點舊，希望能更新到最新版。', 
+              reviewDate: '2026-01-21', 
+              status: '隱藏' 
+          },
+          { 
+              reviewId: 103, 
+              memberId: 'testUser', 
+              rating: 1, 
+              comment: '書本有缺頁，運送過程好像撞到了。', 
+              reviewDate: '2026-01-22', 
+              status: '顯示中' 
+          }
+      ];
+      loading.value = false;
+  }, 500);
+};
+
+// 監聽路由變化
+watch(
+  () => route.params.bookId,
+  (newId) => {
+    currentBookId.value = newId;
+    loadReviews();
   }
-})
+);
 
-const deleteReview = async (reviewId) => {
-  const confirmed = confirm('確定要刪除這筆評價嗎？')
-  if (!confirmed) return
-
-  try {
-    const res = await fetch(`/api/public/admin/reviews/${reviewId}`, {
-      method: 'DELETE',
-    })
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`)
-    }
-
-    reviews.value = reviews.value.filter((review) => review.reviewId !== reviewId)
-
-    alert('刪除成功')
-  } catch (err) {
-    console.error('刪除評價失敗:', err)
-    alert('刪除失敗，請查看後端或 console')
-  }
-}
+onMounted(() => {
+  loadReviews();
+});
 </script>
 
-<style scoped>
-.center-body {
-  font-family: '微軟正黑體', 'Arial', sans-serif;
-  background-color: #fcf8f0;
-  color: #4a4a4a;
-  padding: 40px 0;
-  min-height: 100vh;
+<style scoped lang="scss">
+/* 變數定義：保持配色一致 */
+$primary-color: #2E5C43;
+$bg-color-header: #F9FBE7;
+$bg-color-hover: #F1F8E9;
+$bg-color-even: #FAFAFA;
+$text-grey: #757575;
+
+.review-container {
+    /* 如果需要可以加 padding */
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+/* 標題與按鈕區塊 */
+.header-section {
+    margin-bottom: 1.5rem; /* 取代 mb-4 */
 }
 
-th,
-td {
-  border: 1px solid #e0d9c9;
-  padding: 12px 10px;
+.back-btn {
+    color: $text-grey !important;
+    margin-bottom: 0.5rem; /* 取代 mb-2 */
 }
 
-th {
-  background-color: #e8e4dc;
+.title-wrapper {
+    /* 控制標題跟 ID 的對齊 */
 }
 
-tr:nth-child(even) {
-  background-color: #f7f3f0;
+.page-title {
+    display: inline-block; /* 取代 d-inline-block */
+    font-size: 2.125rem; /* 對應 text-h4 */
+    font-weight: 700; /* 對應 font-weight-bold */
+    color: $primary-color; /* 對應 text-primary */
+    line-height: 1.2;
 }
 
-.update-button {
-  background-color: #9fb89e;
+.sub-info {
+    font-size: 1rem; /* 對應 text-subtitle-1 */
+    color: $text-grey; /* 對應 text-grey-darken-1 */
+    margin-left: 0.75rem; /* 取代 ml-3 */
 }
 
-.delete-button {
-  background-color: #d89696;
-  color: white;
+/* 表格區塊 */
+.table-card {
+    border-radius: 8px; /* 對應 rounded-lg */
+    border-top: 4px solid $primary-color !important; /* 對應 border-t-4 */
+    /* elevation-2 在 Vuetify 比較難完全用 CSS 模擬，建議保留或用 box-shadow */
+    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 
+                0px 2px 2px 0px rgba(0, 0, 0, 0.14), 
+                0px 1px 5px 0px rgba(0, 0, 0, 0.12); 
 }
 
-.system-button {
-  margin: 10px;
+/* Data Table 內部樣式覆寫 */
+.forest-table {
+    :deep(.v-data-table-header) {
+        background-color: $bg-color-header !important;
+    }
+
+    :deep(.v-data-table-header__content) {
+        font-weight: bold;
+        color: $primary-color;
+        font-size: 1rem;
+    }
+
+    :deep(.v-data-table__tr:nth-child(even)) {
+        background-color: $bg-color-even;
+    }
+
+    :deep(.v-data-table__tr:hover) {
+        background-color: $bg-color-hover !important;
+    }
 }
 
-.add-button {
-  background-color: #a07d58;
-  color: white;
+.status-chip {
+    font-weight: 700;
 }
 
-.back-to-center-button {
-  background-color: #e8e4dc;
+.action-btn {
+    color: $primary-color !important;
+}
+
+.no-data-text {
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+    color: $text-grey;
 }
 </style>

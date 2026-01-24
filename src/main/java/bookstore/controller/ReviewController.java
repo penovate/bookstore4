@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import bookstore.bean.BooksBean;
 import bookstore.bean.ReviewBean;
+import bookstore.dto.ReviewList;
 import bookstore.service.ReviewsService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,9 +29,7 @@ public class ReviewController {
 	@Autowired
 	private ReviewsService reviewsService;
 
-	// =================================================
 	// 【原 GetAllReviews.java】
-	// =================================================
 	@GetMapping("/GetAllReviews")
 	public String getAllReviews(Model model) {
 
@@ -45,9 +44,7 @@ public class ReviewController {
 		return getAllReviews(model);
 	}
 
-	// =================================================
 	// 【原 GetReview.java】
-	// =================================================
 	@GetMapping("/GetReview")
 	public String getReview(HttpServletRequest request, Model model) {
 
@@ -60,17 +57,13 @@ public class ReviewController {
 		return "reviews/GetReview";
 	}
 
-	// =================================================
 	// 【原 InsertReview.java - doGet】
-	// =================================================
 	@GetMapping("/InsertReview")
 	public String showInsertPage() {
 		return "reviews/ReviewInsert";
 	}
 
-	// =================================================
 	// 【原 InsertReview.java - doPost】
-	// =================================================
 	@PostMapping("/InsertReview")
 	public String insertReview(HttpServletRequest request, Model model) throws IOException {
 
@@ -127,9 +120,7 @@ public class ReviewController {
 		return "reviews/ReviewInsertFinish";
 	}
 
-	// =================================================
 	// 【原 UpdateReview.java - doGet】
-	// =================================================
 	@GetMapping("/UpdateReview")
 	public String showUpdatePage(HttpServletRequest request, HttpServletResponse response, Model model)
 			throws IOException {
@@ -154,9 +145,7 @@ public class ReviewController {
 		}
 	}
 
-	// =================================================
 	// 【原 UpdateReview.java - doPost】
-	// =================================================
 	@PostMapping("/UpdateReview")
 	public void updateReview(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
@@ -190,9 +179,7 @@ public class ReviewController {
 		response.sendRedirect(request.getContextPath() + "/GetAllReviews?msg=" + URLEncoder.encode(message, "UTF-8"));
 	}
 
-	// =================================================
 	// 【原 DeleteReview.java】
-	// =================================================
 	@GetMapping("/DeleteReview")
 	public void deleteReview(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
@@ -261,12 +248,19 @@ public class ReviewController {
 
 		return dbReview;
 	}
-	
+
 	// 【Vue - 刪除評論（JSON）】
 	@DeleteMapping("/api/public/admin/reviews/{id}")
 	@ResponseBody
 	public void deleteReviewForVue(@PathVariable Integer id) {
-	    reviewsService.delete(id);
+		reviewsService.delete(id);
+	}
+
+	// 【Vue - 取得書籍列表與評價統計 】
+	@GetMapping("/api/public/admin/reviews/books-stats")
+	@ResponseBody
+	public List<ReviewList> getBooksWithReviewStats() {
+		return reviewsService.findAllBooksWithStats();
 	}
 
 }

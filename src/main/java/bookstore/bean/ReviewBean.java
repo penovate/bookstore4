@@ -26,7 +26,7 @@ import lombok.ToString;
 @Entity
 @Table(name = "reviews")
 @Component
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user", "book"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "user", "book" })
 public class ReviewBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -34,7 +34,7 @@ public class ReviewBean implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "review_id")
-	private Integer reviewId; 
+	private Integer reviewId;
 
 	// ===== FK → ManyToOne（關鍵）=====
 
@@ -46,7 +46,7 @@ public class ReviewBean implements Serializable {
 	@EqualsAndHashCode.Exclude
 	private UserBean user;
 
-	@ManyToOne(fetch = FetchType.LAZY )
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "book_id", nullable = false)
 	@JsonIgnore
 	@ToString.Exclude
@@ -76,7 +76,7 @@ public class ReviewBean implements Serializable {
 
 	@Transient
 	private String bookName;
-	
+
 	@Transient
 	private Integer userType;
 
@@ -88,9 +88,9 @@ public class ReviewBean implements Serializable {
 		}
 		this.book.setBookId(bookId);
 	}
-	
+
 	public void setUserType(Integer userType) {
-	    this.userType = userType;
+		this.userType = userType;
 	}
 
 	// ✅ 舊 JSP 仍可用：優先從關聯拿名稱（不會再一直 null）
@@ -101,9 +101,9 @@ public class ReviewBean implements Serializable {
 	public String getBookName() {
 		return (book != null) ? book.getBookName() : bookName;
 	}
-	
+
 	public Integer getUserType() {
-	    return userType;
+		return userType;
 	}
 
 }

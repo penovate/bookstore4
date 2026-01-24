@@ -105,10 +105,14 @@ public class OrderService {
 			}
 		}
 
+		String orderStatus = "待出貨"; // 預設
+
 		if ("信用卡".equals(paymentMethod)) {
-			paymentStatus = "已付款";
+			paymentStatus = "未付款";
+			orderStatus = "待付款";
 		} else if ("貨到付款".equals(paymentMethod)) {
 			paymentStatus = "未付款";
+			orderStatus = "待出貨";
 		}
 
 		// 計算實付金額
@@ -123,7 +127,7 @@ public class OrderService {
 
 		order.setPaymentMethod(request.getPaymentMethod());
 		order.setPaymentStatus(paymentStatus);
-		order.setOrderStatus("待出貨");
+		order.setOrderStatus(orderStatus);
 
 		order.setRecipientAt(request.getRecipientName());
 		order.setPhone(request.getRecipientPhone());
@@ -502,5 +506,19 @@ public class OrderService {
 	@Transactional(readOnly = true)
 	public List<OrderItem> getAllOrderItems() {
 		return orderItemRepository.findAll();
+	}
+
+	@Transactional
+	public void updatePaymentStatus(Integer orderId, String paymentStatus) {
+		Orders order = ordersRepository.findById(orderId)
+				.orElseThrow(() -> new BusinessException(400, "找不到訂單 ID: " + orderId));
+
+		order.setPaymentStatus(paymentStatus);
+
+		if ("已付款".equals(paymentStatus)) {
+			order.setOrderStatus("待出貨"); // 假設付款成功後轉為待出貨
+		}
+
+		ordersRepository.save(order);
 	}
 }

@@ -64,6 +64,12 @@
             <div class="delivery-detail" v-if="form.deliveryMethod === '超商取貨'">
               <div class="form-group">
                 <label>超商門市 <span class="required">*</span></label>
+                <div style="margin-bottom: 10px;">
+                     <label><input type="radio" v-model="cvsType" value="UNIMART" /> 7-11</label>
+                     <label style="margin-left:10px;"><input type="radio" v-model="cvsType" value="FAMI" /> 全家</label>
+                     <label style="margin-left:10px;"><input type="radio" v-model="cvsType" value="HILIFE" /> 萊爾富</label>
+                     <label style="margin-left:10px;"><input type="radio" v-model="cvsType" value="OKMART" /> OK超商</label>
+                </div>
                 <div class="store-selector">
                   <input
                     type="text"
@@ -71,7 +77,7 @@
                     placeholder="請選擇您的配送門市"
                     readonly
                   />
-                  <button class="btn-select-store" @click="">請選擇門市</button>
+                  <button class="btn-select-store" @click="selectStore">請選擇門市</button>
                 </div>
               </div>
               <p class="shipping-note">超商取貨未滿 350 元，將酌收訂單處理費 50 元</p>
@@ -164,6 +170,8 @@
       </div>
     </div>
   </div>
+  <!-- Hidden Form Container -->
+  <div id="ecpay-form-container" style="display:none;"></div>
 </template>
 
 <script setup>
@@ -300,16 +308,64 @@ const canUseCOD = computed(() => form.value.deliveryMethod === '超商取貨') /
 watch(
   () => form.value.deliveryMethod,
   (newVal) => {
-    // 如果切換後的配送方式不支援當前付款方式，則重置付款方式
-    if (newVal === '宅配到府' && form.value.paymentMethod === 'COD') {
-      form.value.paymentMethod = ''
-    }
     // 切換配送方式時清除地址
     form.value.address = ''
   },
 )
 
+// === ECPay Map Listeners ===
+onMounted(() => {
+  initData()
+  window.addEventListener('message', handleMapMessage)
+})
+
+import { onUnmounted } from 'vue'
+onUnmounted(() => {
+  window.removeEventListener('message', handleMapMessage)
+})
+
+const handleMapMessage = (event) => {
+    if (event.data && event.data.type === 'STORE_SELECTED') {
+        const { storeId, storeName, address } = event.data
+        // Format: 7-11(123456) - City... or just address
+        // 儲存門市名稱和地址，這裡簡單串接
+        form.value.address = `${storeName} (${storeId}) - ${address}`
+    }
+}
+
 // === 快速填入方法 ===
+const cvsType = ref('UNIMART')
+
+const selectStore = () => {
+    // 使用 Form Post 方式開啟新視窗 (避免被瀏覽器擋下或跨網域問題)
+    // 目標: POST /orders/ecpay/map params={ logisticsSubType: cvsType.value }
+    
+    const width = 800
+    const height = 600
+    const left = (window.screen.width - width) / 2
+    const top = (window.screen.height - height) / 2
+    const windowName = 'SelectStoreWindow'
+    
+    // 1. 先開啟空白視窗
+    window.open('', windowName, `width=${width},height=${height},top=${top},left=${left}`)
+    
+    // 2. 建立動態 Form 並送出
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.action = 'http://localhost:8080/orders/ecpay/map'
+    form.target = windowName // 指定送出到剛開的視窗
+
+    const input = document.createElement('input')
+    input.type = 'hidden'
+    input.name = 'logisticsSubType'
+    input.value = cvsType.value
+    form.appendChild(input)
+
+    document.body.appendChild(form)
+    form.submit()
+    document.body.removeChild(form)
+}
+
 
 const copySubscriberInfo = () => {
   form.value.recipientName = user.value.userName
@@ -337,19 +393,6 @@ const submitOrder = async () => {
     return
   }
 
-  if (form.value.paymentMethod === '信用卡') {
-    // 模擬信用卡流程
-    const result = await Swal.fire({
-      title: '進入付款頁面',
-      text: '模擬刷卡中...',
-      timer: 2000,
-      timerProgressBar: true,
-      didOpen: () => {
-        Swal.showLoading()
-      },
-    })
-  }
-
   isSubmitting.value = true
   try {
     const payload = {
@@ -365,15 +408,39 @@ const submitOrder = async () => {
 	const response = await orderService.checkout(payload)
 
     if (response.data.success) {
-      Swal.fire({
-        icon: 'success',
-        title: '訂購成功',
-        text: '您的訂單已建立！',
-        showConfirmButton: false,
-        timer: 1500,
-      }).then(() => {
-        router.push({ name: 'bookStore' }) // 或成功頁面
-      })
+      if (response.data.ecpayParams) {
+          // ECPay 信用卡付款，建立 Form 並送出
+          const container = document.getElementById('ecpay-form-container')
+          container.innerHTML = ''
+          
+          const formEl = document.createElement('form')
+          formEl.method = 'POST'
+          formEl.action = response.data.paymentUrl // https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5
+          
+          const params = response.data.ecpayParams
+          for (const key in params) {
+              const input = document.createElement('input')
+              input.type = 'hidden'
+              input.name = key
+              input.value = params[key]
+              formEl.appendChild(input)
+          }
+          
+          container.appendChild(formEl)
+          formEl.submit()
+          
+      } else {
+          // 一般訂單 (貨到付款)
+          Swal.fire({
+            icon: 'success',
+            title: '訂購成功',
+            text: '您的訂單已建立！',
+            showConfirmButton: false,
+            timer: 1500,
+          }).then(() => {
+            router.push({ name: 'bookStore' }) // 或成功頁面
+          })
+      }
     } else {
       Swal.fire('訂購失敗', response.data.message, 'error')
     }
@@ -385,9 +452,7 @@ const submitOrder = async () => {
   }
 }
 
-onMounted(() => {
-  initData()
-})
+
 </script>
 
 <style scoped>

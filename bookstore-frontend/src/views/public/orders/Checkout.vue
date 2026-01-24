@@ -143,6 +143,40 @@
             </div>
             <div v-else class="text-grey pa-2">無可用優惠券</div>
           </div>
+
+          <!-- 6. 訂單明細 -->
+          <div class="section-block">
+            <h3>訂單明細</h3>
+            <div class="order-items-list">
+              <div v-for="item in cartItems" :key="item.cartId" class="order-item">
+                <div class="item-image">
+                  <img
+                    :src="
+                      item.booksBean && item.booksBean.bookImageBean
+                        ? `http://localhost:8080/upload-images/${item.booksBean.bookImageBean.imageUrl}`
+                        : '/no-image.png'
+                    "
+                    alt="Book Cover"
+                  />
+                </div>
+                <div class="item-info">
+                  <div class="item-title">
+                    {{ item.booksBean ? item.booksBean.bookName : '未知書籍' }}
+                  </div>
+                  <div class="item-meta">
+                    <span
+                      >${{ item.booksBean ? item.booksBean.price : 0 }} x {{ item.quantity }}</span
+                    >
+                    <span class="item-subtotal"
+                      >小計: ${{
+                        (item.booksBean ? item.booksBean.price : 0) * item.quantity
+                      }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 右側：訂單摘要 -->
@@ -195,6 +229,7 @@ const isSubmitting = ref(false)
 const user = ref({ userName: '', userPhone: '' })
 const cartTotal = ref(0) // 假設從後端取得購物車總額
 const cartItemsCount = ref(0)
+const cartItems = ref([])
 const coupons = ref([])
 const selectedCouponId = ref(null)
 
@@ -219,6 +254,7 @@ const initData = async () => {
     }
 
     cartTotal.value = cartRes.data.totalAmount
+    cartItems.value = cartRes.data.cartItems || []
     cartItemsCount.value = (cartRes.data.cartItems || []).length
 
     if (cartItemsCount.value === 0) {
@@ -440,7 +476,7 @@ const submitOrder = async () => {
           showConfirmButton: false,
           timer: 1500,
         }).then(() => {
-          router.push({ name: 'bookStore' }) // 或成功頁面
+          router.push({ name: 'orderSuccess' }) // 導向成功頁面
         })
       }
     } else {
@@ -669,7 +705,7 @@ input[type='text'] {
 .btn-checkout {
   width: 100%;
   padding: 12px;
-  background-color: #d33;
+  background-color: #2e5a44;
   color: white;
   border: none;
   border-radius: 4px;
@@ -679,11 +715,11 @@ input[type='text'] {
   margin-top: 20px;
 }
 .btn-checkout:disabled {
-  background-color: #fab1b1;
+  background-color: #a9b7b0;
   cursor: not-allowed;
 }
 .btn-checkout:hover:not(:disabled) {
-  background-color: #b00;
+  background-color: #3e795b;
 }
 
 .btn-back {
@@ -703,5 +739,65 @@ input[type='text'] {
 }
 .text-error {
   color: #d33;
+}
+
+/* 訂單明細列表 */
+.order-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.order-item {
+  display: flex;
+  gap: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.order-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.item-image {
+  width: 60px;
+  height: 80px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.item-title {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+  font-size: 15px;
+}
+
+.item-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #666;
+  font-size: 14px;
+}
+
+.item-subtotal {
+  color: #d33;
+  font-weight: bold;
 }
 </style>

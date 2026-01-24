@@ -214,6 +214,11 @@ const router = createRouter({
           component: () => import('../views/public/orders/Checkout.vue'),
         },
         {
+          path: 'orders/success',
+          name: 'orderSuccess',
+          component: () => import('../views/public/orders/OrderSuccess.vue'),
+        },
+        {
           path: 'orders',
           name: 'myOrders',
           component: () => import('../views/public/orders/MyOrders.vue'),

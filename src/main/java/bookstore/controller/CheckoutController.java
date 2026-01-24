@@ -85,7 +85,7 @@ public class CheckoutController {
 
                 // 設定回傳網址 (本地測試需透過 ngrok 改為公開網址)
                 String returnURL = "https://unpreferable-unmeteorologic-ruthann.ngrok-free.dev/orders/ecpay/return";
-                String clientBackURL = "http://localhost:5173/dev/user/orders";
+                String clientBackURL = "http://localhost:5173/dev/user/orders/success";
 
                 Map<String, String> ecpayParams = ecPayService.genAioCheckOutALL(
                         merchantTradeNo,

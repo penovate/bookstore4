@@ -40,32 +40,48 @@
 
           <!-- 書籍名稱 -->
           <template v-slot:item.bookName="{ item }">
-            <div class="py-2">
-              <div class="font-weight-bold text-h6 text-primary mb-1">
-                {{ item.booksBean ? item.booksBean.bookName : '未知書籍' }}
-              </div>
-              <div class="text-caption text-grey">
-                {{ item.booksBean ? item.booksBean.author : '' }}
-              </div>
-              <!-- 顯示無庫存或下架警告 -->
-              <v-chip
-                v-if="item.cartStatus === 'OFF_SHELF'"
-                color="error"
-                size="default"
-                class="mt-1 font-weight-bold"
-                variant="flat"
+            <div class="d-flex align-center py-2">
+              <div
+                class="mr-4 rounded overflow-hidden border"
+                style="width: 70px; height: 100px; flex-shrink: 0"
               >
-                本書籍暫不供應販售，請移除
-              </v-chip>
-              <v-chip
-                v-else-if="item.quantity === 0"
-                color="error"
-                size="default"
-                class="mt-1 font-weight-bold"
-                variant="flat"
-              >
-                本書暫無庫存，請移除
-              </v-chip>
+                <v-img
+                  :src="
+                    item.booksBean && item.booksBean.bookImageBean
+                      ? `http://localhost:8080/upload-images/${item.booksBean.bookImageBean.imageUrl}`
+                      : '/no-image.png'
+                  "
+                  cover
+                  height="100%"
+                ></v-img>
+              </div>
+              <div>
+                <div class="font-weight-bold text-h6 text-primary mb-1">
+                  {{ item.booksBean ? item.booksBean.bookName : '未知書籍' }}
+                </div>
+                <div class="text-caption text-grey">
+                  {{ item.booksBean ? item.booksBean.author : '' }}
+                </div>
+                <!-- 顯示無庫存或下架警告 -->
+                <v-chip
+                  v-if="item.cartStatus === 'OFF_SHELF'"
+                  color="error"
+                  size="default"
+                  class="mt-1 font-weight-bold"
+                  variant="flat"
+                >
+                  本書籍暫不供應販售，請移除
+                </v-chip>
+                <v-chip
+                  v-else-if="item.quantity === 0"
+                  color="error"
+                  size="default"
+                  class="mt-1 font-weight-bold"
+                  variant="flat"
+                >
+                  本書暫無庫存，請移除
+                </v-chip>
+              </div>
             </div>
           </template>
 

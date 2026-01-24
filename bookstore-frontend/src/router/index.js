@@ -194,6 +194,16 @@ const router = createRouter({
           component: () => import('../views/public/user/UserRegister.vue'),
         },
         {
+          path: 'forgetpassword',
+          name: 'user-forget-password',
+          component: () => import('../views/public/user/UserForgetPwd.vue')
+        },
+        {
+          path: 'reset-password-by-email',
+          name: 'user-reset-password-by-email',
+          component: () => import('../views/public/user/ResetPasswordByEmail.vue'),
+        },
+        {
           path: 'books',
           name: 'user-books',
           component: () => import('../views/public/books/UserBookList.vue'),

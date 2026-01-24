@@ -169,12 +169,6 @@ const handleLogout = () => {
 
       <v-btn icon="mdi-bell-outline" color="secondary" variant="text"></v-btn>
 
-      <div class="d-flex align-center mx-2">
-        <span class="text-secondary font-weight-bold me-2">{{ userStore.name }}</span>
-        <v-avatar size="32" color="secondary">
-          <span class="text-white text-caption">{{ userStore.name.charAt(0) }}</span>
-        </v-avatar>
-      </div>
     </v-app-bar>
 
     <v-main class="bg-background" style="min-height: 100vh">

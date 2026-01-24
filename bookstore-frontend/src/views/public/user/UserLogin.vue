@@ -29,12 +29,12 @@
         ></v-text-field>
 
         <div class="d-flex justify-end mb-4">
-          <a
-            href="#"
-            class="text-caption text-primary text-decoration-none font-weight-bold hover-opacity"
+          <span
+            class="text-caption text-primary font-weight-bold hover-opacity cursor-pointer"
+            @click="router.push('/dev/user/forgetpassword')"
           >
             忘記密碼？
-          </a>
+          </span>
         </div>
 
         <v-btn

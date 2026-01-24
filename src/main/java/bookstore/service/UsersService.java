@@ -87,4 +87,8 @@ public class UsersService {
 		return userRepo.findByEmail(email);
 	}
 	
+	public UserBean findByEmailAndBirth(String email, String birth) {
+		return userRepo.findByEmailAndBirthString(email, birth);
+	}
+	
 }

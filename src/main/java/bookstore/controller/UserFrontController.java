@@ -3,12 +3,15 @@ package bookstore.controller;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
@@ -175,6 +178,7 @@ public class UserFrontController {
 	public Map<String, Object> sendCode(@RequestBody Map<String, String> data, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		String email = data.get("email");
+		String type = data.getOrDefault("type", "register");
 		
 		if (email == null || email.isEmpty()) {
 			response.put("success", false);
@@ -183,17 +187,119 @@ public class UserFrontController {
 		}
 		
 		String code = String.valueOf((int)((Math.random() * 9 + 1) * 100000));
-		
 		session.setAttribute("verifyCode_" + email, code);
 		
 		try {
-			emailService.sendVerifyCode(email, code);
+			String subject = type.equals("forget") ? "森林書屋 - 密碼重設驗證碼" : "森林書屋 - 會員註冊驗證碼";
+			
+			emailService.sendVerifyCode(email, code, subject);
 			response.put("success", true);
 			response.put("message", "驗證碼已寄出！");
 		} catch (Exception e) {
 			e.printStackTrace();
 			response.put("success", false);
 			response.put("message", "郵件寄送失敗，請檢查設定！");
+		}
+		return response;
+	}
+	
+	@GetMapping("/api/user/check-unique")
+	@ResponseBody
+	public Map<String, Object> checkUnique(@RequestParam(required = false) String email, @RequestParam(required = false) String phone) {
+		return userService.checkUserUnique(null, email, phone);
+	}
+	
+	@PostMapping("/api/user/forget-password")
+	@ResponseBody
+	public Map<String, Object> forgetPasswordByEmail(@RequestBody Map<String, String> data, HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		String email = (String) data.get("email");
+		String birth = (String) data.get("birth");
+		
+		UserBean findUser = userService.findByEmailAndBirth(email, birth);
+		
+		if (findUser != null) {
+			String code = String.valueOf((int) ((Math.random() * 9 + 1) * 100000));
+			session.setAttribute("verifyCode_" + email, code);
+			
+			try {
+				emailService.sendVerifyCode(email, code, "森林書屋 - 密碼重設驗證碼");
+				response.put("success", true);
+				response.put("userId", findUser.getUserId());
+				response.put("email", email);
+				response.put("message", "驗證成功，驗證碼已寄出！");
+			} catch (Exception e) {
+				response.put("success", false);
+				response.put("message", "身分正確但郵件發送失敗，請稍後再試！");
+			}
+		} else {
+			response.put("success", false);
+			response.put("message", "Email 或 生日錯誤！");
+		}
+		return response;
+	}
+	
+	@PostMapping("/api/user/verify-reset-code")
+	@ResponseBody
+	public Map<String, Object> verifyResetPasswordCode(@RequestBody Map<String, String> data, HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		String email = data.get("email");
+		String inputCode = data.get("verifyCode");
+		String userId = data.get("userId");
+		
+		String sessionCode = (String) session.getAttribute("verifyCode_" + email);
+		if (sessionCode != null && sessionCode.equals(inputCode)) {
+			response.put("success", true);
+			response.put("message", "驗證成功！");
+			response.put("userId", userId);
+			
+			String resetToken = UUID.randomUUID().toString();
+			session.setAttribute("resetToken_" + userId, resetToken);
+			response.put("resetToken", resetToken);
+			
+			session.removeAttribute("verifyCode_" + email);
+		} else {
+			response.put("success", false);
+			response.put("message", "驗證碼錯誤或已過期！");
+		}
+		return response;
+	}
+	
+	@PostMapping("/api/user/do-reset-password")
+	@ResponseBody
+	public Map<String, Object> resetPassword(@RequestBody Map<String, String> data, HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		
+		String userId = data.get("userId");
+		String newPassword = data.get("newPassword");
+		String resetToken = data.get("resetToken");
+		
+		String sessionToken = (String) session.getAttribute("resetToken_" + userId);
+		
+		if (sessionToken == null || !sessionToken.equals(resetToken)) {
+			response.put("success", false);
+			response.put("message", "安全驗證無效或已過期，請重新操作！");
+			return response;
+		}
+		
+		try {
+			UserBean user = userService.findById(Integer.parseInt(userId));
+			if (user != null) {
+				user.setUserPwd(passwordEncoder.encode(newPassword));
+				userService.saveUser(user);
+				
+				session.removeAttribute("resetToken_" + userId);
+				
+				response.put("success", true);
+				response.put("message", "密碼修改成功！");
+			} else {
+				response.put("success", false);
+				response.put("message", "找不到該會員資料！");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.put("success", false);
+			response.put("message", "資料庫更新失敗！");
 		}
 		return response;
 	}

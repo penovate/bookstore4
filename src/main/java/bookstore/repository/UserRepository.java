@@ -43,5 +43,11 @@ public interface UserRepository extends JpaRepository<UserBean, Integer> {
 	
 	UserBean findByEmail(String email);
 	
+	@Query("SELECT u FROM UserBean u WHERE u.email = :email AND FUNCTION('FORMAT', u.birth, 'yyyy-MM-dd') = :birthStr")
+	UserBean findByEmailAndBirthString(
+	    @Param("email") String email, 
+	    @Param("birthStr") String birth
+	);
+	
 	
 }

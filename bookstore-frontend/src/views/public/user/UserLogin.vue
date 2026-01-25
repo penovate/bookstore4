@@ -1,6 +1,6 @@
 <template>
   <v-container class="fill-height d-flex justify-center align-center py-12" fluid>
-    <v-card width="100%" max-width="460" class="mx-auto pa-10 text-center login-card-box">
+    <v-card width="100%" max-width="500" class="mx-auto pa-12 rounded-xl text-center login-card-box shadow-lg">
       <v-card-item class="mb-6">
         <v-icon icon="mdi-book-open-variant" size="48" color="primary" class="mb-2"></v-icon>
         <v-card-title class="text-h4 font-weight-bold text-primary">會員登入</v-card-title>

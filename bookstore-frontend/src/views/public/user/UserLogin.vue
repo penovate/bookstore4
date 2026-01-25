@@ -7,43 +7,21 @@
       </v-card-item>
 
       <v-form @submit.prevent="handleLogin" class="mt-4">
-        <v-text-field
-          v-model="loginForm.email"
-          label="電子信箱"
-          prepend-inner-icon="mdi-email-outline"
-          variant="outlined"
-          color="primary"
-          class="mb-4 rounded-lg"
-          density="comfortable"
-        ></v-text-field>
+        <v-text-field v-model="loginForm.email" label="電子信箱" prepend-inner-icon="mdi-email-outline" variant="outlined"
+          color="primary" class="mb-4 rounded-lg" density="comfortable"></v-text-field>
 
-        <v-text-field
-          v-model="loginForm.password"
-          label="密碼"
-          prepend-inner-icon="mdi-lock-outline"
-          type="password"
-          variant="outlined"
-          color="primary"
-          class="mb-2 rounded-lg"
-          density="comfortable"
-        ></v-text-field>
+        <v-text-field v-model="loginForm.password" label="密碼" prepend-inner-icon="mdi-lock-outline" type="password"
+          variant="outlined" color="primary" class="mb-2 rounded-lg" density="comfortable"></v-text-field>
 
         <div class="d-flex justify-end mb-4">
-          <span
-            class="text-caption text-primary font-weight-bold hover-opacity cursor-pointer"
-            @click="router.push('/dev/user/forgetpassword')"
-          >
+          <span class="text-caption text-primary font-weight-bold hover-opacity cursor-pointer"
+            @click="router.push('/dev/user/forgetpassword')">
             忘記密碼？
           </span>
         </div>
 
-        <v-btn
-          type="submit"
-          block
-          height="54"
-          color="primary"
-          class="text-h6 font-weight-bold rounded-lg elevation-1 mt-2"
-        >
+        <v-btn type="submit" block height="54" color="primary"
+          class="text-h6 font-weight-bold rounded-lg elevation-1 mt-2">
           立即登入
         </v-btn>
       </v-form>
@@ -51,28 +29,19 @@
       <div class="d-flex justify-center mt-6">
         <button class="custom-google-circle-btn" @click="handleLoginClick" type="button">
           <div class="gsi-icon">
-            <svg
-              version="1.1"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 48 48"
-              style="display: block"
-            >
-              <path
-                fill="#EA4335"
-                d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
-              ></path>
-              <path
-                fill="#4285F4"
-                d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
-              ></path>
-              <path
-                fill="#FBBC05"
-                d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
-              ></path>
-              <path
-                fill="#34A853"
-                d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-              ></path>
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="display: block">
+              <path fill="#EA4335"
+                d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z">
+              </path>
+              <path fill="#4285F4"
+                d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z">
+              </path>
+              <path fill="#FBBC05"
+                d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z">
+              </path>
+              <path fill="#34A853"
+                d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z">
+              </path>
               <path fill="none" d="M0 0h48v48H0z"></path>
             </svg>
           </div>
@@ -85,13 +54,7 @@
 
       <v-row dense justify="center">
         <v-col v-for="type in ['SUPER_ADMIN', 'ADMIN', 'USER', 'BANNED']" :key="type" cols="3">
-          <v-btn
-            variant="tonal"
-            icon
-            color="primary"
-            @click="quickLogin(type)"
-            class="quick-btn rounded-circle"
-          >
+          <v-btn variant="tonal" icon color="primary" @click="quickLogin(type)" class="quick-btn rounded-circle">
             <v-icon :icon="getIcon(type)" size="20"></v-icon>
             <v-tooltip activator="parent" location="bottom">{{ getLabel(type) }}</v-tooltip>
           </v-btn>
@@ -100,10 +63,7 @@
 
       <div class="mt-6 text-body-2 text-grey-darken-1">
         還沒有帳號嗎？
-        <router-link
-          to="register"
-          class="text-primary font-weight-bold text-decoration-none register-link"
-        >
+        <router-link to="register" class="text-primary font-weight-bold text-decoration-none register-link">
           立即註冊新會員
         </router-link>
       </div>
@@ -149,9 +109,9 @@ const getLabel = (type) => {
 
 const quickLogin = (type) => {
   const accounts = {
-    SUPER_ADMIN: { email: 'pen@bookstore.com', pass: '12345' },
+    SUPER_ADMIN: { email: 'alex122694@gmail.com', pass: '74586' },
     ADMIN: { email: 'alice.lee@mail.com', pass: '123456' },
-    USER: { email: 'testuser_m@abc.com', pass: 'testtest' },
+    USER: { email: 'leemei122694@gmail.com', pass: 'alex74586' },
     BANNED: { email: 'super@bookstore.com', pass: '123' },
   }
   loginForm.email = accounts[type].email
@@ -216,7 +176,7 @@ const handleLogin = async () => {
   try {
     const response = await axios.post('http://localhost:8080/api/user/login', {
       email: loginForm.email,
-      userPwd: loginForm.password, 
+      userPwd: loginForm.password,
     })
 
     if (response.data.success) {
@@ -238,10 +198,10 @@ const handleLogin = async () => {
         router.push(redirectPath)
       })
     } else {
-      Swal.fire({ 
-        icon: 'error', 
-        title: '登入失敗', 
-        text: response.data.message 
+      Swal.fire({
+        icon: 'error',
+        title: '登入失敗',
+        text: response.data.message
       })
     }
   } catch (error) {

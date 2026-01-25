@@ -253,6 +253,17 @@ const router = createRouter({
           name: 'userCoupons',
           component: () => import('../views/public/user/UserCoupon.vue'),
         },
+        // 讀書會專區
+        {
+          path: 'bookclubs',
+          name: 'user-bookclubs',
+          component: () => import('../views/public/club/UserBookClub.vue'),
+        },
+        {
+          path: 'bookclubs/insert',
+          name: 'user-bookclubs-insert',
+          component: () => import('../views/public/club/UserInsertBookClub.vue'),
+        },
       ],
     },
   ],

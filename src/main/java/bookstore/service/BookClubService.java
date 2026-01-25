@@ -116,6 +116,15 @@ public class BookClubService {
 		return list;
 	}
 
+	// 根據 Host ID 查詢 (Controller 專用)
+	public List<BookClubsBean> findByHostId(Integer userId) {
+		Optional<UserBean> userOpt = userRepository.findById(userId);
+		if (userOpt.isEmpty()) {
+			throw new BusinessException(404, "查無使用者");
+		}
+		return findByHost(userOpt.get());
+	}
+
 	// 發起讀書會
 	public BookClubsBean createBookClub(BookClubsBean bookClub, MultipartFile proposal, MultipartFile proof,
 			Integer userId) throws IOException {
@@ -132,6 +141,8 @@ public class BookClubService {
 			BooksBean book = bookRepository.findById(bookClub.getBook().getBookId()).get();
 			bookClub.setBook(book);
 		}
+
+		bookClub.setStatus(ClubConstants.STATUS_PEDING);
 
 		if (proposal != null) {
 			bookClub.setProposalPath(saveToDisk(proposal, PROPOSAL_DIR));

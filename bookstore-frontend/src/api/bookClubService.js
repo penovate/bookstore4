@@ -43,6 +43,11 @@ export default {
     return apiClient.get('/allClubs')
   },
 
+  // 取得我發起的讀書會
+  getMyHostedClubs() {
+    return apiClient.get('/my-hosted')
+  },
+
   // 取得讀書會分類
   getClubCategories() {
     return apiClient.get('/categories')

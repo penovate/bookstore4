@@ -75,6 +75,25 @@ public class BookClubsController {
 		return ResponseEntity.ok(club);
 	}
 
+	@GetMapping("/my-hosted")
+	public ResponseEntity<List<BookClubsBean>> getMyHostedClubs(HttpServletRequest request) {
+		Integer userId = (Integer) request.getAttribute("userId");
+		if (userId == null) {
+			return ResponseEntity.status(401).build();
+		}
+		// 這裡需要透過 Service 呼叫 UserRepository 查 UserBean，或是 Service 增加接受 userId 的方法
+		// 由於 Service 有 findByHost(UserBean)，我們先在 Controller 轉換
+		// 但 Controller 不直接碰 Repo，所以我們在 Service 加一個 findByHostId 比較好，
+		// 或者直接用既有的 service.findByHost(userRepository.findById(userId))
+		// 為了乾淨，我们在 Service 加一个 overload 或是直接修改 Controller 注入 UserRepo (不建議)。
+		// 最佳解：Service 新增 findByHostId(Integer userId)
+
+		// 暫時解：先在 Service 加方法，稍後透過工具修改 Service
+		// 假設 Service 已更新。我們等下會去改 Service。
+		List<BookClubsBean> list = bookClubService.findByHostId(userId);
+		return ResponseEntity.ok(list);
+	}
+
 	@DeleteMapping("/delete/{clubId}")
 	public ResponseEntity<String> deleteClub(@PathVariable Integer clubId) {
 		bookClubService.deleteClubId(clubId);

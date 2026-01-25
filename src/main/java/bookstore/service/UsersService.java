@@ -17,32 +17,37 @@ import lombok.RequiredArgsConstructor;
 public class UsersService {
 
 	private final UserRepository userRepo;
-	
+
 	// 後台會員系統
 	public UserBean login(String email, String password) {
-		if (email == null || password == null) return null;
+		if (email == null || password == null)
+			return null;
 		return userRepo.findByEmailAndUserPwd(email, password);
 	}
-	
+
 	public List<UserBean> findAllUsers() {
 		return userRepo.findAll();
 	}
-	
+
 	public List<UserBean> searchUsers(String keyword, Integer type) {
-	    if ((keyword == null || keyword.trim().isEmpty()) && type == null) {
-	        return userRepo.findAll();
-	    }
-	    return userRepo.searchUsersGlobal(keyword, type);
+		if ((keyword == null || keyword.trim().isEmpty()) && type == null) {
+			return userRepo.findAll();
+		}
+		return userRepo.searchUsersGlobal(keyword, type);
 	}
-	
+
 	public UserBean findById(Integer id) {
 		return userRepo.findById(id).orElse(null);
 	}
-	
+
 	public UserBean saveUser(UserBean user) {
 		return userRepo.save(user);
 	}
-	
+
+	public void deleteUser(Integer id) {
+		userRepo.deleteById(id);
+	}
+
 	public void updateStatus(Integer id, Integer status) {
 		UserBean user = userRepo.findById(id).orElse(null);
 		if (user != null) {
@@ -50,11 +55,11 @@ public class UsersService {
 			userRepo.save(user);
 		}
 	}
-	
+
 	public Map<String, Object> checkUserUnique(Integer userId, String email, String phoneNum) {
 		Map<String, Object> result = new HashMap<>();
 		result.put("success", true);
-		
+
 		if (userId == null) {
 			if (userRepo.existsByEmail(email)) {
 				result.put("success", false);
@@ -80,15 +85,15 @@ public class UsersService {
 		}
 		return result;
 	}
-	
+
 	// 前台書店系統
-	
+
 	public UserBean findByEmail(String email) {
 		return userRepo.findByEmail(email);
 	}
-	
+
 	public UserBean findByEmailAndBirth(String email, String birth) {
 		return userRepo.findByEmailAndBirthString(email, birth);
 	}
-	
+
 }

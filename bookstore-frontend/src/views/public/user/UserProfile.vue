@@ -1,19 +1,13 @@
 <template>
   <v-container class="user-profile-wrapper py-10">
     <v-card class="profile-header-card mb-8 rounded-xl elevation-4" overflow-hidden>
-      <v-img
-        src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=2070"
-        height="200"
-        cover
-        class="align-end text-white"
-      >
+      <v-img src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=2070" height="200" cover
+        class="align-end text-white">
         <div class="header-overlay pa-6 d-flex align-center">
           <v-avatar size="100" class="elevation-4 profile-avatar mr-6">
             <v-img :src="userAvatar" cover>
               <template v-slot:placeholder>
-                <div
-                  class="bg-accent fill-height d-flex align-center justify-center text-h3 text-white"
-                >
+                <div class="bg-accent fill-height d-flex align-center justify-center text-h3 text-white">
                   {{ userStore.name.charAt(0) }}
                 </div>
               </template>
@@ -32,12 +26,8 @@
     <v-row>
       <v-col v-for="(item, index) in menuItems" :key="index" cols="12" sm="6" md="4" lg="3">
         <v-hover v-slot="{ isHovering, props }">
-          <v-card
-            v-bind="props"
-            :elevation="isHovering ? 8 : 2"
-            class="menu-card rounded-lg transition-swing text-center pa-6 h-100"
-            @click="navigateTo(item.to)"
-          >
+          <v-card v-bind="props" :elevation="isHovering ? 8 : 2"
+            class="menu-card rounded-lg transition-swing text-center pa-6 h-100" @click="navigateTo(item.to)">
             <v-avatar :color="item.color" size="64" class="mb-4">
               <v-icon :icon="item.icon" color="white" size="32"></v-icon>
             </v-avatar>
@@ -122,6 +112,14 @@ const menuItems = ref([
     desc: '管理您留下的讀後感想',
   },
   {
+    title: '讀書會專區',
+    //將icon改成書本圖案將icon改成書本圖案
+    icon: 'mdi-book-open-variant',
+    color: 'blue-grey-darken-1',
+    to: '/dev/user/bookclubs',
+    desc: '查看您參加與發起的讀書會',
+  },
+  {
     title: '客服專區',
     icon: 'mdi-chat-question-outline',
     color: 'blue-grey-darken-1',
@@ -146,6 +144,7 @@ onMounted(() => {
 
 .profile-header-card {
   position: relative;
+
   .header-overlay {
     background: linear-gradient(to right, rgba(46, 92, 67, 0.95), rgba(46, 92, 67, 0.4));
     height: 100%;
@@ -180,6 +179,7 @@ onMounted(() => {
 .bg-accent {
   background-color: #b05252 !important;
 }
+
 .text-primary {
   color: #2e5c43 !important;
 }

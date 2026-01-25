@@ -23,6 +23,7 @@ public class CouponService {
     @Autowired
     private UserRepository userRepository;
 
+    // 領取優惠券
     public CouponBean claimCoupon(Integer userId, String code) {
         // 驗證使用者
         userRepository.findById(userId)
@@ -36,7 +37,7 @@ public class CouponService {
         BigDecimal discount;
         BigDecimal minSpend;
 
-        // 根據需求硬編碼邏輯，適用於 "read50" 和 "read100"
+        // 根據代碼不同產生不同面額優惠券: "read50" 和 "read100"，equalsIgnoreCase容許不分大小寫
         if ("read50".equalsIgnoreCase(validCode)) {
             discount = new BigDecimal("50");
             minSpend = new BigDecimal("499");
@@ -48,8 +49,6 @@ public class CouponService {
         }
 
         // 檢查使用者是否已經擁有此優惠券
-        // 需求說明「使用者可在這個頁面提供一個輸入框...獲取優惠券」
-        // 這裡檢查重複以防止重複領取
         List<CouponBean> existing = couponRepository.findByUserIdAndCouponCode(userId, validCode);
         if (!existing.isEmpty()) {
             throw new BusinessException(400, "您已經領取過此優惠券");
@@ -60,13 +59,13 @@ public class CouponService {
         coupon.setCouponCode(validCode);
         coupon.setDiscountAmount(discount);
         coupon.setMinSpend(minSpend);
-        coupon.setStatus(0); // Unused
+        coupon.setStatus(0); // 未使用
         coupon.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 
         return couponRepository.save(coupon);
     }
 
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") //忽略空值警告
     public List<CouponBean> getCouponsByUserId(Integer userId) {
         return couponRepository.findByUserId(userId);
     }
@@ -75,6 +74,7 @@ public class CouponService {
         return couponRepository.findAll();
     }
 
+    //使用優惠券
     public void useCoupon(Integer couponId) {
         CouponBean coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new BusinessException(404, "找不到優惠券"));

@@ -195,7 +195,7 @@ const openDetails = async (orderId) => {
 
   try {
     const response = await orderService.getOrderDetail(orderId)
-    // response.data format: { order: {...}, items: [...] } from OrderController
+    // 後端 OrderController 回傳的資料格式為: { order: {...}, items: [...] } 
     if (response.data) {
         currentOrder.value = response.data.order
         currentOrderItems.value = response.data.items || []
@@ -220,11 +220,11 @@ const fetchUserOrders = async () => {
     }
 
     try {
-        // 1. Decode token to get user ID or fetch profile
+        // 1. 解碼 Token 以取得用戶 ID 或獲取個人資料
         const base64Url = token.split('.')[1]
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
         const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2) // Fix encoding
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2) // 修正 Base64 解碼時可能出現的編碼問題
         }).join(''))
         const payload = JSON.parse(jsonPayload)
 
@@ -232,7 +232,7 @@ const fetchUserOrders = async () => {
             throw new Error('Invalid Token')
         }
 
-        // 2. Fetch User Profile
+        // 2. 根據解碼出的帳號資訊，向後端獲取詳細的用戶資料（以取得真正的 userId）
         const userRes = await axios.get(`http://localhost:8080/api/data/get/${payload.sub}`, {
             withCredentials: true,
             headers: { Authorization: `Bearer ${token}` }
@@ -241,11 +241,11 @@ const fetchUserOrders = async () => {
         if (userRes.data && userRes.data.userId) {
             const userId = userRes.data.userId
             
-            // 3. Fetch Orders
+            // 3. 取得真正的 userId 後，向後端請求該用戶的所有訂單
             const response = await orderService.getUserOrders(userId)
             orders.value = response.data || []
             
-            // Sort by date desc (newest first)
+            // 將訂單依照日期降冪排序（最新的訂單排在最前面）
             orders.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
         } else {

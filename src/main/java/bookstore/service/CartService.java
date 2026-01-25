@@ -24,22 +24,18 @@ public class CartService {
     @Autowired
     private BookRepository bookRepository;
 
+    //商品加入購物車
     public Cart addToCart(Integer userId, Integer bookId, Integer quantity) {
         BooksBean book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BusinessException(400, "找不到該書籍"));
 
-        // 安全處理 Null 值
+        // 判斷存貨量與上下架(null值存貨為0、書籍為下架)
         int stock = (book.getStock() != null) ? book.getStock() : 0;
         int onShelf = (book.getOnShelf() != null) ? book.getOnShelf() : 0;
 
+        // 如果書未上架，拋出異常
         if (onShelf != 1) {
-            if (onShelf != 1) {
-                // 假設 1 代表上架狀態 (基於前端邏輯)
-                // 如果需要嚴格檢查：拋出異常或忽略
-                // 需求提到「失效商品管理...禁止勾選結帳」，也許加入購物車時稍微寬容？
-                // 但一般「加入購物車」時通常會阻擋無效商品
                 throw new BusinessException(400, "該書籍目前未上架");
-            }
         }
 
         if (quantity > stock) {
@@ -67,6 +63,7 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
+    //修改購物車內個別商品數量
     public Cart updateQuantity(Integer cartId, Integer quantity) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new BusinessException(400, "找不到該購物車項目"));
@@ -89,10 +86,12 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
+    //將商品從購物車移除
     public void removeFromCart(Integer cartId) {
         cartRepository.deleteById(cartId);
     }
 
+    //取得用戶購物車明細資料(並且要將當前購物車資料修正到與書籍資料表資料一致---上架狀態檢查、庫存量檢查)
     public List<Cart> getUserCart(Integer userId) {
         List<Cart> cartItems = cartRepository.findByUserId(userId);
 
@@ -104,6 +103,7 @@ public class CartService {
                 Integer onShelf = (book.getOnShelf() != null) ? book.getOnShelf() : 0;
                 boolean isStatusChanged = false;
 
+                // 如果商品未上架，且購物車目前登記為上架狀態，要將購物車狀態改為未上架
                 if (onShelf != 1) {
                     if (!"OFF_SHELF".equals(item.getCartStatus())) {
                         item.setCartStatus("OFF_SHELF");
@@ -123,11 +123,6 @@ public class CartService {
                         item.setQuantity(stock);
                         isStatusChanged = true;
                     } else {
-                        // 庫存為 0，暫時保留但可能透過狀態處理？
-                        // 如果庫存為 0 且上架狀態為 1，代表缺貨
-                        // 需求：「若出現下架中或是封存的書籍... 改變狀態」
-                        // 上面已經處理了 OFF_SHELF (下架)
-                        // 對於庫存 0：既有邏輯是「設為庫存量(0)」
                         item.setQuantity(0); // 若無庫存則設為 0
                         isStatusChanged = true;
                     }

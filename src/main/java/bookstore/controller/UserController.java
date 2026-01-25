@@ -55,12 +55,6 @@ public class UserController {
                 return response;
             }
             
-            if (user.getUserType() != null && user.getUserType().equals(2)) {
-            	response.put("success", false);
-            	response.put("message", "您沒有權限進入後台管理系統！");
-            	return response;
-            }
-            
             String role;
             Integer type = user.getUserType();
             
@@ -147,7 +141,7 @@ public class UserController {
 	    
 	    if (user.getUserType() != null && user.getUserType() == 2) {
 	        response.put("success", false);
-	        response.put("message", "新增失敗！後台系統禁止直接建立一般會員，請引導使用者至前台註冊。");
+	        response.put("message", "新增失敗！後台系統禁止直接建立一般會員，請引導使用者至前台註冊！");
 	        return response;
 	    }
 

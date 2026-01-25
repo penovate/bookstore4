@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, nextTick, computed } from 'vue';
 import MarkdownIt from 'markdown-it';
+import axios from 'axios';
 
 // 初始化 Markdown 解析器
 const md = new MarkdownIt({
@@ -30,6 +31,7 @@ const messages = ref([ // 對話紀錄
 const isTyping = ref(false); // AI 正在輸入狀態
 
 // 滾動到底部 helper
+// 滾動到底部 helper
 const messagesContainer = ref(null);
 const scrollToBottom = async () => {
     await nextTick();
@@ -37,8 +39,6 @@ const scrollToBottom = async () => {
         messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
     }
 };
-
-import axios from 'axios';
 
 // --- AI 核心邏輯 (REAL API PHASE) ---
 const generateResponse = async (query) => {

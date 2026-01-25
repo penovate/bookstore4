@@ -72,6 +72,7 @@ public class ServiceLogAspect {
 		Object[] args = joinPoint.getArgs();
 		String argString = formatArgs(args);
 
+		log.info("呼叫方法:[{}] 參數:[{}]", methodName, argString);
 		log.info(" 呼叫方法:[{}] 參數:[{}]", methodName, argString);
 		Object result;
 

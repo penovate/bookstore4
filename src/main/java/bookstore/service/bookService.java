@@ -41,11 +41,10 @@ public class bookService {
 	@Transactional
 	public List<BooksBean> selectAllBooks() {
 		List<BooksBean> bookList = bookRepo.findAll();
-		if (bookList == null || bookList.isEmpty()) {
-			log.warn("查詢全部失敗 - 資料庫內無任何書籍資料");
-		}
-		log.info("查詢全部成功 書籍數量: {} 筆", bookList.size());
+
+		log.info("查詢成功 - 共{}筆資料", bookList.size());
 		return bookList;
+
 	}
 
 	// Select book by id-----------------
@@ -185,13 +184,15 @@ public class bookService {
 
 	// update Check
 	private void updateBasicFields(BooksBean existing, BooksBean incoming) {
-		// 書名
 
+		
+		// 書名
 		if (incoming.getBookName() != null) {
 			if (incoming.getBookName().trim().isEmpty())
 				throw new BusinessException(400, "書名不可為空白");
 			existing.setBookName(incoming.getBookName());
 		}
+
 		// 作者
 		if (incoming.getAuthor() != null) {
 			if (incoming.getAuthor().trim().isEmpty())

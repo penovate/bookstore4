@@ -42,19 +42,21 @@
               hover
               density="comfortable"
             ></v-rating>
-            <div v-if="errors.rating" class="text-error text-caption text-red">
+            <div v-if="errors.rating" class="text-caption text-red">
               請點選星星給予評分
             </div>
           </div>
 
           <v-textarea
             v-model="newReview.comment"
-            label="寫下您的心得..."
+            label="寫下您的心得(必填)..."
             placeholder="這本書最讓你印象深刻的是什麼？"
             variant="outlined"
             rows="3"
             auto-grow
             counter="500"
+            :error="errors.comment"
+            :error-messages="errors.comment ? '請填寫評論內容' : ''"
           ></v-textarea>
         </v-form>
       </v-card-text>
@@ -66,6 +68,7 @@
           variant="elevated"
           @click="submitReview"
           prepend-icon="mdi-send"
+          :loading="isSubmitting"
         >
           送出評論
         </v-btn>
@@ -77,58 +80,58 @@
     <div v-if="reviews.length > 0">
       <v-card
         v-for="review in reviews"
-        :key="review.review_id"
+        :key="review.reviewId"
         class="mb-4"
         variant="flat"
         border
       >
         <v-card-text>
           <div class="d-flex flex-row">
-    <div class="mr-4">
-      <v-avatar color="secondary" size="48">
-        <span class="text-h6 text-white">{{ review.user_id }}</span>
-      </v-avatar>
-    </div>
+            <div class="mr-4">
+              <v-avatar color="secondary" size="48">
+                <span class="text-h6 text-white">{{ (review.userName && review.userName[0]) || review.userId }}</span>
+              </v-avatar>
+            </div>
 
-    <div class="flex-grow-1">
-      <div class="d-flex justify-space-between align-start">
-        <div>
-          <div class="text-subtitle-1 font-weight-bold">
-            User {{ review.user_id }}
+            <div class="flex-grow-1">
+              <div class="d-flex justify-space-between align-start">
+                <div>
+                  <div class="text-subtitle-1 font-weight-bold">
+                    {{ review.userName || `User ${review.userId}` }}
+                  </div>
+                  <div class="text-caption text-grey">
+                    {{ formatDate(review.createdAt) }}
+                  </div>
+                </div>
+                
+                <div class="d-flex align-center">
+                  <v-rating
+                    :model-value="review.rating"
+                    color="amber-darken-2"
+                    density="compact"
+                    readonly
+                    size="small"
+                  ></v-rating>
+
+                  <v-btn
+                    variant="text"
+                    size="small"
+                    color="grey-lighten-1"
+                    class="ml-2"
+                    icon
+                    @click="handleReport(review)"
+                  >
+                    <span class="mdi mdi-alert" style="font-size: 20px;"></span>
+                    <v-tooltip activator="parent" location="top">檢舉</v-tooltip>
+                  </v-btn>
+                </div>
+              </div>
+
+              <div class="mt-3 text-body-1">
+                {{ review.comment || "此使用者未填寫文字評論。" }}
+              </div>
+            </div>
           </div>
-          <div class="text-caption text-grey">
-            {{ formatDate(review.created_at) }}
-          </div>
-        </div>
-        
-        <div class="d-flex align-center">
-          <v-rating
-            :model-value="review.rating"
-            color="amber-darken-2"
-            density="compact"
-            readonly
-            size="small"
-          ></v-rating>
-
-          <v-btn
-            icon="mdi-flag-variant-outline"
-            variant="text"
-            size="small"
-            color="grey-lighten-1"
-            class="ml-2"
-            title="檢舉此評論"
-            @click="handleReport(review)"
-          >
-            <v-tooltip activator="parent" location="top">檢舉</v-tooltip>
-          </v-btn>
-        </div>
-        </div>
-
-      <div class="mt-3 text-body-1">
-        {{ review.comment || "此使用者未填寫文字評論。" }}
-      </div>
-    </div>
-  </div>
         </v-card-text>
       </v-card>
     </div>
@@ -145,68 +148,100 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import Swal from 'sweetalert2'; // 引用專案中的 SweetAlert2
+import { ref, computed, onMounted, watch } from 'vue';
+import Swal from 'sweetalert2';
+import reviewService from '@/api/reviewService.js';
+import { useUserStore } from '@/stores/userStore';
 
-// --- 接收 Props (預留給之後書籍詳情頁傳入 book_id) ---
 const props = defineProps({
   bookId: {
     type: [Number, String],
-    default: 1 // 測試用預設值
+    default: 1
   }
 });
 
-// --- Mock Data (模擬資料庫回傳) ---
-const reviews = ref([
-  {
-    review_id: 1,
-    user_id: 101,
-    book_id: 1,
-    rating: 5,
-    comment: "內容非常精彩，整本書都讓我停不下來！使用 Vuetify 做介面真的很漂亮。",
-    created_at: "2025-01-12T14:32:10"
-  },
-  {
-    review_id: 2,
-    user_id: 205,
-    book_id: 1,
-    rating: 3,
-    comment: "還可以，部分內容有點普通。",
-    created_at: "2025-02-14T20:41:03"
-  },
-  {
-    review_id: 3,
-    user_id: 33,
-    book_id: 1,
-    rating: 4,
-    comment: "", // 測試空評論
-    created_at: "2025-01-30T12:55:19"
+// --- JWT 解碼小工具 (不用改其他檔案的關鍵！) ---
+const parseJwt = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
   }
-]);
+};
 
-// --- 表單狀態 ---
+// --- 狀態 ---
+const reviews = ref([]);
+const isSubmitting = ref(false);
 const valid = ref(false);
+const userStore = useUserStore();
+
 const newReview = ref({
   rating: 0,
   comment: ""
 });
 const errors = ref({
-  rating: false
+  rating: false,
+  comment: false
 });
 
-// --- 計算屬性 ---
+// --- 從後端撈資料 ---
+const fetchReviews = async () => {
+  try {
+    const response = await reviewService.getAllReviews();
+    const allReviews = response.data;
+    
+    // 過濾出目前這本書的評論
+    reviews.value = allReviews.filter(r => r.bookId == props.bookId);
+
+    // 依照時間排序 (新的在上面)
+    reviews.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  } catch (error) {
+    console.error("取得評論失敗:", error);
+  }
+};
+
+// --- 監聽 bookId 改變 ---
+watch(() => props.bookId, () => {
+  fetchReviews();
+});
+
+// --- 初始化 ---
+onMounted(() => {
+  fetchReviews();
+});
+
+// --- 計算平均分數 ---
 const averageRating = computed(() => {
   if (reviews.value.length === 0) return 0;
   const sum = reviews.value.reduce((acc, curr) => acc + curr.rating, 0);
   return (sum / reviews.value.length).toFixed(1);
 });
 
-// --- 方法 ---
+// --- 格式化日期 ---
+const formatDate = (dateArrayOrString) => {
+  if (!dateArrayOrString) return '';
+  
+  let date;
+  if (Array.isArray(dateArrayOrString)) {
+    // 處理 Java 陣列格式 [year, month, day, hour, minute, second]
+    date = new Date(
+      dateArrayOrString[0],
+      dateArrayOrString[1] - 1,
+      dateArrayOrString[2],
+      dateArrayOrString[3],
+      dateArrayOrString[4],
+      dateArrayOrString[5] || 0
+    );
+  } else {
+    date = new Date(dateArrayOrString);
+  }
 
-// 格式化日期
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
   return date.toLocaleString('zh-TW', {
     year: 'numeric',
     month: '2-digit',
@@ -216,48 +251,124 @@ const formatDate = (dateString) => {
   });
 };
 
-// 送出評論
-const submitReview = () => {
-  // 1. 驗證: Rating 必填
+// --- 送出評論 ---
+const submitReview = async () => {
+  // 1. 重置錯誤狀態
+  errors.value.rating = false;
+  errors.value.comment = false;
+
+  let hasError = false;
+
+  // 2. 驗證 Rating (必填)
   if (newReview.value.rating === 0) {
     errors.value.rating = true;
+    hasError = true;
+  }
+
+  // 3. ▼▼▼ 新增驗證：Comment (必填且不能只有空白) ▼▼▼
+  if (!newReview.value.comment || !newReview.value.comment.trim()) {
+    errors.value.comment = true;
+    hasError = true;
+  }
+
+  // 如果有任何錯誤，就停止執行
+  if (hasError) {
     return;
   }
-  errors.value.rating = false;
 
-  // 2. 模擬送後端 payload
-  const mockPayload = {
-    review_id: Date.now(), // 用時間戳當臨時 ID
-    user_id: 888, // 模擬當前登入者
-    book_id: props.bookId,
+  isSubmitting.value = true;
+  
+  // 從 Pinia 狀態管理中取得當前登入者資訊
+  let currentUserId = userStore.userId || localStorage.getItem('userId');
+  let currentUserName = userStore.userName || localStorage.getItem('userName');
+
+
+  // 2. 如果真的都沒有 (因為沒存到)，我們就去解碼 Token！
+  if (!currentUserId) {
+      const token = localStorage.getItem('userToken');
+      if (token) {
+          const decoded = parseJwt(token);
+          // 試著從解碼後的資料抓 ID，通常欄位名稱是 'userId', 'id', 或 'sub'
+          if (decoded) {
+              console.log("Token 解碼結果:", decoded); // 可以在 F12 偷看 Token 裡有什麼
+              currentUserId = decoded.userId || decoded.id || decoded.sub; 
+              
+              // 如果名字也沒有，順便抓名字
+              if (!currentUserName) {
+                  currentUserName = decoded.userName || decoded.name || decoded.sub;
+              }
+          }
+      }
+  }
+
+
+  // 防呆：如果 Store 裡沒有 ID (代表可能沒登入或狀態遺失)
+  if (!currentUserId) {
+      Swal.fire({
+          icon: 'warning',
+          title: '請先登入',
+          text: '登入後才能發表評論',
+          confirmButtonText: '前往登入',
+          confirmButtonColor: '#2E5C43'
+      }).then((result) => {
+          if (result.isConfirmed) {
+              // 這裡假設你有 router，如果沒有請在上面 const router = useRouter()
+              // router.push('/login'); 
+              window.location.href = '/dev/user/login'; // 或是直接跳轉
+          }
+      });
+      isSubmitting.value = false;
+      return;
+  }
+
+  // 準備要送給後端的資料
+  const payload = {
+    userId: Number(currentUserId), 
+    bookId: props.bookId,
     rating: newReview.value.rating,
-    comment: newReview.value.comment,
-    created_at: new Date().toISOString()
+    comment: newReview.value.comment
   };
+  
+  try {
+    const response = await reviewService.createReview(payload);
+    const newReviewData = response.data;
+    
+    if (!newReviewData.userName && currentUserName) {
+    newReviewData.userName = currentUserName;
+    }
 
-  // 3. 更新畫面 (加到最上面)
-  reviews.value.unshift(mockPayload);
+    // 成功後，把回傳的新資料加到列表最上方
+    reviews.value.unshift(response.data);
 
-  // 4. 跳出成功提示 (使用 SweetAlert2)
-  Swal.fire({
-    icon: 'success',
-    title: '評論已送出',
-    text: '感謝您的分享！',
-    timer: 1500,
-    showConfirmButton: false,
-    confirmButtonColor: '#a5886d' // 配合你的主題色
-  });
+    Swal.fire({
+      icon: 'success',
+      title: '評論已送出',
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 1500
+    });
 
-  // 5. 重置表單
-  newReview.value.rating = 0;
-  newReview.value.comment = "";
+    // 重置表單
+    newReview.value.rating = 0;
+    newReview.value.comment = "";
+  } catch (error) {
+    console.error(error);
+    Swal.fire({
+      icon: 'error',
+      title: '評論失敗',
+      text: '系統發生錯誤，請稍後再試'
+    });
+  } finally {
+    isSubmitting.value = false;
+  }
 };
+
 // 處理檢舉
 const handleReport = async (review) => {
-  // 1. 彈出選單詢問原因
   const { value: reason } = await Swal.fire({
     title: '檢舉評論',
-    text: `您確定要檢舉 User ${review.user_id} 的評論嗎？請選擇原因：`,
+    text: `您確定要檢舉 ${review.userName || 'User ' + review.userId} 的評論嗎？請選擇原因：`,
     input: 'select',
     inputOptions: {
       'spam': '垃圾廣告訊息',
@@ -269,19 +380,15 @@ const handleReport = async (review) => {
     showCancelButton: true,
     confirmButtonText: '送出檢舉',
     cancelButtonText: '取消',
-    confirmButtonColor: '#d33', // 紅色代表警告動作
+    confirmButtonColor: '#d33',
     cancelButtonColor: '#aaa',
     inputValidator: (value) => {
       return !value && '請選擇一個原因！'
     }
   });
 
-  // 2. 如果使用者有選原因並送出
   if (reason) {
-    // 這裡未來會呼叫後端 API，例如: reviewService.reportReview(review.review_id, reason)
-    console.log(`已檢舉評論 ID: ${review.review_id}, 原因: ${reason}`);
-
-    // 3. 顯示成功訊息
+    console.log(`已檢舉評論 ID: ${review.reviewId}, 原因: ${reason}`);
     Swal.fire({
       icon: 'success',
       title: '檢舉已送出',

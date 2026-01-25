@@ -132,7 +132,7 @@ const router = createRouter({
         {
           path: 'bookclubs',
           name: 'admin-bookclubs',
-          component: () => import('../views/admin/bookClubs/ClubList.vue'),
+          component: () => import('../views/admin/bookClubs/AdminBookClub.vue'),
         },
         {
           path: 'orders/update/:id',
@@ -149,12 +149,12 @@ const router = createRouter({
           name: 'orderItemUpdate',
           component: () => import('../views/admin/orders/OrderItemUpdate.vue'),
         },
+        // 4.評價管理
         {
           path: 'reviews',
           name: 'admin-reviews',
           component: () => import('../views/admin/reviews/ReviewList.vue'),
         },
-        // 暫用開始行
         {
           path: 'reviews/:id',
           name: 'review-detail',
@@ -170,7 +170,6 @@ const router = createRouter({
           name: 'review-update',
           component: () => import('../views/admin/reviews/ReviewUpdate.vue'),
         },
-        // 暫用結束行
       ],
     },
     // --- 前台網站區域 ---
@@ -178,6 +177,11 @@ const router = createRouter({
       path: '/dev/user',
       component: () => import('../views/Layout/UserLayout.vue'),
       children: [
+        {
+          path: 'login',
+          name: 'user-login',
+          component: () => import('../views/public/user/UserLogin.vue'),
+        },
         {
           path: 'books',
           name: 'user-books',
@@ -230,25 +234,30 @@ router.beforeEach((to, from, next) => {
 
   const isAdminRoute = to.path.startsWith('/dev/admin') || to.name === 'home'
 
+  const isUserProtectedRoute =
+    ['myOrders', 'checkout', 'cart', 'userCoupons'].includes(to.name) ||
+    to.path.startsWith('/dev/user/orders') ||
+    to.path.startsWith('/dev/user/coupons')
+
   if (isAdminRoute) {
     if (!token) {
-      next({ name: 'login' })
+      return next({ name: 'login', query: { redirect: to.fullPath } })
     } else if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
-      next()
+      return next()
     } else {
       Swal.fire('權限不足', '您沒有進入後台管理系統的權限', 'error')
-      next({ name: 'userHome' })
+      return next({ name: 'userHome' })
     }
-    return
   }
 
-  if (to.name === 'login') {
-    if (token && (role === 'SUPER_ADMIN' || role === 'ADMIN')) {
-      next({ name: 'home' })
-    } else {
-      next()
-    }
-    return
+  if (isUserProtectedRoute && !token) {
+    Swal.fire({
+      title: '請先登入',
+      text: '登入會員後即可查看',
+      icon: 'info',
+      confirmButtonColor: '#2e5c43',
+    })
+    return next({ name: 'user-login', query: { redirect: to.fullPath } })
   }
 
   next()

@@ -1,7 +1,9 @@
 package bookstore.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import bookstore.bean.UserBean;
@@ -24,6 +26,16 @@ public class UserLogService {
 		log.setActionTime(LocalDateTime.now());
 		
 		logRepo.save(log);
+	}
+	
+	public List<UserLogBean> getLogsByRole(String role, Integer userId) {
+	    Sort sortByTime = Sort.by(Sort.Direction.DESC, "actionTime");
+	    
+	    if ("SUPER_ADMIN".equals(role)) {
+	        return logRepo.findAll(sortByTime);
+	    } else {
+	        return logRepo.findByAdminUser_UserId(userId, sortByTime);
+	    }
 	}
 	
 }

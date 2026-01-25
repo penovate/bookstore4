@@ -38,7 +38,7 @@ public class WebConfig implements WebMvcConfigurer {
 					.excludePathPatterns("/login", "/api/login")
 					.excludePathPatterns("/api/**")
 					.excludePathPatterns("/logout")
-					
+					.excludePathPatterns("/get-test-token")
 					.excludePathPatterns("/static/**", "/css/**", "/js/**", "/images/**");
 		}
 
@@ -46,11 +46,12 @@ public class WebConfig implements WebMvcConfigurer {
 			registry.addInterceptor(jwtInterceptor)
 					.addPathPatterns("/cart/api/**")
 					.addPathPatterns("/orders/**")
-					.addPathPatterns("/api/books/**")
+					.addPathPatterns("/api/clubs/**")
 					.excludePathPatterns("/api/books/getAllBooks",
 										  "/api/books/getBook/**",
 										  "/api/books/isbnCheck",
-										   "/api/books/genres");
+										   "/api/books/genres",
+										   "/api/book/delete/**");
 //			
 		}
 	}

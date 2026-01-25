@@ -74,7 +74,7 @@
                   <button class="btn-select-store" @click="">請選擇門市</button>
                 </div>
               </div>
-              <p class="shipping-note">超商取貨未滿 500 元，將酌收訂單處理費 50 元</p>
+              <p class="shipping-note">超商取貨未滿 350 元，將酌收訂單處理費 50 元</p>
             </div>
           </div>
 
@@ -86,7 +86,8 @@
                 <input type="radio" v-model="form.paymentMethod" value="信用卡" />
                 信用卡付款
               </label>
-              <label v-if="canUseCOD">
+			  <!-- 超商取貨才能使用貨到付款 --> 
+			  <label v-if="canUseCOD">
                 <input type="radio" v-model="form.paymentMethod" value="COD" />
                 貨到付款
               </label>
@@ -308,7 +309,7 @@ watch(
   },
 )
 
-// === 方法 ===
+// === 快速填入方法 ===
 
 const copySubscriberInfo = () => {
   form.value.recipientName = user.value.userName
@@ -360,7 +361,8 @@ const submitOrder = async () => {
       couponId: selectedCouponId.value
     }
 
-    const response = await orderService.checkout(payload)
+    // 將前端訂單資料傳入後端執行新增
+	const response = await orderService.checkout(payload)
 
     if (response.data.success) {
       Swal.fire({

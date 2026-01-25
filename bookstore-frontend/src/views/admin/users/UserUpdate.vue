@@ -1,199 +1,219 @@
 <template>
   <div class="update-page-wrapper">
     <div class="header-section mb-6">
-      <h2 class="forest-main-title">修改會員資料</h2>
+      <h2 class="forest-main-title">會員資料管理</h2>
     </div>
 
-    <v-card
-      width="100%"
-      max-width="850"
-      class="pa-8 forest-card-border elevation-2 mx-auto rounded-xl"
-    >
-      <v-card-item class="text-center mb-4">
-        <v-icon icon="mdi-account-edit-outline" size="large" color="primary" class="mb-2"></v-icon>
-        <v-card-title class="text-h5 font-weight-bold text-primary"> 編輯帳號資訊 </v-card-title>
-      </v-card-item>
+    <v-card width="100%" max-width="850" class="forest-card-border elevation-2 mx-auto rounded-xl">
+      <v-tabs v-model="tab" color="primary" align-tabs="center" class="mt-2">
+        <v-tab value="profile">
+          <v-icon start icon="mdi-account-details-outline"></v-icon>基本資料修改
+        </v-tab>
+        <v-tab value="password"> <v-icon start icon="mdi-lock-reset"></v-icon>修改帳號密碼 </v-tab>
+      </v-tabs>
 
-      <v-divider class="my-4"></v-divider>
+      <v-divider></v-divider>
 
-      <v-form ref="updateForm" @submit.prevent="handleUpdate" v-if="formData.userId">
-        <v-container>
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-text-field
-                label="會員編號 (ID)"
-                :model-value="formData.userId"
-                readonly
-                disabled
-                variant="filled"
-                density="compact"
-                bg-color="grey-lighten-4"
-                color="primary"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="formData.email"
-                label="帳號（Email）"
-                type="email"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                :rules="[(v) => !!v || 'Email 必填', () => !emailError || emailError]"
-                @blur="validateUnique('email')"
-                @input="emailError = ''"
-                required
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="formData.userPwd"
-                label="修改新密碼"
-                type="password"
-                placeholder="若不修改請留空"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                hint="不修改請保持空白"
-                persistent-hint
-                @input="confirmPwd = ''"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="confirmPwd"
-                label="確認新密碼"
-                type="password"
-                placeholder="請再次輸入新密碼"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                :disabled="!formData.userPwd || formData.userPwd.trim() === ''"
-                :rules="[
-                  (v) =>
-                    !formData.userPwd || formData.userPwd.trim() === '' || !!v || '確認密碼必填',
-                  (v) =>
-                    !formData.userPwd ||
-                    formData.userPwd.trim() === '' ||
-                    v === formData.userPwd ||
-                    '兩次輸入的密碼不一致',
-                ]"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="formData.userName"
-                label="姓名"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                :rules="[(v) => !!v || '姓名必填']"
-                required
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="formData.gender"
-                label="性別"
-                :items="[
-                  { title: '男', value: 'M' },
-                  { title: '女', value: 'F' },
-                ]"
-                variant="outlined"
-                density="compact"
-                color="primary"
-              ></v-select>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="formData.birth"
-                label="生日"
-                type="date"
-                variant="outlined"
-                density="compact"
-                color="primary"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="formData.phoneNum"
-                label="聯絡電話"
-                variant="outlined"
-                density="compact"
-                color="primary"
-                :rules="[() => !phoneError || phoneError]"
-                @blur="validateUnique('phone')"
-                @input="phoneError = ''"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12">
-              <v-text-field
-                v-model="formData.address"
-                label="地址"
-                variant="outlined"
-                density="compact"
-                color="primary"
-              ></v-text-field>
-            </v-col>
-
-            <v-col cols="12" v-if="currentUserRole === 'SUPER_ADMIN' && formData.userType !== 2">
-              <v-select
-                v-model="formData.userType"
-                label="權限等級"
-                :items="roleSelectOptions"
-                variant="outlined"
-                density="compact"
-                color="primary"
-              ></v-select>
-            </v-col>
-
-            <v-col cols="12" v-else-if="formData.userType === 2">
-              <v-text-field
-                label="權限等級"
-                model-value="一般會員"
-                variant="filled"
-                density="compact"
-                readonly
-                disabled
-                bg-color="grey-lighten-4"
-              ></v-text-field>
-            </v-col>
-          </v-row>
-        </v-container>
-
-        <v-divider class="my-6"></v-divider>
-
-        <v-card-actions class="justify-center pb-4">
-          <v-btn
-            type="submit"
-            color="primary"
-            variant="elevated"
-            size="large"
-            class="px-10 mr-4 rounded-lg font-weight-bold"
+      <v-window v-model="tab">
+        <v-window-item value="profile">
+          <v-form
+            ref="profileForm"
+            @submit.prevent="handleUpdate"
+            v-if="formData.userId"
+            class="pa-8"
           >
-            確認修改資料
-          </v-btn>
-          <v-btn
-            color="primary"
-            variant="outlined"
-            size="large"
-            class="px-10 rounded-lg font-weight-bold"
-            @click="router.push('/dev/admin/users')"
-          >
-            取消返回
-          </v-btn>
-        </v-card-actions>
-      </v-form>
+            <v-container>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    label="會員編號 (ID)"
+                    :model-value="formData.userId"
+                    readonly
+                    disabled
+                    variant="filled"
+                    density="compact"
+                    bg-color="grey-lighten-4"
+                    color="primary"
+                  ></v-text-field>
+                </v-col>
 
-      <v-card-text v-else class="text-center pa-10">
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.email"
+                    label="帳號（Email）"
+                    type="email"
+                    variant="outlined"
+                    density="compact"
+                    color="primary"
+                    :rules="[(v) => !!v || 'Email 必填', () => !emailError || emailError]"
+                    @blur="validateUnique('email')"
+                    @input="emailError = ''"
+                    required
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.userName"
+                    label="姓名"
+                    variant="outlined"
+                    density="compact"
+                    color="primary"
+                    :rules="[(v) => !!v || '姓名必填']"
+                    required
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="formData.gender"
+                    label="性別"
+                    :items="[
+                      { title: '男', value: 'M' },
+                      { title: '女', value: 'F' },
+                    ]"
+                    variant="outlined"
+                    density="compact"
+                    color="primary"
+                  ></v-select>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.birth"
+                    label="生日"
+                    type="date"
+                    variant="outlined"
+                    density="compact"
+                    color="primary"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.phoneNum"
+                    label="聯絡電話"
+                    variant="outlined"
+                    density="compact"
+                    color="primary"
+                    :rules="[() => !phoneError || phoneError]"
+                    @blur="validateUnique('phone')"
+                    @input="phoneError = ''"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="formData.address"
+                    label="地址"
+                    variant="outlined"
+                    density="compact"
+                    color="primary"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12">
+                  <v-select
+                    v-if="
+                      currentUserRole === 'SUPER_ADMIN' &&
+                      String(formData.userId) !== currentUserId &&
+                      formData.userType !== 2
+                    "
+                    v-model="formData.userType"
+                    label="權限等級"
+                    :items="roleSelectOptions"
+                    variant="outlined"
+                    density="compact"
+                    color="primary"
+                  ></v-select>
+
+                  <v-text-field
+                    v-else
+                    label="權限等級"
+                    :model-value="getRoleName(formData.userType)"
+                    variant="filled"
+                    density="compact"
+                    readonly
+                    disabled
+                    bg-color="grey-lighten-4"
+                    persistent-hint
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+
+            <v-card-actions class="justify-center mt-4">
+              <v-btn
+                type="submit"
+                color="primary"
+                variant="elevated"
+                size="large"
+                class="px-10 mr-4 rounded-lg font-weight-bold"
+                >確認修改資料</v-btn
+              >
+              <v-btn
+                color="primary"
+                variant="outlined"
+                size="large"
+                class="px-10 rounded-lg font-weight-bold"
+                @click="router.push('/dev/admin/users')"
+                >取消返回</v-btn
+              >
+            </v-card-actions>
+          </v-form>
+        </v-window-item>
+
+        <v-window-item value="password">
+          <v-form ref="passwordForm" @submit.prevent="handlePasswordUpdate" class="pa-10">
+            <v-container style="max-width: 500px">
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="passwordData.userPwd"
+                    label="新密碼"
+                    type="password"
+                    variant="outlined"
+                    color="primary"
+                    prepend-inner-icon="mdi-lock-outline"
+                    :rules="[(v) => !!v || '新密碼必填']"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="passwordData.confirmPwd"
+                    label="確認新密碼"
+                    type="password"
+                    variant="outlined"
+                    color="primary"
+                    prepend-inner-icon="mdi-lock-check-outline"
+                    :rules="[(v) => v === passwordData.userPwd || '兩次密碼不一致']"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+
+            <v-card-actions class="justify-center mt-6">
+              <v-btn
+                type="submit"
+                color="primary"
+                variant="elevated"
+                size="large"
+                class="px-10 mr-4 rounded-lg font-weight-bold"
+                >確認變更密碼</v-btn
+              >
+              <v-btn
+                variant="outlined"
+                size="large"
+                class="px-10 rounded-lg font-weight-bold"
+                @click="tab = 'profile'"
+                >返回基本資料</v-btn
+              >
+            </v-card-actions>
+          </v-form>
+        </v-window-item>
+      </v-window>
+
+      <v-card-text v-if="!formData.userId" class="text-center pa-10">
         <v-progress-circular indeterminate color="primary"></v-progress-circular>
         <div class="mt-4 text-grey">正在讀取會員資料...</div>
       </v-card-text>
@@ -202,33 +222,36 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 
 const route = useRoute()
 const router = useRouter()
-const updateForm = ref(null)
-const confirmPwd = ref('')
+const tab = ref('profile')
+const profileForm = ref(null)
+const passwordForm = ref(null)
+
 const emailError = ref('')
 const phoneError = ref('')
-
 const currentUserRole = localStorage.getItem('userRole')
 const currentUserId = localStorage.getItem('userId')
 
 const formData = ref({
   userId: null,
   email: '',
-  userPwd: '',
   userName: '',
   gender: '',
   birth: '',
   phoneNum: '',
   address: '',
   userType: null,
-  status: null,
-  points: null,
+})
+
+const passwordData = reactive({
+  userPwd: '',
+  confirmPwd: '',
 })
 
 const roleSelectOptions = computed(() => {
@@ -248,17 +271,15 @@ const fetchUser = async () => {
     const response = await axios.get(`http://localhost:8080/api/data/get/${userId}`)
     if (response.data) {
       const userData = response.data
-
       if (
         currentUserRole === 'ADMIN' &&
         (userData.userType === 0 || userData.userType === 1) &&
-        String(userData.userId) !== currentUserId
+        String(userData.userId) !== String(currentUserId)
       ) {
         Swal.fire({ icon: 'error', title: '權限不足', text: '您無權修改管理員等級的資料！' })
         router.push('/dev/admin/users')
         return
       }
-
       formData.value = userData
       if (formData.value.birth) {
         formData.value.birth = new Date(formData.value.birth).toISOString().split('T')[0]
@@ -270,79 +291,74 @@ const fetchUser = async () => {
 }
 
 const handleUpdate = async () => {
-  const { valid } = await updateForm.value.validate()
-  if (!valid || emailError.value || phoneError.value) {
-    Swal.fire({
-      icon: 'error',
-      title: '資料有誤',
-      text: emailError.value || phoneError.value || '請檢查輸入欄位',
-    })
-    return
-  }
-
-  if (formData.value.userPwd && formData.value.userPwd.trim() !== '') {
-    if (formData.value.userPwd !== confirmPwd.value) {
-      Swal.fire({
-        icon: 'error',
-        title: '密碼不一致',
-        text: '請確認兩次輸入的新密碼是否相同！',
-        confirmButtonColor: '#2E5C43',
-      })
-      return
-    }
-  }
+  const { valid } = await profileForm.value.validate()
+  if (!valid || emailError.value || phoneError.value) return
 
   try {
-    const checkRes = await axios.get('http://localhost:8080/api/users/check-unique', {
-      params: {
-        userId: formData.value.userId,
-        email: formData.value.email,
-        phoneNum: formData.value.phoneNum,
-      },
-    })
-
-    if (!checkRes.data.success) {
-      Swal.fire({
-        icon: 'warning',
-        title: '更新失敗',
-        text: checkRes.data.message,
-        confirmButtonColor: '#2E5C43',
-      })
-      return
-    }
-
     const response = await axios.put('http://localhost:8080/api/data/update', formData.value)
     if (response.data.success) {
       Swal.fire({
         icon: 'success',
-        title: '更新成功！',
+        title: '資料更新成功！',
         confirmButtonColor: '#2E5C43',
       }).then(() => {
         router.push('/dev/admin/users')
       })
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: '更新失敗',
-        text: response.data.message,
-        confirmButtonColor: '#2E5C43',
-      })
     }
   } catch (error) {
-    Swal.fire({ icon: 'error', title: '錯誤', text: '連線異常', confirmButtonColor: '#2E5C43' })
+    Swal.fire('錯誤', '連線異常', 'error')
   }
 }
 
+const handlePasswordUpdate = async () => {
+  const { valid } = await passwordForm.value.validate()
+  if (!valid) return
+
+  Swal.fire({
+    title: '確定要修改密碼嗎？',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#2E5C43',
+    cancelButtonColor: '#aaa',
+    confirmButtonText: '確定',
+    cancelButtonText: '取消',
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const updateData = {
+          ...formData.value,
+          userPwd: passwordData.userPwd,
+        }
+
+        const response = await axios.put('http://localhost:8080/api/data/update', updateData)
+
+        if (response.data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: '密碼更新成功！',
+            confirmButtonColor: '#2E5C43',
+          }).then(() => {
+            passwordData.userPwd = ''
+            passwordData.confirmPwd = ''
+            router.push('/dev/admin/users')
+          })
+        } else {
+          Swal.fire('失敗', response.data.message, 'error')
+        }
+      } catch (error) {
+        console.error('API Error:', error)
+        Swal.fire('錯誤', '伺服器連線異常，請稍後再試', 'error')
+      }
+    }
+  })
+}
+
 const validateUnique = async (type) => {
+  const params = { userId: formData.value.userId }
+  if (type === 'email' && formData.value.email) params.email = formData.value.email
+  if (type === 'phone' && formData.value.phoneNum) params.phoneNum = formData.value.phoneNum
   try {
-    const params = { userId: formData.value.userId }
-    if (type === 'email' && formData.value.email) params.email = formData.value.email
-    if (type === 'phone' && formData.value.phoneNum) params.phoneNum = formData.value.phoneNum
-
-    if ((type === 'email' && !params.email) || (type === 'phone' && !params.phoneNum)) return
-
     const res = await axios.get('http://localhost:8080/api/users/check-unique', { params })
-
     if (!res.data.success) {
       if (type === 'email') emailError.value = res.data.message
       if (type === 'phone') phoneError.value = res.data.message
@@ -350,9 +366,18 @@ const validateUnique = async (type) => {
       if (type === 'email') emailError.value = ''
       if (type === 'phone') phoneError.value = ''
     }
-  } catch (error) {
-    console.error('唯一性檢查失敗', error)
+  } catch (e) {
+    console.error(e)
   }
+}
+
+const getRoleName = (type) => {
+  const roles = {
+    0: '超級管理員',
+    1: '一般管理員',
+    2: '一般會員',
+  }
+  return roles[type] || '未知等級'
 }
 
 onMounted(fetchUser)

@@ -5,6 +5,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import GoogleSignInPlugin from 'vue3-google-signin'
 
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
@@ -14,6 +15,14 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
 import App from './App.vue'
 import router from './router'
+
+const app = createApp(App)
+
+axios.defaults.withCredentials = true;
+
+app.use(GoogleSignInPlugin, {
+  clientId: '820056363256-hofl35eid0nukf8283riv209ij3gl6h0.apps.googleusercontent.com',
+})
 
 axios.interceptors.request.use(
   (config) => {
@@ -62,8 +71,6 @@ const vuetify = createVuetify({
     },
   },
 })
-
-const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)

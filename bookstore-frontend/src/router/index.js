@@ -71,6 +71,7 @@ const router = createRouter({
           path: 'users',
           name: 'userList',
           component: () => import('../views/admin/users/UserList.vue'),
+          meta: { title: '會員管理列表' },
         },
         {
           path: 'users/get/:id',
@@ -188,6 +189,31 @@ const router = createRouter({
           component: () => import('../views/public/user/UserLogin.vue'),
         },
         {
+          path: 'profile',
+          name: 'user-profile',
+          component: () => import('../views/public/user/UserProfile.vue'),
+        },
+        {
+          path: 'register',
+          name: 'user-register',
+          component: () => import('../views/public/user/UserRegister.vue'),
+        },
+        {
+          path: 'forgetpassword',
+          name: 'user-forget-password',
+          component: () => import('../views/public/user/UserForgetPwd.vue')
+        },
+        {
+          path: 'reset-password-by-email',
+          name: 'user-reset-password-by-email',
+          component: () => import('../views/public/user/ResetPasswordByEmail.vue'),
+        },
+        {
+          path: 'set-new-password',
+          name: 'set-new-password',
+          component: () => import('../views/public/user/SetNewPassword.vue'),
+        },
+        {
           path: 'books',
           name: 'user-books',
           component: () => import('../views/public/books/UserBookList.vue'),
@@ -236,6 +262,11 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('userToken')
   const role = localStorage.getItem('userRole')
+  const pageTitle = to.meta.title
+  document.title = pageTitle
+    ? `${pageTitle} | 
+  網路書店`
+    : '網路書店'
 
   const isAdminRoute = to.path.startsWith('/dev/admin') || to.name === 'home'
 

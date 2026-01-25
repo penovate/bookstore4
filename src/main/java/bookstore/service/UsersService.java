@@ -18,6 +18,7 @@ public class UsersService {
 
 	private final UserRepository userRepo;
 	
+	// 後台會員系統
 	public UserBean login(String email, String password) {
 		if (email == null || password == null) return null;
 		return userRepo.findByEmailAndUserPwd(email, password);
@@ -78,6 +79,16 @@ public class UsersService {
 			}
 		}
 		return result;
+	}
+	
+	// 前台書店系統
+	
+	public UserBean findByEmail(String email) {
+		return userRepo.findByEmail(email);
+	}
+	
+	public UserBean findByEmailAndBirth(String email, String birth) {
+		return userRepo.findByEmailAndBirthString(email, birth);
 	}
 	
 }

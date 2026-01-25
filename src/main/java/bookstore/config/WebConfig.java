@@ -24,7 +24,7 @@ public class WebConfig implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(@NonNull CorsRegistry registry) {
 		registry.addMapping("/**")
-				.allowedOrigins("http://localhost:5173")
+				.allowedOriginPatterns("http://localhost:5173", "https://*.ecpay.com.tw")// 允許這些網址讀取後端回傳的 Response
 				.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 				.allowCredentials(true)
 				.allowedHeaders("*");
@@ -38,7 +38,11 @@ public class WebConfig implements WebMvcConfigurer {
 					.excludePathPatterns("/login", "/api/login")
 					.excludePathPatterns("/api/**")
 					.excludePathPatterns("/logout")
+<<<<<<< HEAD
 					.excludePathPatterns("/get-test-token")
+=======
+
+>>>>>>> master
 					.excludePathPatterns("/static/**", "/css/**", "/js/**", "/images/**");
 		}
 
@@ -46,6 +50,7 @@ public class WebConfig implements WebMvcConfigurer {
 			registry.addInterceptor(jwtInterceptor)
 					.addPathPatterns("/cart/api/**")
 					.addPathPatterns("/orders/**")
+<<<<<<< HEAD
 					.addPathPatterns("/api/clubs/**")
 					.excludePathPatterns("/api/books/getAllBooks",
 										  "/api/books/getBook/**",
@@ -53,6 +58,16 @@ public class WebConfig implements WebMvcConfigurer {
 										   "/api/books/genres",
 										   "/api/book/delete/**");
 //			
+=======
+					.excludePathPatterns("/orders/ecpay/**");
+			// .addPathPatterns("/api/books**")
+			// .addPathPatterns("/api/**")
+			// .excludePathPatterns("/api/books/getAllBooks",
+			// "api/books/getBook/**",
+			// "api/books/isbnCheck",
+			// "api/books/genres");
+
+>>>>>>> master
 		}
 	}
 
@@ -61,6 +76,5 @@ public class WebConfig implements WebMvcConfigurer {
 		registry.addResourceHandler("/upload-images/**")
 				.addResourceLocations("file:" + uploadDir);
 	}
-	
-	
+
 }

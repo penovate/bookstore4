@@ -130,6 +130,11 @@ const router = createRouter({
           component: () => import('../views/admin/logs/SalesData.vue'),
         },
         {
+          path: 'bookclubs/insert',
+          name: 'admin-bookclubs-insert',
+          component: () => import('../views/admin/bookClubs/insertBookClub.vue'),
+        },
+        {
           path: 'bookclubs',
           name: 'admin-bookclubs',
           component: () => import('../views/admin/bookClubs/AdminBookClub.vue'),

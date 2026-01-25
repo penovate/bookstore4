@@ -56,13 +56,13 @@ const handleReview = async (item, newStatus) => {
     // 這裡需要注意：Service 的 updateClub 需要完整 Bean 與檔案 Part
     // 若後端不支援單純透過 API 修改狀態 (Patch)，則需要完整資料更新。
     // 在此我們先建立對話框確認，然後嘗試用原資料 + 新狀態回傳。
-    
+
     // 實際上 Admin 若要審核，通常只需改 Status
     // 但 BookClubService.updateBookclub 會驗證欄位。
     // 假設我們將現有 item 修改 status 後回傳 (不帶檔案)
 
     const statusText = statusMap[newStatus]?.text || '未知狀態';
-    
+
     const result = await Swal.fire({
         title: `確定變更為${statusText}？`,
         text: "此操作將更新讀書會狀態",
@@ -77,12 +77,12 @@ const handleReview = async (item, newStatus) => {
     if (result.isConfirmed) {
         try {
             // 深拷貝物件以避免直接修改 UI
-            const updateData = { ...item }; 
+            const updateData = { ...item };
             updateData.status = newStatus;
-            
+
             // 呼叫 Service (不帶檔案)
             await bookClubService.updateClub(item.clubId, updateData, null, null);
-            
+
             Swal.fire('成功', `狀態已更新為${statusText}`, 'success');
             loadClubs(); // 重整列表
         } catch (error) {
@@ -126,6 +126,10 @@ onMounted(() => {
         <v-row class="mb-4" align="center">
             <v-col cols="12" md="4">
                 <h2 class="text-h4 font-weight-bold text-primary">讀書會管理</h2>
+                <v-btn color="primary" class="mt-2" prepend-icon="mdi-plus" elevation="2"
+                    @click="router.push({ name: 'admin-bookclubs-insert' })">
+                    新增讀書會
+                </v-btn>
             </v-col>
             <v-col cols="12" md="4" offset-md="4">
                 <v-text-field v-model="search" label="搜尋讀書會..." prepend-inner-icon="mdi-magnify" variant="outlined"
@@ -139,15 +143,15 @@ onMounted(() => {
 
                 <!-- 主辦人 -->
                 <template v-slot:item.host="{ item }">
-                   <div v-if="item.host">
-                       <v-icon icon="mdi-account" size="small" class="mr-1"></v-icon>
-                       {{ item.host.userName }} ({{ item.host.userId }})
-                   </div>
-                   <span v-else>-</span>
+                    <div v-if="item.host">
+                        <v-icon icon="mdi-account" size="small" class="mr-1"></v-icon>
+                        {{ item.host.userName }} ({{ item.host.userId }})
+                    </div>
+                    <span v-else>-</span>
                 </template>
 
-                 <!-- 人數 -->
-                 <template v-slot:item.participants="{ item }">
+                <!-- 人數 -->
+                <template v-slot:item.participants="{ item }">
                     {{ item.currentParticipants || 0 }} / {{ item.maxParticipants }}
                 </template>
 
@@ -176,7 +180,8 @@ onMounted(() => {
                     </div>
                     <!-- 其他狀態顯示刪除 -->
                     <div v-else class="d-flex justify-center">
-                         <v-btn color="grey" variant="text" size="small" icon="mdi-delete" @click="handleDelete(item)"></v-btn>
+                        <v-btn color="grey" variant="text" size="small" icon="mdi-delete"
+                            @click="handleDelete(item)"></v-btn>
                     </div>
                 </template>
 

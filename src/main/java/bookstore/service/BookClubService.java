@@ -43,7 +43,6 @@ public class BookClubService {
 
 	@Autowired
 	private ClubCategoriesRepository categoriesRepository;
-	
 
 	private final String PROPOSAL_DIR = "C:\\uploads\\proposal\\";
 
@@ -56,6 +55,11 @@ public class BookClubService {
 		List<BookClubsBean> clubList = bookClubsRepository.findAll();
 		log.info("查詢成功，共 {} 筆資料", clubList.size());
 		return clubList;
+	}
+
+	// 查詢所有讀書會分類
+	public List<ClubCategoriesBean> getAllCategories() {
+		return categoriesRepository.findAll();
 	}
 
 	// 查詢單筆讀書會
@@ -264,12 +268,12 @@ public class BookClubService {
 	}
 
 	// 修改讀書會主方法
-	public BookClubsBean updateBookclub(Integer clubId, 
-										BookClubsBean incomingClub, 
-										MultipartFile proposalFile,
-										MultipartFile proofFile, 
-										Integer currentUserId, 
-										Integer currentUserRole)
+	public BookClubsBean updateBookclub(Integer clubId,
+			BookClubsBean incomingClub,
+			MultipartFile proposalFile,
+			MultipartFile proofFile,
+			Integer currentUserId,
+			Integer currentUserRole)
 			throws IllegalStateException, IOException {
 
 		Optional<BookClubsBean> opt = bookClubsRepository.findById(clubId);

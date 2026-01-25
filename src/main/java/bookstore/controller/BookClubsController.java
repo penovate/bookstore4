@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import bookstore.aop.BusinessException;
 import bookstore.bean.BookClubsBean;
+import bookstore.bean.ClubCategoriesBean;
 import bookstore.bean.ClubConstants;
 import bookstore.service.BookClubService;
 import bookstore.util.JwtUtil;
@@ -37,6 +38,12 @@ public class BookClubsController {
 	@GetMapping("/allClubs")
 	public ResponseEntity<List<BookClubsBean>> getAllClubs() {
 		List<BookClubsBean> list = bookClubService.getAllClubs();
+		return ResponseEntity.ok(list);
+	}
+
+	@GetMapping("/categories")
+	public ResponseEntity<List<ClubCategoriesBean>> getAllCategories() {
+		List<ClubCategoriesBean> list = bookClubService.getAllCategories();
 		return ResponseEntity.ok(list);
 	}
 
@@ -74,12 +81,12 @@ public class BookClubsController {
 		return ResponseEntity.noContent().build();
 	}
 
-	
 	@PutMapping("/update/{clubId}")
 	public ResponseEntity<?> updateClub(@PathVariable Integer clubId, @RequestPart("data") BookClubsBean clubdata,
 			@RequestPart(value = "proposal", required = false) MultipartFile proposalFile,
 			@RequestPart(value = "proof", required = false) MultipartFile proofFile, HttpServletRequest request,
-			@RequestHeader(value = "Authorization", required = false) String authHeader) throws IllegalStateException, IOException {
+			@RequestHeader(value = "Authorization", required = false) String authHeader)
+			throws IllegalStateException, IOException {
 
 		Integer userId = (Integer) request.getAttribute("userId");
 

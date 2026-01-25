@@ -43,6 +43,11 @@ export default {
     return apiClient.get('/allClubs')
   },
 
+  // 取得讀書會分類
+  getClubCategories() {
+    return apiClient.get('/categories')
+  },
+
   // 取得單筆讀書會
   getClub(id) {
     return apiClient.get(`/clubs/${id}`)
@@ -51,6 +56,27 @@ export default {
   // 刪除讀書會
   deleteClub(id) {
     return apiClient.delete(`/delete/${id}`)
+  },
+
+  // 新增讀書會
+  createClub(clubData, proposalFile, proofFile) {
+    const formData = new FormData()
+    const jsonBlob = new Blob([JSON.stringify(clubData)], { type: 'application/json' })
+
+    formData.append('bookclub', jsonBlob)
+
+    if (proposalFile) {
+      formData.append('proposalFile', proposalFile)
+    }
+
+    // proofFile is optional
+    if (proofFile) {
+      formData.append('proofFile', proofFile)
+    }
+
+    return apiClient.post('/insert', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
   },
 
   // 更新讀書會 (包含狀態審核，需帶入完整 Bean 與 檔案)

@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
 		log.warn("業務異常[代碼:{}]:{}", ex.getCode(), ex.getMessage());
 		Map<String, Object> errorResponse = new HashMap<String, Object>();
 		
-		errorResponse.put("success", false);
+		errorResponse.put("status", false);
 		errorResponse.put("code", ex.getCode());
 		errorResponse.put("message", ex.getMessage());
 		

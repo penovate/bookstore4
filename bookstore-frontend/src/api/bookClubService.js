@@ -106,4 +106,33 @@ export default {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
+
+  // -------------------------
+  // 報名相關 API
+  // -------------------------
+
+  // 報名讀書會
+  register(clubId) {
+    return apiClient.post(`/reg/register/${clubId}`)
+  },
+
+  // 取消報名
+  cancelRegistration(clubId) {
+    return apiClient.put(`/reg/cancel/${clubId}`)
+  },
+
+  // 取得我參加的讀書會
+  getMyRegistrations() {
+    return apiClient.get('/reg/my-registrations')
+  },
+
+  // 取得某讀書會的報名名單 (發起人檢視)
+  getClubRegistrations(clubId) {
+    return apiClient.get(`/reg/club/${clubId}`)
+  },
+
+  // 發起人幫會員報到
+  checkInUser(clubId, targetUserId) {
+    return apiClient.put(`/reg/checkin/${clubId}/${targetUserId}`)
+  },
 }

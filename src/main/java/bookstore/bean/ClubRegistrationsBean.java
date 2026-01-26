@@ -31,7 +31,7 @@ public class ClubRegistrationsBean {
     private UserBean user; // 關聯報名者
 
     @Column(name = "status", nullable = false)
-    private Short status;
+    private Integer status;
 
     @Column(name = "check_in")
     private Boolean checkIn; // BIT 對應 Boolean

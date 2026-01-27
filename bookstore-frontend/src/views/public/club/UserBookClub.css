@@ -1,0 +1,36 @@
+.text-primary {
+    color: #2E5C43 !important;
+}
+
+/* 
+    DataTable Styles
+    Separated for easier management of dimensions and font sizes.
+*/
+.forest-table {
+    --v-theme-primary: #2E5C43;
+}
+
+/* Control DataTable Width and Height */
+.club-table-container {
+    width: 100%;
+    height: auto;
+    /* Adjust as needed */
+}
+
+/* Control Text Size within DataTable */
+.forest-table :deep(td),
+.forest-table :deep(th) {
+    font-size: 14px !important;
+    /* Easily adjustable font size */
+}
+
+.ai-comment-placeholder {
+    font-size: 0.75rem;
+    color: #aeaeae;
+    white-space: nowrap;
+}
+
+/* Status Chip specific text adjustments if needed */
+.status-chip-text {
+    font-weight: bold;
+}

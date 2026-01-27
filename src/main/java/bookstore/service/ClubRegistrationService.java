@@ -82,8 +82,8 @@ public class ClubRegistrationService {
 		if (existOpt.isPresent()) {
 			ClubRegistrationsBean exist = existOpt.get();
 			// 若是已取消(status=2)，允許重新報名
-			if (exist.getStatus() == 2) {
-				exist.setStatus(1); // 1: 報名成功
+			if (exist.getStatus() == 1) {
+				exist.setStatus(0); // 1: 報名成功
 				exist.setCheckIn(false);
 				updateClubParticipants(club, 1);
 				return clubRegistrationsRepository.save(exist);

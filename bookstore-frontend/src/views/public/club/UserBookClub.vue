@@ -4,8 +4,11 @@ import { useRouter } from 'vue-router';
 import bookClubService from '@/api/bookClubService.js';
 import { useUserStore } from '@/stores/userStore';
 import Swal from 'sweetalert2';
-// Import Registration Details Component (Will create next)
+// Import Registration Details Component
 import RegistrationDetails from './RegistrationDetails.vue';
+
+// Import Extracted Config
+import { headers, statusMap, statusOptions } from './UserBookClubConfig.js';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -21,32 +24,7 @@ const search = ref('');
 const showDetailsModal = ref(false);
 const selectedClubId = ref(null);
 
-const headers = [
-    { title: '讀書會名稱', key: 'clubName', sortable: true },
-    { title: '活動時間', key: 'eventDate', sortable: true },
-    { title: '狀態', key: 'status', sortable: true },
-    { title: '人數', key: 'participants', sortable: true },
-    { title: '地點', key: 'location', sortable: false },
-    { title: '操作', key: 'actions', sortable: false },
-];
-
-const statusMap = {
-    0: { text: '審核中', color: 'orange' },
-    1: { text: '報名中', color: 'success' },
-    2: { text: '已駁回', color: 'error' },
-    3: { text: '已額滿', color: 'purple' },
-    4: { text: '已截止', color: 'grey' },
-    5: { text: '已結束', color: 'brown' },
-    6: { text: '已取消', color: 'grey-darken-1' }
-};
-
 const statusFilter = ref(null);
-const statusOptions = [
-    { title: '全部', value: null },
-    { title: '審核中', value: 0 },
-    { title: '報名中', value: 1 },
-    { title: '已結束', value: 5 },
-];
 
 // Helper: Check if user is the host
 const isHost = (club) => {
@@ -160,6 +138,18 @@ const openDetails = (club) => {
     showDetailsModal.value = true;
 };
 
+// 一般使用者查看詳細資訊
+const viewClubInfo = (club) => {
+    // TODO: Implement actual details view or modal
+    console.log('View details for:', club.clubName);
+    Swal.fire({
+        title: club.clubName,
+        text: '詳細資訊功能開發中...',
+        icon: 'info',
+        confirmButtonColor: '#2E5C43'
+    });
+};
+
 // 根據目前 Tab 決定顯示的資料
 const currentClubs = computed(() => {
     if (tab.value === 'hosted') return hostedClubs.value;
@@ -235,101 +225,138 @@ onMounted(() => {
                 <v-window v-model="tab">
                     <!-- 所有讀書會 -->
                     <v-window-item value="all">
-                        <v-data-table :headers="headers" :items="filteredClubs" :loading="loading" :search="search"
-                            class="forest-table" hover>
-                            <template v-slot:item.eventDate="{ item }">
-                                {{ formatDate(item.eventDate) }}
-                            </template>
-                            <template v-slot:item.status="{ item }">
-                                <v-chip :color="statusMap[item.status]?.color" size="small" class="font-weight-bold">
-                                    {{ statusMap[item.status]?.text || '未知' }}
-                                </v-chip>
-                            </template>
-                            <template v-slot:item.participants="{ item }">
-                                {{ item.currentParticipants || 0 }} / {{ item.maxParticipants }}
-                            </template>
-                            <template v-slot:item.actions="{ item }">
-                                <!-- 
+                        <div class="club-table-container">
+                            <v-data-table :headers="headers" :items="filteredClubs" :loading="loading" :search="search"
+                                class="forest-table club-data-table" hover>
+                                <template v-slot:item.eventDate="{ item }">
+                                    {{ formatDate(item.eventDate) }}
+                                </template>
+                                <template v-slot:item.status="{ item }">
+                                    <v-chip :color="statusMap[item.status]?.color" size="small"
+                                        class="font-weight-bold status-chip-text">
+                                        {{ statusMap[item.status]?.text || '未知' }}
+                                    </v-chip>
+                                </template>
+                                <template v-slot:item.participants="{ item }">
+                                    {{ item.currentParticipants || 0 }} / {{ item.maxParticipants }}
+                                </template>
+                                <template v-slot:item.details="{ item }">
+                                    <div class="d-flex flex-column align-center py-2">
+                                        <v-btn icon="mdi-eye" size="large" variant="text" color="primary"
+                                            @click="viewClubInfo(item)"></v-btn>
+                                        <div class="ai-comment-placeholder mt-1">
+                                            (AI 評語)
+                                        </div>
+                                    </div>
+                                </template>
+                                <template v-slot:item.actions="{ item }">
+                                    <!-- 
                                     1. 如果是 Host -> 顯示管理 (或跳轉)
                                     2. 如果已報名 -> 顯示已報名/取消 (Danger Color)
                                     3. 如果未報名 -> 顯示報名 (Primary Color)
                                 -->
-                                <template v-if="isHost(item)">
-                                    <v-chip color="info" size="small" variant="outlined" class="mr-2">我是發起人</v-chip>
+                                    <template v-if="isHost(item)">
+                                        <v-chip color="info" size="small" variant="outlined" class="mr-2">我是發起人</v-chip>
+                                    </template>
+                                    <template v-else-if="myRegistrationIds.has(item.clubId)">
+                                        <v-btn size="small" color="error" variant="flat" @click="handleCancel(item)">
+                                            已報名 (取消)
+                                        </v-btn>
+                                    </template>
+                                    <template v-else>
+                                        <v-btn size="small" color="primary" variant="elevated"
+                                            @click="handleRegister(item)"
+                                            :disabled="item.currentParticipants >= item.maxParticipants">
+                                            {{ item.currentParticipants >= item.maxParticipants ? '已額滿' : '報名' }}
+                                        </v-btn>
+                                    </template>
                                 </template>
-                                <template v-else-if="myRegistrationIds.has(item.clubId)">
-                                    <v-btn size="small" color="error" variant="flat" @click="handleCancel(item)">
-                                        已報名 (取消)
-                                    </v-btn>
+                                <template v-slot:no-data>
+                                    <div class="text-center py-4 text-grey">目前沒有可報名的讀書會</div>
                                 </template>
-                                <template v-else>
-                                    <v-btn size="small" color="primary" variant="elevated" @click="handleRegister(item)"
-                                        :disabled="item.currentParticipants >= item.maxParticipants">
-                                        {{ item.currentParticipants >= item.maxParticipants ? '已額滿' : '報名' }}
-                                    </v-btn>
-                                </template>
-                            </template>
-                            <template v-slot:no-data>
-                                <div class="text-center py-4 text-grey">目前沒有可報名的讀書會</div>
-                            </template>
-                        </v-data-table>
+                            </v-data-table>
+                        </div>
                     </v-window-item>
 
                     <!-- 我發起的 -->
                     <v-window-item value="hosted">
-                        <v-data-table :headers="headers" :items="filteredClubs" :loading="loading" :search="search"
-                            class="forest-table" hover>
-                            <template v-slot:item.eventDate="{ item }">
-                                {{ formatDate(item.eventDate) }}
-                            </template>
-                            <template v-slot:item.status="{ item }">
-                                <v-chip :color="statusMap[item.status]?.color" size="small" class="font-weight-bold">
-                                    {{ statusMap[item.status]?.text || '未知' }}
-                                </v-chip>
-                            </template>
-                            <template v-slot:item.participants="{ item }">
-                                {{ item.currentParticipants || 0 }} / {{ item.maxParticipants }}
-                            </template>
-                            <template v-slot:item.actions="{ item }">
-                                <v-btn size="small" variant="text" color="primary" @click="openDetails(item)">
-                                    <v-icon start icon="mdi-clipboard-list"></v-icon>
-                                    報名明細
-                                </v-btn>
-                            </template>
-                            <template v-slot:no-data>
-                                <div class="text-center py-4 text-grey">目前沒有發起的讀書會</div>
-                            </template>
-                        </v-data-table>
+                        <div class="club-table-container">
+                            <v-data-table :headers="headers" :items="filteredClubs" :loading="loading" :search="search"
+                                class="forest-table club-data-table" hover>
+                                <template v-slot:item.eventDate="{ item }">
+                                    {{ formatDate(item.eventDate) }}
+                                </template>
+                                <template v-slot:item.status="{ item }">
+                                    <v-chip :color="statusMap[item.status]?.color" size="small"
+                                        class="font-weight-bold status-chip-text">
+                                        {{ statusMap[item.status]?.text || '未知' }}
+                                    </v-chip>
+                                </template>
+                                <template v-slot:item.participants="{ item }">
+                                    {{ item.currentParticipants || 0 }} / {{ item.maxParticipants }}
+                                </template>
+                                <template v-slot:item.details="{ item }">
+                                    <div class="d-flex flex-column align-center py-2">
+                                        <v-btn icon="mdi-eye" size="large" variant="text" color="primary"
+                                            @click="viewClubInfo(item)"></v-btn>
+                                        <div class="ai-comment-placeholder mt-1">
+                                        </div>
+                                    </div>
+                                </template>
+                                <template v-slot:item.actions="{ item }">
+                                    <v-btn size="small" variant="text" color="primary" @click="openDetails(item)">
+                                        <v-icon start icon="mdi-clipboard-list"></v-icon>
+                                        報名明細
+                                    </v-btn>
+                                </template>
+                                <template v-slot:no-data>
+                                    <div class="text-center py-4 text-grey">目前沒有發起的讀書會</div>
+                                </template>
+                            </v-data-table>
+                        </div>
                     </v-window-item>
 
                     <!-- 我參加的 -->
                     <v-window-item value="participated">
-                        <v-data-table :headers="headers" :items="filteredClubs" :loading="loading" :search="search"
-                            class="forest-table" hover>
-                            <template v-slot:item.eventDate="{ item }">
-                                {{ formatDate(item.eventDate) }}
-                            </template>
-                            <template v-slot:item.status="{ item }">
-                                <v-chip :color="statusMap[item.status]?.color" size="small" class="font-weight-bold">
-                                    {{ statusMap[item.status]?.text || '未知' }}
-                                </v-chip>
-                            </template>
-                            <template v-slot:item.participants="{ item }">
-                                {{ item.currentParticipants || 0 }} / {{ item.maxParticipants }}
-                            </template>
-                            <template v-slot:item.actions="{ item }">
-                                <v-btn size="small" color="error" variant="text" @click="handleCancel(item)">
-                                    取消報名
-                                </v-btn>
-                            </template>
-                            <template v-slot:no-data>
-                                <div class="text-center py-10 text-grey">
-                                    <v-icon icon="mdi-account-group-outline" size="64" class="mb-4 opacity-50"></v-icon>
-                                    <h3 class="text-h6">目前尚無參與紀錄</h3>
-                                    <p>快去參加感興趣的讀書會吧！</p>
-                                </div>
-                            </template>
-                        </v-data-table>
+                        <div class="club-table-container">
+                            <v-data-table :headers="headers" :items="filteredClubs" :loading="loading" :search="search"
+                                class="forest-table club-data-table" hover>
+                                <template v-slot:item.eventDate="{ item }">
+                                    {{ formatDate(item.eventDate) }}
+                                </template>
+                                <template v-slot:item.status="{ item }">
+                                    <v-chip :color="statusMap[item.status]?.color" size="small"
+                                        class="font-weight-bold status-chip-text">
+                                        {{ statusMap[item.status]?.text || '未知' }}
+                                    </v-chip>
+                                </template>
+                                <template v-slot:item.participants="{ item }">
+                                    {{ item.currentParticipants || 0 }} / {{ item.maxParticipants }}
+                                </template>
+                                <template v-slot:item.details="{ item }">
+                                    <div class="d-flex flex-column align-center py-2">
+                                        <v-btn icon="mdi-eye" size="large" variant="text" color="primary"
+                                            @click="viewClubInfo(item)"></v-btn>
+                                        <div class="ai-comment-placeholder mt-1">
+
+                                        </div>
+                                    </div>
+                                </template>
+                                <template v-slot:item.actions="{ item }">
+                                    <v-btn size="small" color="error" variant="text" @click="handleCancel(item)">
+                                        取消報名
+                                    </v-btn>
+                                </template>
+                                <template v-slot:no-data>
+                                    <div class="text-center py-10 text-grey">
+                                        <v-icon icon="mdi-account-group-outline" size="64"
+                                            class="mb-4 opacity-50"></v-icon>
+                                        <h3 class="text-h6">目前尚無參與紀錄</h3>
+                                        <p>快去參加感興趣的讀書會吧！</p>
+                                    </div>
+                                </template>
+                            </v-data-table>
+                        </div>
                     </v-window-item>
                 </v-window>
             </v-card-text>
@@ -341,12 +368,4 @@ onMounted(() => {
     </v-container>
 </template>
 
-<style scoped>
-.text-primary {
-    color: #2E5C43 !important;
-}
-
-.forest-table {
-    --v-theme-primary: #2E5C43;
-}
-</style>
+<style src="./UserBookClub.css" scoped></style>

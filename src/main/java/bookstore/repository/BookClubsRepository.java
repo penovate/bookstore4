@@ -1,5 +1,6 @@
 package bookstore.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,4 +21,6 @@ public interface BookClubsRepository extends JpaRepository<BookClubsBean, Intege
 	List<BookClubsBean> findByCategoriesBean_CategoryId(Integer categoryId);
 
 	List<BookClubsBean> findByHost(UserBean host);
+	
+	long countByHostIdAndStatusIn(Integer userId, Collection<Integer> statuses);
 }

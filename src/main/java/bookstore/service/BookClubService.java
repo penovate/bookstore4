@@ -22,10 +22,9 @@ import bookstore.repository.BookClubsRepository;
 import bookstore.repository.BookRepository;
 import bookstore.repository.ClubCategoriesRepository;
 import bookstore.repository.UserRepository;
-import bookstore.util.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import bookstore.bean.ClubConstants;
+import bookstore.bean.UserPoint;
 
 @Service
 @Transactional
@@ -125,9 +124,17 @@ public class BookClubService {
 		return findByHost(userOpt.get());
 	}
 
+	// 讀書會發起，發起人等級驗證
+	public void HostPointCheck(Integer userId) {
+	Optional<UserBean> user = userRepository.findById(userId);
+	Integer userPoint = user.get().getPoints();
+	
+	}
+
 	// 發起讀書會
 	public BookClubsBean createBookClub(BookClubsBean bookClub, MultipartFile proposal, MultipartFile proof,
 			Integer userId) throws IOException {
+
 		UserBean host = userRepository.findById(userId).get();
 		bookClub.setHost(host);
 
@@ -279,12 +286,8 @@ public class BookClubService {
 	}
 
 	// 修改讀書會主方法
-	public BookClubsBean updateBookclub(Integer clubId,
-			BookClubsBean incomingClub,
-			MultipartFile proposalFile,
-			MultipartFile proofFile,
-			Integer currentUserId,
-			Integer currentUserRole)
+	public BookClubsBean updateBookclub(Integer clubId, BookClubsBean incomingClub, MultipartFile proposalFile,
+			MultipartFile proofFile, Integer currentUserId, Integer currentUserRole)
 			throws IllegalStateException, IOException {
 
 		Optional<BookClubsBean> opt = bookClubsRepository.findById(clubId);

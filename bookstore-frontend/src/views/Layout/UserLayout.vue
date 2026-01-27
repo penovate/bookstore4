@@ -87,7 +87,7 @@ onMounted(() => {
           @click="$router.push('/dev/user/home')"
         >
           <v-icon icon="mdi-book-open-variant" class="me-2"></v-icon>
-          網路書籍商城
+          森林書屋
         </v-toolbar-title>
       </div>
 

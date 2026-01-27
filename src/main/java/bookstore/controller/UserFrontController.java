@@ -1,6 +1,7 @@
 package bookstore.controller;
 
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import bookstore.bean.UserBean;
 import bookstore.service.EmailService;
@@ -35,7 +37,7 @@ public class UserFrontController {
 	@PostMapping("/api/user/google-login")
 	@ResponseBody
 	@SuppressWarnings("unchecked")
-	public Map<String, Object> googleLogin(@RequestBody Map<String, String> data) {
+	public Map<String, Object> googleLogin(@RequestBody Map<String, String> data, HttpSession session) {
 		String accessToken = data.get("accessToken");
 		Map<String, Object> response = new HashMap<>();
 		
@@ -51,6 +53,7 @@ public class UserFrontController {
 			UserBean user = userService.findByEmail(email);
 			
 			if (user != null) {
+				session.setAttribute("currentUserId", user.getUserId().toString());
 				String role = (user.getUserType() == 0) ? "SUPER_ADMIN" : (user.getUserType() == 1 ? "ADMIN" : "USER");
 				String token = jwtUtil.generateToken(user.getUserId().toString(), role);
 				
@@ -58,6 +61,8 @@ public class UserFrontController {
 				response.put("token", token);
 				response.put("userName", user.getUserName());
 				response.put("role", role);
+				response.put("userId", user.getUserId());
+				response.put("img", user.getImg());
 			} else {
 				response.put("success", false);
 				response.put("isNewUser", true);
@@ -76,7 +81,7 @@ public class UserFrontController {
 	
 	@PostMapping("/api/user/login")
 	@ResponseBody
-	public Map<String, Object> login(@RequestBody Map<String, String> loginData) {
+	public Map<String, Object> login(@RequestBody Map<String, String> loginData, HttpSession session) {
 	    Map<String, Object> response = new HashMap<>();
 	    String email = loginData.get("email");
 	    String rawPassword = loginData.get("userPwd");
@@ -85,6 +90,7 @@ public class UserFrontController {
 
 	    if (user != null) {
 	        if (passwordEncoder.matches(rawPassword, user.getUserPwd())) {
+	        	session.setAttribute("currentUserId", user.getUserId().toString());
 	            String role = (user.getUserType() == 0) ? "SUPER_ADMIN" : (user.getUserType() == 1 ? "ADMIN" : "USER");
 	            String token = jwtUtil.generateToken(user.getUserId().toString(), role);
 
@@ -93,6 +99,8 @@ public class UserFrontController {
 	            response.put("userName", user.getUserName());
 	            response.put("role", role);
 	            response.put("message", "歡迎回來！");
+	            response.put("userId", user.getUserId());
+	            response.put("img", user.getImg());
 	        } else {
 	            response.put("success", false);
 	            response.put("message", "密碼錯誤！");
@@ -304,5 +312,145 @@ public class UserFrontController {
 			response.put("message", "資料庫更新失敗！");
 		}
 		return response;
+	}
+	
+	@PostMapping("/api/user/confirm-password")
+	@ResponseBody
+	public Map<String, Object> passwordConfirmation(@RequestBody Map<String, String> data, HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		
+		String rawPassword = data.get("password");
+		String userId = (String) session.getAttribute("currentUserId");
+		
+		if (userId == null) {
+			response.put("success", false);
+			response.put("message", "連線逾時，請重新登入");
+			return response;
+		} 
+		
+		try {
+			UserBean user = userService.findById(Integer.parseInt(userId));
+			
+			if (user != null && passwordEncoder.matches(rawPassword, user.getUserPwd())) {
+				response.put("success", true);
+				response.put("message", "驗證成功！");
+			} else {
+				response.put("success", false);
+				response.put("message", "驗證失敗，密碼錯誤！");
+			}
+		} catch (Exception e) {
+			response.put("success", false);
+			response.put("message", "伺服器異常");
+		}
+		return response;
+	}
+	
+	@PostMapping("/api/user/update-profile")
+	@ResponseBody
+	public Map<String, Object> updateUserProfile(@RequestParam String gender, @RequestParam String email,
+			@RequestParam String phoneNum, @RequestParam String address,
+			@RequestParam(value = "img", required = false) MultipartFile img, HttpSession session) {
+		
+		Map<String, Object> response = new HashMap<>();
+		
+		String userId = (String) session.getAttribute("currentUserId");
+		
+		if (userId == null) {
+			response.put("success", false);
+			response.put("message", "請重新登入！");
+			return response;
+		}
+		
+		try {
+			UserBean user = userService.findById(Integer.parseInt(userId));
+			
+			user.setGender(gender);
+			user.setEmail(email);
+			user.setPhoneNum(phoneNum);
+			user.setAddress(address);
+			
+			if (img != null && !img.isEmpty()) {
+				byte[] imgBytes = img.getBytes();
+				String base64String = Base64.getEncoder().encodeToString(imgBytes);
+				user.setImg("data:" + img.getContentType() + ";base64," + base64String);
+			}
+				
+			userService.saveUser(user);
+			response.put("success", true);
+			response.put("message", "個人資料已成功更新！");
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.put("success", false);
+			response.put("message", "資料寫入異常！");
+		}
+		return response;
+	}
+	
+	@GetMapping("/api/user/my-profile")
+	@ResponseBody
+	public Map<String, Object> getProfile(HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		
+		String userId = (String) session.getAttribute("currentUserId");
+		
+		if (userId == null) {
+			response.put("success", false);
+			response.put("message", "請先登入！");
+			return response;
+		}
+		
+		try {
+			UserBean user = userService.findById(Integer.parseInt(userId));
+			
+			if (user != null) {
+				user.setUserPwd(null);
+				response.put("success", true);
+				response.put("user", user);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.put("success", false);
+			response.put("message", "伺服器異常");
+		}
+		return response;
+	}
+	
+	@PostMapping("/api/user/change-password")
+	@ResponseBody
+	public Map<String, Object> changePassword(@RequestBody Map<String, String> data, HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		
+		String userId = (String) session.getAttribute("currentUserId");
+		String oldPwd = data.get("oldPwd");
+		String newPwd = data.get("newPwd");
+		
+		if (userId == null) {
+			response.put("success", false);
+			response.put("message", "請重新登入！");
+			return response;
+		}
+		
+		try {
+			UserBean user = userService.findById(Integer.parseInt(userId));
+			
+			if (passwordEncoder.matches(oldPwd, user.getUserPwd())) {
+				user.setUserPwd(passwordEncoder.encode(newPwd));
+				userService.saveUser(user);
+					
+				emailService.sendResetSuccessNotification(user.getEmail());
+					
+				response.put("success", true);
+				response.put("message", "密碼修改成功！");
+			} else {
+				response.put("success", false);
+				response.put("message", "原密碼輸入錯誤");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.put("success", false);
+			response.put("message", "系統處理失敗！");
+		}
+		return response;
+		
 	}
 }

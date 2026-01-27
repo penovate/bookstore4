@@ -9,7 +9,7 @@
       >
         <div class="header-overlay pa-6 d-flex align-center">
           <v-avatar size="100" class="elevation-4 profile-avatar mr-6">
-            <v-img :src="userAvatar" cover>
+            <v-img :src="userStore.img" cover>
               <template v-slot:placeholder>
                 <div
                   class="bg-accent fill-height d-flex align-center justify-center text-h3 text-white"
@@ -83,7 +83,7 @@ const menuItems = ref([
     title: '會員資料',
     icon: 'mdi-account-cog-outline',
     color: 'primary',
-    to: '/dev/user/profile/edit',
+    to: '/dev/user/profile/password-confirmation',
     desc: '修改基本資料與密碼',
   },
   {

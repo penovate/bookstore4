@@ -126,8 +126,16 @@ onMounted(() => {
         <div v-if="userStore.isLoggedIn">
           <v-menu min-width="200px" rounded>
             <template v-slot:activator="{ props }">
-              <v-avatar color="surface" size="36" class="cursor-pointer" v-bind="props">
-                <span class="text-primary font-weight-bold">{{ userStore.name.charAt(0) }}</span>
+              <v-avatar color="surface" size="36" class="cursor-pointer border-sm elevation-1" v-bind="props">
+                <v-img 
+                  v-if="userStore.img" 
+                  :src="userStore.img" 
+                  cover
+                ></v-img>
+                
+                <span v-else class="text-primary font-weight-bold">
+                  {{ userStore.name.charAt(0) }}
+                </span>
               </v-avatar>
             </template>
 
@@ -135,7 +143,7 @@ onMounted(() => {
               <v-list-item
                 prepend-icon="mdi-account-circle"
                 title="會員中心"
-                to="/dev/user/profile"
+                to="/dev/user/user-menu"
               ></v-list-item>
               <v-list-item
                 prepend-icon="mdi-history"

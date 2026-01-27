@@ -208,9 +208,9 @@ const router = createRouter({
           meta: { title: '會員登入' },
         },
         {
-          path: 'profile',
-          name: 'user-profile',
-          component: () => import('../views/public/user/UserProfile.vue'),
+          path: 'user-menu',
+          name: 'user-menu',
+          component: () => import('../views/public/user/UserMenu.vue'),
           meta: { title: '會員中心' },
         },
         {
@@ -236,6 +236,18 @@ const router = createRouter({
           name: 'set-new-password',
           component: () => import('../views/public/user/SetNewPassword.vue'),
           meta: { title: '設定新密碼' },
+        },
+        {
+          path: 'profile/password-confirmation',
+          name: 'password-confirmation',
+          component: () => import('../views/public/user/PasswordConfirmation.vue'),
+          meta: { title: '密碼確認' },
+        },
+        {
+          path: 'profile-edit',
+          name: 'profile-edit',
+          component: () => import('../views/public/user/UserProfileEdit.vue'),
+          meta: { title: '會員資料修改' },
         },
         {
           path: 'books',
@@ -292,23 +304,23 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('userToken')
   const role = localStorage.getItem('userRole')
+  
   const pageTitle = to.meta.title
-  document.title = pageTitle
-    ? `${pageTitle} | 
-  森林書屋`
-    : '森林書屋'
+  document.title = pageTitle ? `${pageTitle} | 森林書屋` : '森林書屋'
 
   const isAdminRoute = to.path.startsWith('/dev/admin') || to.name === 'home'
+  const isUserProtectedRoute = ['myOrders', 'checkout', 'cart', 'userCoupons', 'profile-edit', 'password-confirmation'].includes(to.name)
+  const isLoginPage = to.name === 'user-login'
 
-  const isUserProtectedRoute =
-    ['myOrders', 'checkout', 'cart', 'userCoupons'].includes(to.name) ||
-    to.path.startsWith('/dev/user/orders') ||
-    to.path.startsWith('/dev/user/coupons')
+  if (isLoginPage && token) {
+    return next({ name: 'userHome' })
+  }
 
   if (isAdminRoute) {
     if (!token) {
       return next({ name: 'login', query: { redirect: to.fullPath } })
-    } else if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
+    } 
+    if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
       return next()
     } else {
       Swal.fire('權限不足', '您沒有進入後台管理系統的權限', 'error')
@@ -319,7 +331,7 @@ router.beforeEach((to, from, next) => {
   if (isUserProtectedRoute && !token) {
     Swal.fire({
       title: '請先登入',
-      text: '登入會員後即可查看',
+      text: '登入會員後即可使用此功能',
       icon: 'info',
       confirmButtonColor: '#2e5c43',
     })

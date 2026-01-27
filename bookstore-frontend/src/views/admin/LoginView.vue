@@ -18,7 +18,7 @@
                 class="mb-4"
               ></v-icon>
               <v-card-title class="text-h4 font-weight-bold text-primary mb-1">
-                BookStore
+                森林書屋
               </v-card-title>
               <v-card-subtitle class="text-subtitle-1">後台管理系統</v-card-subtitle>
             </v-card-item>
@@ -119,7 +119,7 @@
             </v-row>
 
             <div class="text-center text-caption text-grey-lighten-1 mt-8">
-              © 2026 網路書店系統管理後台
+              © 2026 森林書屋管理後台
             </div>
           </v-card>
         </v-hover>

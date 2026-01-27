@@ -2,19 +2,10 @@
   <v-container class="review-container">
     <v-row class="header-section" align="center">
       <v-col>
-        <v-btn 
-          variant="text" 
-          prepend-icon="mdi-arrow-left"
-          @click="router.push({ name: 'admin-reviews' })"
-          class="back-btn"
-        >
-          返回評價管理
-        </v-btn>
-        
         <div class="title-wrapper">
-            <h2 class="page-title">評價詳細列表</h2>
-            <span v-if="currentBookId" class="sub-info">
-                (目前查看書籍 ID: {{ currentBookId }})
+            <h2 class="page-title">評價列表</h2>
+            <span v-if="currentBookName" class="sub-info">
+                (目前查看書籍: {{ currentBookName }})
             </span>
         </div>
       </v-col>
@@ -29,6 +20,20 @@
             class="forest-table"
             hover
         >
+        <template v-slot:item.reviewId="{ item }">
+                {{ filteredReviews.indexOf(item) + 1 }}
+        </template>
+
+         <template v-slot:item.userName="{ item }">
+                <a 
+                    href="#" 
+                    class="user-link"
+                    @click.prevent="goToUserDetail(item.userId)"
+                >
+                    {{ item.userName || item.userId }}
+                </a>
+            </template>
+
             <template v-slot:item.rating="{ item }">
                 <v-rating
                     :model-value="item.rating"
@@ -75,6 +80,18 @@
             </template>
         </v-data-table>
     </v-card>
+        <div class="d-flex justify-center mt-6 mb-4">
+            <v-btn 
+                color="primary" 
+                variant="outlined" 
+                size="large"
+                prepend-icon="mdi-arrow-left"
+                class="rounded-lg font-weight-bold px-6"
+                @click="router.push({ name: 'admin-reviews' })"
+            >
+            返回評價管理
+            </v-btn>
+        </div>
   </v-container>
 </template>
 
@@ -94,8 +111,9 @@ const currentBookId = ref(route.params.bookId);
 
 // 定義表格欄位
 const headers = [
-    { title: '評價 ID', key: 'reviewId', align: 'start', sortable: true },
+    { title: '編號', key: 'reviewId', align: 'start', sortable: true },
     { title: '會員 ID', key: 'userId', align: 'start', sortable: true },
+    { title: '會員姓名', key: 'userName', align: 'start', sortable: true },
     { title: '評分', key: 'rating', align: 'center', sortable: true },
     { title: '評價內容', key: 'comment', align: 'start', sortable: false, width: '40%' },
     { title: '評價時間', key: 'createdAt', align: 'center', sortable: true },
@@ -103,11 +121,8 @@ const headers = [
     { title: '操作', key: 'actions', align: 'center', sortable: false },
 ];
 
-// 計算屬性：如果有指定 currentBookId，就只顯示該本書的評論
-// (因為目前後端 API 是抓全部，我們在前端做過濾)
 const filteredReviews = computed(() => {
     if (!currentBookId.value) return reviews.value;
-    // 注意：後端傳回來的 bookId 可能是數字，如果是字串要轉型比較
     return reviews.value.filter(r => r.bookId == currentBookId.value);
 });
 
@@ -125,6 +140,28 @@ const loadReviews = async () => {
 };
 
 // 更新狀態函式 (呼叫 PUT API)
+
+// 取得書名
+const currentBookName = computed(() => {
+    if (route.query.bookName) {
+        return route.query.bookName
+    };
+    
+    if (filteredReviews.value.length > 0 && filteredReviews.value[0].bookName) {
+        return filteredReviews.value[0].bookName;
+    }
+    
+    return null;
+});
+
+// 跳轉到會員詳細頁面
+const goToUserDetail = (userId) => {
+    router.push({ 
+        name: 'userDetail', 
+        params: { id: userId } 
+    });
+};
+
 // 狀態切換邏輯 
 const handleToggleStatus = (item) => {
     // 1(顯示)， 0(隱藏)
@@ -137,7 +174,7 @@ const handleToggleStatus = (item) => {
         text: newStatus === 0 ? "隱藏後，前台將無法看到此評價" : "該評價將重新顯示於前台",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: `確定${actionText}`,
+        confirmButtonText: `確定`,
         cancelButtonText: '取消',
         confirmButtonColor: confirmColor,
         cancelButtonColor: '#aaa',
@@ -206,6 +243,18 @@ $text-grey: #757575;
 
 .review-container {
     /* padding */
+}
+
+.user-link {
+    text-decoration: none;
+    color: $primary-color; 
+    font-weight: bold;
+    transition: all 0.2s;
+
+    &:hover {
+        color: #1b5e20; 
+        text-decoration: underline;
+    }
 }
 
 .header-section {

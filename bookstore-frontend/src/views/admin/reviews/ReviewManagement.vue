@@ -3,9 +3,6 @@
         <v-row class="mb-4" align="center">
             <v-col cols="12" md="4">
                 <h2 class="text-h4 font-weight-bold text-primary">評價管理</h2>
-                <div class="text-subtitle-1 text-grey-darken-1 mt-1">
-                    點擊書籍查看詳細評價
-                </div>
             </v-col>
             <v-col cols="12" md="4" offset-md="4">
                 <v-text-field 
@@ -121,7 +118,8 @@ const bookReviews = (item) => {
     // router 的 name: 'BookReviews' 或是路徑
     router.push({ 
         name: 'admin-book-reviews', 
-        params: { bookId: item.bookId } 
+        params: { bookId: item.bookId }, 
+        query: { bookName: item.bookName }
     });
 };
 

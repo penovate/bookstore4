@@ -68,6 +68,7 @@ public class ReviewBean implements Serializable {
 	private String comment;
 
 	@Column(name = "created_at", updatable = false)
+	@com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
 	private LocalDateTime createdAt;
 	
 	@Column(name = "status")

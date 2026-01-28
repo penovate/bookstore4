@@ -171,11 +171,11 @@ public class bookService {
 
 			// 建立圖片物件並設定關聯
 			BookImageBean imageBean = new BookImageBean();
-			imageBean.setImageUrl(newFilename); // 建議只存檔名，路徑由前端或設定檔決定
+			imageBean.setImageUrl(newFilename); 
 
 			// 雙向關聯設定 (重要)
-			imageBean.setBook(book); // 設定 FK
-			book.setBookImageBean(imageBean); // 設定主體關聯
+			imageBean.setBook(book); 
+			book.setBookImageBean(imageBean); 
 		}
 
 		// --- 4. 儲存 ---

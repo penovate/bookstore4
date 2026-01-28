@@ -153,9 +153,17 @@ const handleGoogleSuccess = async (response) => {
           },
         })
       })
+    } else {
+      // 處理後端回傳的錯誤 (例如: Google 驗證失敗、JWT 生成錯誤等)
+      Swal.fire({
+        icon: 'error',
+        title: '登入失敗',
+        text: res.data.message || '無法完成 Google 登入',
+      })
     }
   } catch (error) {
-    Swal.fire({ icon: 'error', title: '系統錯誤' })
+    console.error('Google Login Request Error:', error)
+    Swal.fire({ icon: 'error', title: '系統錯誤', text: '伺服器連線失敗' })
   }
 }
 

@@ -126,14 +126,13 @@ public class BookClubService {
 
 	// 讀書會發起，發起人等級驗證
 	public void HostPointCheck(Integer userId) {
-	Optional<UserBean> user = userRepository.findById(userId);
-	Integer userPoint = user.get().getPoints();
-	
+		Optional<UserBean> user = userRepository.findById(userId);
+		Integer userPoint = user.get().getPoints();
+
 	}
 
 	// 發起讀書會
-	public BookClubsBean createBookClub(BookClubsBean bookClub, MultipartFile proposal, MultipartFile proof,
-			Integer userId) throws IOException {
+	public BookClubsBean createBookClub(BookClubsBean bookClub, Integer userId) throws IOException {
 
 		UserBean host = userRepository.findById(userId).get();
 		bookClub.setHost(host);
@@ -150,14 +149,6 @@ public class BookClubService {
 		}
 
 		bookClub.setStatus(ClubConstants.STATUS_PEDING);
-
-		if (proposal != null) {
-			bookClub.setProposalPath(saveToDisk(proposal, PROPOSAL_DIR));
-		}
-
-		if (proof != null) {
-			bookClub.setProofPath(saveToDisk(proof, PROOF_DIR));
-		}
 
 		return bookClubsRepository.save(bookClub);
 
@@ -286,9 +277,8 @@ public class BookClubService {
 	}
 
 	// 修改讀書會主方法
-	public BookClubsBean updateBookclub(Integer clubId, BookClubsBean incomingClub, MultipartFile proposalFile,
-			MultipartFile proofFile, Integer currentUserId, Integer currentUserRole)
-			throws IllegalStateException, IOException {
+	public BookClubsBean updateBookclub(Integer clubId, BookClubsBean incomingClub, Integer currentUserId,
+			Integer currentUserRole) throws IllegalStateException, IOException {
 
 		Optional<BookClubsBean> opt = bookClubsRepository.findById(clubId);
 		if (opt.isEmpty()) {
@@ -310,19 +300,6 @@ public class BookClubService {
 		if (shouldResetStatus) {
 			existingclub.setStatus((Integer) ClubConstants.STATUS_PEDING);
 			existingclub.setRejectionReason(null);
-		}
-
-		// 檔案上傳處理
-		if (proposalFile != null && !proposalFile.isEmpty()) {
-			// 存入proposal
-			String path = uploadFile(proofFile, "proposal");
-			existingclub.setProposalPath(path);
-		}
-
-		if (proofFile != null && proofFile.isEmpty()) {
-			// 存入proof
-			String path = uploadFile(proofFile, "proof");
-			existingclub.setProofPath(path);
 		}
 
 		bookClubsRepository.save(existingclub);

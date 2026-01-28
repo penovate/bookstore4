@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import bookService from '@/api/bookService.js';
 import Swal from 'sweetalert2';
@@ -7,7 +7,20 @@ import Swal from 'sweetalert2';
 const router = useRouter();
 const books = ref([]);
 const loading = ref(false);
+
 const search = ref('');
+const page = ref(1);
+
+// 讀取已儲存的頁碼
+const savedPage = sessionStorage.getItem('adminBookListPage');
+if (savedPage) {
+    page.value = parseInt(savedPage, 10);
+}
+
+// 監聽頁碼變動並儲存
+watch(page, (newPage) => {
+    sessionStorage.setItem('adminBookListPage', newPage);
+});
 
 // 圖片放大功能狀態
 const zoomedImageUrl = ref(null);
@@ -167,7 +180,7 @@ onMounted(() => {
 
         <!-- 書籍列表區 -->
         <v-card class="rounded-lg elevation-2 border-t-4 border-primary">
-            <v-data-table :headers="headers" :items="books" :loading="loading" :search="search" class="forest-table"
+            <v-data-table v-model:page="page" :headers="headers" :items="books" :loading="loading" :search="search" class="forest-table"
                 item-value="bookId" hover>
 
                 <!-- [新增] 圖片顯示 Slot -->

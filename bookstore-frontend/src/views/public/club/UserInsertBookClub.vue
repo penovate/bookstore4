@@ -64,10 +64,10 @@ const submit = async () => {
         return;
     }
 
-    if (!proposalFile.value) {
-        Swal.fire('提示', '請上傳活動企劃書', 'warning');
-        return;
-    }
+    // if (!proposalFile.value) {
+    //     Swal.fire('提示', '請上傳活動企劃書', 'warning');
+    //     return;
+    // }
 
     loading.value = true;
 

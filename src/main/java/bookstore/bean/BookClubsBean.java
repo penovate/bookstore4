@@ -52,11 +52,11 @@ public class BookClubsBean {
 	@Column(name = "location", nullable = false, length = 200)
 	private String location;
 
-	@Column(name = "proposal_path", nullable = false, length = 500)
-	private String proposalPath;
-
-	@Column(name = "proof_path", length = 500)
-	private String proofPath;
+//	@Column(name = "proposal_path", nullable = false, length = 500)
+//	private String proposalPath;
+//
+//	@Column(name = "proof_path", length = 500)
+//	private String proofPath;
 
 	@Column(name = "organizer_type")
 	private Short organizerType; // TINYINT 對應 Short 或 Integer

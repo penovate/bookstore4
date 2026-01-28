@@ -175,6 +175,12 @@ const router = createRouter({
           name: 'review-update',
           component: () => import('../views/admin/reviews/ReviewUpdate.vue'),
         },
+        // 5.檢舉管理
+        {
+          path: 'reviews/reports',
+          name: 'admin-review-reports',
+          component: () => import('../views/admin/reports/ReportList.vue')
+        },
       ],
     },
     // --- 前台網站區域 ---

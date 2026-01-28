@@ -13,7 +13,7 @@ export default {
     return axios.post(API_URL, reviewData)
   },
 
-  // 3. 編輯評論 
+  // 3. 編輯評論
   updateReview(id, reviewData) {
     return axios.put(`${API_URL}/${id}`, reviewData)
   },
@@ -26,6 +26,20 @@ export default {
   // 取得書籍列表與評價統計
   getBooksWithStats() {
     return axios.get(`${API_URL}/books-stats`)
-  }
-}
+  },
 
+  // 檢舉評論
+  createReport(reportData) {
+    return axios.post('/api/public/reports', reportData)
+  },
+
+  // (後台) 取得檢舉列表
+  getAdminReports() {
+    return axios.get('/api/admin/reports')
+  },
+
+  // (後台) 審核檢舉
+  updateReportStatus(id, newStatus) {
+    return axios.put(`/api/admin/reports/${id}`, { status: newStatus })
+  },
+}

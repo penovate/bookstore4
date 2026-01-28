@@ -14,5 +14,5 @@ public interface ReviewReportRepository extends JpaRepository<ReviewReportBean, 
     
     // 查詢 User 對某書籍 Review 是否已經檢舉過 (避免重複檢舉)
     boolean existsByUserIdAndReviewId(Integer userId, Integer reviewId);
-
+    
 }

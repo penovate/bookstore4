@@ -2,7 +2,7 @@
     <div>
         <v-row class="mb-4" align="center">
             <v-col cols="12" md="4">
-                <h2 class="text-h4 font-weight-bold text-primary">評價管理</h2>
+                <h2 class="text-h4 font-weight-bold text-primary">書籍評價</h2>
             </v-col>
             <v-col cols="12" md="4" offset-md="4">
                 <v-text-field 
@@ -96,7 +96,7 @@ const headers = [
     { title: '出版社', key: 'press', sortable: true, align: 'center' },
     { title: '總評價數', key: 'reviewCount', sortable: true, align: 'center' }, 
     { title: '平均評分', key: 'avgRating', sortable: true, align: 'center' },
-    { title: '書籍評價', key: 'actions', sortable: false, align: 'center' },
+    { title: '評價資料', key: 'actions', sortable: false, align: 'center' },
 ];
 
 // 讀取書籍資料

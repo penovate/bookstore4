@@ -3,7 +3,7 @@
     <v-row class="header-section" align="center">
       <v-col>
         <div class="title-wrapper">
-            <h2 class="page-title">評價列表</h2>
+            <h2 class="page-title">評價資料</h2>
             <span v-if="currentBookName" class="sub-info">
                 (目前查看書籍: {{ currentBookName }})
             </span>
@@ -64,15 +64,21 @@
             </template>
 
             <template v-slot:item.actions="{ item }">
-                <v-btn 
-                    icon 
-                    size="small" 
-                    variant="text"
-                    class="action-btn"
-                    @click="console.log('查看/編輯', item.reviewId)"
-                >
-                    <v-icon>mdi-pencil</v-icon>
-                </v-btn>
+                <v-tooltip location="top" text="檢舉此評論">
+                    <template v-slot:activator="{ props }">
+                        <v-btn 
+                            v-bind="props"
+                            icon 
+                            size="small" 
+                            variant="text"
+                            color="error" 
+                            class="action-btn"
+                            @click="handleReport(item)"
+                        >
+                            <v-icon>mdi-alert-circle-outline</v-icon>
+                        </v-btn>
+                    </template>
+                </v-tooltip>
             </template>
 
             <template v-slot:no-data>
@@ -98,6 +104,7 @@
 <script setup>
 import { ref, onMounted, watch, computed} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { REPORT_OPTIONS } from '@/utils/reportOptions.js';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
@@ -105,6 +112,7 @@ const route = useRoute();
 const router = useRouter();
 const reviews = ref([]);
 const loading = ref(false);
+
 
 // 判斷目前是查看哪本書
 const currentBookId = ref(route.params.bookId); 
@@ -118,7 +126,7 @@ const headers = [
     { title: '評價內容', key: 'comment', align: 'start', sortable: false, width: '40%' },
     { title: '評價時間', key: 'createdAt', align: 'center', sortable: true },
     { title: '狀態', key: 'status', align: 'center', sortable: true },
-    { title: '操作', key: 'actions', align: 'center', sortable: false },
+    { title: '檢舉', key: 'actions', align: 'center', sortable: false },
 ];
 
 const filteredReviews = computed(() => {
@@ -138,8 +146,6 @@ const loadReviews = async () => {
       loading.value = false;
   }
 };
-
-// 更新狀態函式 (呼叫 PUT API)
 
 // 取得書名
 const currentBookName = computed(() => {
@@ -205,6 +211,106 @@ const handleToggleStatus = (item) => {
             }
         }
     });
+};
+
+const getUserIdFromToken = () => {
+    const token = localStorage.getItem('userToken');
+    if (!token) return null;
+
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+
+        const payload = JSON.parse(jsonPayload);
+        
+        // ★ 這裡很重要：請觀察你的後端 JWT 欄位名稱
+        // 通常是 'userId', 'id', 或 'sub'
+        // 如果你的後端把 ID 放在 'sub' (Subject)，就回傳 payload.sub
+        return payload.userId || payload.id || payload.sub;
+
+    } catch (e) {
+        console.error("Token 解析失敗", e);
+        return null;
+    }
+};
+
+// 檢舉邏輯 
+const handleReport = async (item) => {
+
+    const currentUserId = getUserIdFromToken();
+
+    if (!currentUserId) {
+         Swal.fire({
+            icon: 'error',
+            title: '驗證錯誤',
+            text: '無法讀取使用者資訊，請重新登入。'
+        });
+        return;
+    }
+
+    const swalOptions = REPORT_OPTIONS.reduce((acc, curr) => {
+        acc[curr.value] = curr.label;
+        return acc;
+    }, {});
+
+    // 1. 彈出輸入視窗
+    const { value: reason } = await Swal.fire({
+        title: '檢舉評論',
+        input: 'select',
+        inputOptions: swalOptions,
+        inputPlaceholder: '請選擇檢舉原因',
+        showCancelButton: true,
+        confirmButtonText: '送出',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#d33',
+        inputValidator: (value) => {
+            if (!value) {
+                return '請選擇一個原因！';
+            }
+        }
+    });
+
+    // 2. 如果使用者有選擇原因並送出
+    if (reason) {
+        try {
+            const reportData = {
+                reviewId: item.reviewId,
+                userId: currentUserId, // 這裡帶入當前登入者 ID
+                reason: reason
+            };
+            
+            await axios.post('/api/public/reports', reportData);
+
+            // 成功提示
+            Swal.fire({
+                icon: 'success',
+                title: '檢舉已送出',
+                text: '管理員將會盡快審核您的檢舉。',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+        } catch (error) {
+            // 處理錯誤 (例如重複檢舉)
+            if (error.response && error.response.status === 409) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '重複檢舉',
+                    text: '您已經檢舉過此評論了。'
+                });
+            } else {
+                console.error('檢舉失敗:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: '檢舉失敗',
+                    text: '系統發生錯誤，請稍後再試。'
+                });
+            }
+        }
+    }
 };
 
 // 監聽路由變化
@@ -312,7 +418,7 @@ $text-grey: #757575;
 }
 
 .action-btn {
-    color: $primary-color !important;
+    // color: $primary-color !important;
 }
 
 .no-data-text {

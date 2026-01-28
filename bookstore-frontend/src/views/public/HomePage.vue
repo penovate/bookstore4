@@ -149,7 +149,7 @@ onMounted(() => {
 
     <v-container class="my-12">
       <div class="d-flex justify-space-between align-center mb-6">
-        <h2 class="text-h4 font-weight-bold" style="color: #2e5c43">🔥 本月熱銷排行</h2>
+        <h2 class="text-h4 font-weight-bold" style="color: #2e5c43">本月熱銷排行</h2>
         <v-btn variant="text" color="primary" @click="goToBooks"
           >查看全部 <v-icon icon="mdi-chevron-right"></v-icon
         ></v-btn>

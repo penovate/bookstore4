@@ -24,6 +24,8 @@ import bookstore.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import bookstore.repository.CouponRepository;
+import bookstore.repository.UserCouponRepository; // Added
+import bookstore.bean.UserCouponBean; // Added
 import bookstore.dto.BookSalesDTO;
 import bookstore.dto.CheckoutRequest;
 
@@ -47,7 +49,7 @@ public class OrderService {
 	private UserRepository userRepository;
 
 	@Autowired
-	private CouponRepository couponRepository;
+	private UserCouponRepository userCouponRepository; // Changed from CouponRepository
 
 	// 從購物車轉訂單 (Checkout Transcation)
 	@SuppressWarnings("null")
@@ -158,26 +160,30 @@ public class OrderService {
 
 		// 8. 處理優惠券 (如果有)
 		if (order.getCouponId() != null) {
-			CouponBean coupon = couponRepository.findById(order.getCouponId())
+			// 使用 UserCouponRepository 查找 UserCouponBean (代表使用者領取的優惠券)
+			UserCouponBean userCoupon = userCouponRepository.findById(order.getCouponId())
 					.orElseThrow(() -> new BusinessException(400, "優惠券不存在"));
 
 			// 驗證優惠券歸屬
-			if (!coupon.getUserId().equals(order.getUserBean().getUserId())) {
+			if (!userCoupon.getUserId().equals(order.getUserBean().getUserId())) {
 				throw new BusinessException(400, "這張優惠券不屬於您");
 			}
 
 			// 驗證是否已使用
-			if (coupon.getStatus() == 1) {
+			if (userCoupon.getStatus() == 1) {
 				throw new BusinessException(400, "優惠券已使用");
 			}
 
+			// 獲取優惠券定義 (CouponBean) 以檢查規則
+			CouponBean couponDef = userCoupon.getCouponBean();
+
 			// 驗證低消
-			if (order.getTotalAmount().compareTo(coupon.getMinSpend()) < 0) {
-				throw new BusinessException(400, "未達優惠券最低消費金額: " + coupon.getMinSpend());
+			if (order.getTotalAmount().compareTo(couponDef.getMinSpend()) < 0) {
+				throw new BusinessException(400, "未達優惠券最低消費金額: " + couponDef.getMinSpend());
 			}
 
 			// 套用折扣
-			BigDecimal discount = coupon.getDiscountAmount();
+			BigDecimal discount = couponDef.getDiscountAmount();
 			order.setDiscount(discount);
 
 			// 重新計算實付金額
@@ -189,9 +195,9 @@ public class OrderService {
 			order.setFinalAmount(newFinal);
 
 			// 標記已使用
-			coupon.setStatus(1);
-			coupon.setUsedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-			couponRepository.save(coupon);
+			userCoupon.setStatus(1);
+			userCoupon.setUsedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+			userCouponRepository.save(userCoupon);
 			ordersRepository.save(order); // 更新訂單的折扣和最終金額
 		}
 
@@ -270,26 +276,29 @@ public class OrderService {
 
 		// 8. 處理優惠券 (如果有)
 		if (order.getCouponId() != null) {
-			CouponBean coupon = couponRepository.findById(order.getCouponId())
+			// 使用 UserCouponRepository 查找 UserCouponBean
+			UserCouponBean userCoupon = userCouponRepository.findById(order.getCouponId())
 					.orElseThrow(() -> new BusinessException(400, "優惠券不存在"));
 
 			// 驗證優惠券歸屬
-			if (!coupon.getUserId().equals(order.getUserBean().getUserId())) {
+			if (!userCoupon.getUserId().equals(order.getUserBean().getUserId())) {
 				throw new BusinessException(400, "這張優惠券不屬於您");
 			}
 
 			// 驗證是否已使用
-			if (coupon.getStatus() == 1) {
+			if (userCoupon.getStatus() == 1) {
 				throw new BusinessException(400, "優惠券已使用");
 			}
 
+			CouponBean couponDef = userCoupon.getCouponBean();
+
 			// 驗證低消
-			if (order.getTotalAmount().compareTo(coupon.getMinSpend()) < 0) {
-				throw new BusinessException(400, "未達優惠券最低消費金額: " + coupon.getMinSpend());
+			if (order.getTotalAmount().compareTo(couponDef.getMinSpend()) < 0) {
+				throw new BusinessException(400, "未達優惠券最低消費金額: " + couponDef.getMinSpend());
 			}
 
 			// 套用折扣
-			BigDecimal discount = coupon.getDiscountAmount();
+			BigDecimal discount = couponDef.getDiscountAmount();
 			order.setDiscount(discount);
 
 			// 重新計算實付金額
@@ -301,9 +310,9 @@ public class OrderService {
 			order.setFinalAmount(newFinal);
 
 			// 標記已使用
-			coupon.setStatus(1);
-			coupon.setUsedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-			couponRepository.save(coupon);
+			userCoupon.setStatus(1);
+			userCoupon.setUsedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+			userCouponRepository.save(userCoupon);
 			ordersRepository.save(order); // 更新訂單的折扣和最終金額
 		}
 	}

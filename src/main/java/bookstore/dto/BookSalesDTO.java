@@ -18,13 +18,13 @@ public class BookSalesDTO {
     private String author;
     private String coverImage;
 
-    // For Admin Analysis (simple)
+    // 後台分析使用
     public BookSalesDTO(String bookName, Long totalQuantity) {
         this.bookName = bookName;
         this.totalQuantity = totalQuantity;
     }
 
-    // For Homepage Display (full detailed)
+    // 前台熱銷排名使用
     public BookSalesDTO(Integer bookId, String bookName, String author, BigDecimal price, String coverImage,
             Long totalQuantity) {
         this.bookId = bookId;

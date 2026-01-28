@@ -32,7 +32,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @DynamicInsert
 @DynamicUpdate
-@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })//避免在 JSON 轉換時，因為 Hibernate 的延遲加載（Lazy Loading）產生循環引用或代理物件報錯
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" }) // 避免在 JSON 轉換時，因為 Hibernate 的延遲加載（Lazy
+                                                                 // Loading）產生循環引用或代理物件報錯
 public class CouponBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -41,11 +42,12 @@ public class CouponBean implements Serializable {
     @Column(name = "coupon_id")
     private Integer couponId;
 
-    @Column(name = "user_id")
-    private Integer userId;
+    // 優惠券名稱
+    @Column(name = "coupon_name", nullable = false)
+    private String couponName;
 
-    // 優惠券代碼 ("read50"、"read100")
-    @Column(name = "coupon_code", nullable = false)
+    // 優惠券代碼
+    @Column(name = "coupon_code", nullable = false, unique = true)
     private String couponCode;
 
     // 折扣金額
@@ -56,22 +58,15 @@ public class CouponBean implements Serializable {
     @Column(name = "min_spend", nullable = false)
     private BigDecimal minSpend;
 
-    // 狀態: 0=未使用, 1=已使用
-    @Column(name = "status", nullable = false)
-    private Integer status;
+    // 是否開放領取 (0=禁止, 1=開放)
+    @Column(name = "is_available", nullable = false)
+    private Integer isAvailable = 1;
 
-    // 領取時間
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Timestamp createdAt;
 
-    // 使用時間
-    @Column(name = "used_at")
+    @Column(name = "updated_at")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Timestamp usedAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
-    @JsonIgnoreProperties("coupons")
-    private UserBean userBean;
+    private Timestamp updatedAt;
 }

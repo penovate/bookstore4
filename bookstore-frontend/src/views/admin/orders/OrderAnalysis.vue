@@ -125,7 +125,7 @@
 
     <!-- 前三名熱銷卡片 -->
     <div class="d-flex align-center mb-4">
-      <h3 class="text-h4 font-weight-bold text-grey-darken-2">🏆 熱銷排行 (依本期區間統計)</h3>
+      <h3 class="text-h4 font-weight-bold text-grey-darken-2">熱銷排行 (依本期區間統計)</h3>
     </div>
     <v-row v-if="topBooks.length > 0" class="mb-6">
       <v-col v-for="(book, index) in topBooks.slice(0, 3)" :key="book.bookName" cols="12" md="4">

@@ -37,11 +37,14 @@
                 <div class="coupon-content pa-4">
                     <div class="d-flex justify-space-between align-start">
                         <div>
-                            <div class="text-h4 font-weight-black text-primary mb-1">
-                                ${{ coupon.discountAmount }}
+                            <div class="text-subtitle-1 font-weight-bold mb-1">
+                                {{ coupon.couponBean?.couponName }}
                             </div>
-                            <div class="text-subtitle-1 font-weight-bold text-grey-darken-2">
-                                滿 ${{ coupon.minSpend }} 可用
+                            <div class="text-h4 font-weight-black text-primary mb-1">
+                                ${{ coupon.couponBean?.discountAmount }}
+                            </div>
+                            <div class="text-subtitle-2 text-grey-darken-2">
+                                滿 ${{ coupon.couponBean?.minSpend }} 可用
                             </div>
                         </div>
                         <v-chip :color="coupon.status === 1 ? 'grey' : 'secondary'" label class="font-weight-bold">
@@ -50,10 +53,10 @@
                     </div>
                     <v-divider class="my-3"></v-divider>
                     <div class="text-caption text-grey">
-                        優惠碼: <span class="font-weight-bold">{{ coupon.couponCode }}</span>
+                        優惠碼: <span class="font-weight-bold">{{ coupon.couponBean?.couponCode }}</span>
                     </div>
                     <div class="text-caption text-grey">
-                        領取時間: {{ formatDate(coupon.createdAt) }}
+                        領取時間: {{ formatDate(coupon.receivedAt) }}
                     </div>
                      <div v-if="coupon.status === 1" class="text-caption text-grey">
                         使用時間: {{ formatDate(coupon.usedAt) }}
@@ -90,7 +93,7 @@ const fetchCoupons = async () => {
        // 排序：未使用的優先，然後按日期降序排列
        coupons.value.sort((a, b) => {
            if (a.status !== b.status) return a.status - b.status
-           return new Date(b.createdAt) - new Date(a.createdAt)
+           return new Date(b.receivedAt) - new Date(a.receivedAt)
        })
     }
   } catch (error) {
@@ -108,7 +111,7 @@ const claimCoupon = async () => {
              Swal.fire({
                 icon: 'success',
                 title: '領取成功',
-                text: `恭喜獲得 $${response.data.coupon.discountAmount} 優惠券！`,
+                text: `恭喜獲得 $${response.data.coupon.couponBean?.discountAmount} 優惠券！`,
                 timer: 1500,
                 showConfirmButton: false
              })
@@ -152,7 +155,7 @@ onMounted(() => {
 }
 
 .coupon-card {
-    border-left: 6px solid #ff9800;
+    border-left: 6px solid #2e5c43;
     transition: transform 0.2s;
     background-color: white;
 }

@@ -13,7 +13,7 @@ public class MonthlySalesDTO {
     private BigDecimal revenue;
     private Long orderCount;
 
-    // Explicit constructor to handle potential Lombok issues or type ambiguities
+    // 嚴謹版本的建構子
     public MonthlySalesDTO(Integer year, Integer month, BigDecimal revenue, Long orderCount) {
         this.year = year;
         this.month = month;
@@ -21,7 +21,7 @@ public class MonthlySalesDTO {
         this.orderCount = orderCount != null ? orderCount : 0L;
     }
 
-    // 使用AllArgsConstructor發現無法正確轉型，所以寫建構子並進行手動轉型
+    // (寬鬆版本)使用@AllArgsConstructor發現無法正確轉型，所以寫建構子並進行手動轉型
     public MonthlySalesDTO(Object year, Object month, Object revenue, Object orderCount) {
         this.year = (year instanceof Integer y) ? y.intValue() : 0;
         this.month = (month instanceof Integer m) ? m.intValue() : 0;

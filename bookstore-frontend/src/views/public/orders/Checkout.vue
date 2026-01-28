@@ -106,42 +106,83 @@
           <!-- 5. 優惠券 -->
           <div class="section-block">
             <h3>優惠券</h3>
-            <div v-if="coupons.length > 0">
-              <div class="radio-group" style="flex-direction: column; gap: 10px">
-                <label class="radio-label" :class="{ active: selectedCouponId === null }">
-                  <input type="radio" :value="null" v-model="selectedCouponId" />
-                  不使用優惠券
-                </label>
-                <label
-                  v-for="coupon in coupons"
-                  :key="coupon.couponId"
-                  class="radio-label"
-                  :class="{
-                    active: selectedCouponId === coupon.couponId,
-                    'disabled-coupon': cartTotal < coupon.minSpend,
-                  }"
-                >
-                  <input
-                    type="radio"
-                    :value="coupon.couponId"
-                    v-model="selectedCouponId"
-                    :disabled="cartTotal < coupon.minSpend"
-                  />
-                  <div class="d-flex justify-space-between w-100 align-center">
-                    <span>
-                      <strong class="text-primary">${{ coupon.discountAmount }} 折價券</strong>
-                      <span class="text-caption text-grey ml-2"
-                        >(滿 ${{ coupon.minSpend }} 可用)</span
-                      >
-                    </span>
-                    <span v-if="cartTotal < coupon.minSpend" class="text-caption text-error"
-                      >未達門檻</span
-                    >
-                  </div>
-                </label>
-              </div>
+            
+            <!-- Selected Coupon Display or Button -->
+            <div v-if="selectedCouponId" class="selected-coupon-display mb-3">
+                <div class="d-flex justify-space-between align-center pa-3 bg-grey-lighten-4 rounded border">
+                    <div>
+                        <div class="font-weight-bold text-primary">
+                            {{ getSelectedCouponName() }}
+                        </div>
+                        <div class="text-caption">
+                            折抵 ${{ getSelectedCouponDiscount() }}
+                        </div>
+                    </div>
+                    <button class="btn-remove-coupon" @click="selectedCouponId = null">
+                        取消使用
+                    </button>
+                </div>
             </div>
-            <div v-else class="text-grey pa-2">無可用優惠券</div>
+
+            <button class="btn-use-coupon" @click="showCouponDialog = true">
+                {{ selectedCouponId ? '更換優惠券' : '使用優惠券' }}
+            </button>
+
+            <!-- 優惠券 Dialog -->
+            <v-dialog v-model="showCouponDialog" max-width="500px">
+                <v-card class="rounded-lg">
+                    <v-card-title class="d-flex justify-space-between align-center pa-4">
+                        <span class="text-h6 font-weight-bold">選擇優惠券</span>
+                        <v-btn icon variant="text" @click="showCouponDialog = false">
+                            <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                    </v-card-title>
+                    <v-divider></v-divider>
+                    <v-card-text class="pa-4" style="max-height: 400px; overflow-y: auto;">
+                        <div v-if="coupons.length > 0" class="d-flex flex-column gap-3">
+                            <v-card 
+                                v-for="coupon in coupons" 
+                                :key="coupon.id"
+                                class="coupon-card rounded-lg cursor-pointer my-2 elevation-2"
+                                :class="{
+                                    'active-coupon-card': selectedCouponId === coupon.id,
+                                    'disabled-coupon': cartTotal < (coupon.couponBean?.minSpend || 0)
+                                }"
+                                @click="selectCoupon(coupon)"
+                            >
+                                <div class="coupon-content pa-4">
+                                    <div class="d-flex justify-space-between align-start">
+                                        <div>
+                                            <div class="text-subtitle-1 font-weight-bold mb-1">
+                                                {{ coupon.couponBean?.couponName }}
+                                            </div>
+                                            <div class="text-h4 font-weight-black text-primary mb-1">
+                                                ${{ coupon.couponBean?.discountAmount }}
+                                            </div>
+                                            <div class="text-subtitle-2 text-grey-darken-2">
+                                                滿 ${{ coupon.couponBean?.minSpend }} 可用
+                                            </div>
+                                        </div>
+                                        <v-icon v-if="selectedCouponId === coupon.id" color="primary" size="x-large">
+                                            mdi-check-circle
+                                        </v-icon>
+                                    </div>
+                                    <div v-if="cartTotal < (coupon.couponBean?.minSpend || 0)" class="mt-2 text-caption text-error bg-red-lighten-5 px-2 py-1 rounded">
+                                        未達消費門檻 (差 ${{ (coupon.couponBean?.minSpend || 0) - cartTotal }})
+                                    </div>
+                                    <v-divider class="my-3"></v-divider>
+                                    <div class="text-caption text-grey">
+                                        優惠碼: <span class="font-weight-bold">{{ coupon.couponBean?.couponCode }}</span>
+                                    </div>
+                                </div>
+                            </v-card>
+                        </div>
+                        <div v-else class="text-center text-grey py-5">
+                            找不到可用的優惠券
+                        </div>
+                    </v-card-text>
+                </v-card>
+            </v-dialog>
           </div>
 
           <!-- 6. 訂單明細 -->
@@ -232,6 +273,24 @@ const cartItemsCount = ref(0)
 const cartItems = ref([])
 const coupons = ref([])
 const selectedCouponId = ref(null)
+const showCouponDialog = ref(false)
+
+const selectCoupon = (coupon) => {
+    const minSpend = coupon.couponBean?.minSpend || 0
+    if (cartTotal.value < minSpend) return
+    selectedCouponId.value = coupon.id
+    showCouponDialog.value = false
+}
+
+const getSelectedCouponName = () => {
+    const coupon = coupons.value.find(c => c.id === selectedCouponId.value)
+    return coupon?.couponBean?.couponName || '優惠券'
+}
+
+const getSelectedCouponDiscount = () => {
+    const coupon = coupons.value.find(c => c.id === selectedCouponId.value)
+    return coupon?.couponBean?.discountAmount || 0
+}
 
 const form = ref({
   recipientName: '',
@@ -323,13 +382,13 @@ const shippingFee = computed(() => {
     return cartTotal.value < 350 ? 50 : 0
   }
 })
-
+// ...
 const finalAmount = computed(() => {
   let total = cartTotal.value + shippingFee.value
   if (selectedCouponId.value) {
-    const coupon = coupons.value.find((c) => c.couponId === selectedCouponId.value)
+    const coupon = coupons.value.find((c) => c.id === selectedCouponId.value)
     if (coupon) {
-      total -= coupon.discountAmount
+      total -= (coupon.couponBean?.discountAmount || 0)
     }
   }
   return total > 0 ? total : 0
@@ -337,8 +396,8 @@ const finalAmount = computed(() => {
 
 const discountAmount = computed(() => {
   if (selectedCouponId.value) {
-    const coupon = coupons.value.find((c) => c.couponId === selectedCouponId.value)
-    return coupon ? coupon.discountAmount : 0
+    const coupon = coupons.value.find((c) => c.id === selectedCouponId.value)
+    return coupon ? (coupon.couponBean?.discountAmount || 0) : 0
   }
   return 0
 })
@@ -798,6 +857,58 @@ input[type='text'] {
 
 .item-subtotal {
   font-size: 16px;
-  font-weight: bold;
+}
+
+.btn-use-coupon {
+    width: 100%;
+    padding: 12px;
+    border: 1px dashed #2e5c43;
+    color: #2e5c43;
+    background-color: transparent;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-use-coupon:hover {
+    background-color: #f1f8e9;
+}
+
+.btn-remove-coupon {
+    font-size: 12px;
+    color: #666;
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.coupon-card {
+    border-left: 6px solid #2e5c43;
+    transition: transform 0.2s, background-color 0.2s;
+    background-color: white;
+}
+
+.coupon-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.active-coupon-card {
+  background-color: #f1f8e9 !important; /* Light green background for selected */
+  border-left-color: #1b5e20 !important; /* Darker green border */
+  border: 2px solid #2e5c43; /* Add full border to highlight selection */
+}
+
+.disabled-coupon {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+    border-left-color: #9e9e9e;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>

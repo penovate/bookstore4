@@ -129,6 +129,8 @@ public class BookClubService {
 	Optional<UserBean> user = userRepository.findById(userId);
 	Integer userPoint = user.get().getPoints();
 	
+	
+	
 	}
 
 	// 發起讀書會

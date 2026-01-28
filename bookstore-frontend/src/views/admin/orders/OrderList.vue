@@ -11,10 +11,19 @@
           color="primary"
           prepend-icon="mdi-plus"
           elevation="2"
-          class="rounded-lg font-weight-bold"
+          class="rounded-lg font-weight-bold mr-2"
           @click="router.push({ name: 'orderInsert' })"
         >
           新增訂單
+        </v-btn>
+        <v-btn
+          color="secondary"
+          prepend-icon="mdi-chart-bar"
+          elevation="2"
+          class="rounded-lg font-weight-bold"
+          @click="router.push({ name: 'orderAnalysis' })"
+        >
+          訂單分析
         </v-btn>
       </v-col>
 

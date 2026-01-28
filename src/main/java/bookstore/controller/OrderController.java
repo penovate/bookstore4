@@ -21,6 +21,7 @@ import bookstore.bean.Orders;
 import bookstore.bean.UserBean;
 import bookstore.service.OrderService;
 import bookstore.service.bookService;
+import bookstore.dto.BookSalesDTO;
 import bookstore.dto.CheckoutRequest;
 import bookstore.util.JwtUtil;
 //import bookstore.service.BookService; 
@@ -458,6 +459,74 @@ public class OrderController {
 			return "success";
 		} catch (Exception e) {
 			return "error: " + e.getMessage();
+		}
+	}
+
+	@GetMapping("/order/api/analysis/books")
+	@ResponseBody
+	public List<BookSalesDTO> getSalesAnalysisApi(
+			@RequestParam(value = "startDate", required = false) String startDateStr,
+			@RequestParam(value = "endDate", required = false) String endDateStr) {
+		java.sql.Timestamp start = parseTimestamp(startDateStr);
+		java.sql.Timestamp end = parseTimestamp(endDateStr);
+		return orderService.getTopSellingBooks(start, end);
+	}
+
+	@GetMapping("/order/api/analysis/revenue")
+	@ResponseBody
+	public BigDecimal getSalesRevenueApi(
+			@RequestParam(value = "startDate", required = false) String startDateStr,
+			@RequestParam(value = "endDate", required = false) String endDateStr) {
+		java.sql.Timestamp start = parseTimestamp(startDateStr);
+		java.sql.Timestamp end = parseTimestamp(endDateStr);
+		return orderService.getSalesRevenue(start, end);
+	}
+
+	@GetMapping("/order/api/analysis/overview")
+	@ResponseBody
+	public bookstore.dto.SalesOverviewDTO getSalesOverviewApi(
+			@RequestParam(value = "startDate", required = false) String startDateStr,
+			@RequestParam(value = "endDate", required = false) String endDateStr) {
+		java.sql.Timestamp start = parseTimestamp(startDateStr);
+		java.sql.Timestamp end = parseTimestamp(endDateStr);
+		return orderService.getSalesOverview(start, end);
+	}
+
+	@GetMapping("/order/api/analysis/homepage-books")
+	@ResponseBody
+	public List<BookSalesDTO> getHomepageTopBooksApi() {
+		// Default to current month
+		java.util.Calendar cal = java.util.Calendar.getInstance();
+		cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+		cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+		cal.set(java.util.Calendar.MINUTE, 0);
+		cal.set(java.util.Calendar.SECOND, 0);
+		java.sql.Timestamp start = new java.sql.Timestamp(cal.getTimeInMillis());
+
+		// End of month (or just 'now' is fine as upper bound)
+		java.sql.Timestamp end = new java.sql.Timestamp(System.currentTimeMillis());
+
+		return orderService.getTopSellingBooksFull(start, end);
+	}
+
+	@GetMapping("/order/api/analysis/recent-trend")
+	@ResponseBody
+	public List<bookstore.dto.MonthlySalesDTO> getRecentSalesRevenueApi() {
+		return orderService.getRecentSalesTrends();
+	}
+
+	private java.sql.Timestamp parseTimestamp(String dateStr) {
+		if (dateStr == null || dateStr.trim().isEmpty()) {
+			return null;
+		}
+		try {
+			// Assume format matches standard or long (append time if just date)
+			if (dateStr.length() <= 10) {
+				return java.sql.Timestamp.valueOf(dateStr + " 00:00:00");
+			}
+			return java.sql.Timestamp.valueOf(dateStr);
+		} catch (Exception e) {
+			return null;
 		}
 	}
 

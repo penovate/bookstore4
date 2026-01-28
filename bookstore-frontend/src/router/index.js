@@ -101,14 +101,15 @@ const router = createRouter({
         },
         // 3. 訂單管理
         {
-          path: 'orders',
-          name: 'orderMenu',
-          component: () => import('../views/admin/orders/OrderMenu.vue'),
-        },
-        {
           path: 'orders/list',
           name: 'orderList',
           component: () => import('../views/admin/orders/OrderList.vue'),
+        },
+        {
+          path: 'orders/analysis',
+          name: 'orderAnalysis',
+          component: () => import('../views/admin/orders/OrderAnalysis.vue'),
+          meta: { requiresAuth: true, role: 'ADMIN' },
         },
         {
           path: 'orders/insert',

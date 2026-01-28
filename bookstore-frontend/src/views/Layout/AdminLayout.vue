@@ -33,7 +33,10 @@ const items = ref([
   {
     title: '訂單管理',
     icon: 'mdi-clipboard-list-outline',
-    to: '/dev/admin/orders',
+    children: [
+      { title: '訂單列表', to: '/dev/admin/orders/list', icon: 'mdi-format-list-bulleted' },
+      { title: '訂單分析', to: '/dev/admin/orders/analysis', icon: 'mdi-chart-bar' },
+    ],
   },
   {
     title: '評價管理',

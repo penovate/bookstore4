@@ -21,7 +21,10 @@ import bookstore.repository.CartRepository;
 import bookstore.repository.OrderItemRepository;
 import bookstore.repository.OrdersRepository;
 import bookstore.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import bookstore.repository.CouponRepository;
+import bookstore.dto.BookSalesDTO;
 import bookstore.dto.CheckoutRequest;
 
 @Service
@@ -524,4 +527,161 @@ public class OrderService {
 
 		ordersRepository.save(order);
 	}
+
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	@Transactional(readOnly = true)
+	public List<BookSalesDTO> getTopSellingBooks() {
+		return getTopSellingBooks(null, null);
+	}
+
+	@Transactional(readOnly = true)
+	public List<BookSalesDTO> getTopSellingBooks(Timestamp start, Timestamp end) {
+		StringBuilder jpql = new StringBuilder(
+				"SELECT new bookstore.dto.BookSalesDTO(b.bookName, SUM(oi.quantity)) " +
+						"FROM OrderItem oi " +
+						"JOIN oi.booksBean b " +
+						"JOIN oi.orders o " +
+						"WHERE o.orderStatus NOT IN ('已取消', '已退款') ");
+
+		if (start != null && end != null) {
+			jpql.append("AND o.createdAt BETWEEN :start AND :end ");
+		}
+
+		jpql.append("GROUP BY b.bookName ORDER BY SUM(oi.quantity) DESC");
+
+		var query = entityManager.createQuery(jpql.toString(), BookSalesDTO.class);
+
+		if (start != null && end != null) {
+			query.setParameter("start", start);
+			query.setParameter("end", end);
+		}
+
+		return query.getResultList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<BookSalesDTO> getTopSellingBooksFull(Timestamp start, Timestamp end) {
+		StringBuilder jpql = new StringBuilder(
+				"SELECT new bookstore.dto.BookSalesDTO(" +
+						"b.bookId, b.bookName, b.author, b.price, bi.imageUrl, SUM(oi.quantity)) " +
+						"FROM OrderItem oi " +
+						"JOIN oi.booksBean b " +
+						"LEFT JOIN b.bookImageBean bi " +
+						"JOIN oi.orders o " +
+						"WHERE o.orderStatus NOT IN ('已取消', '已退款') " +
+						"AND b.onShelf = 1 ");
+
+		if (start != null && end != null) {
+			jpql.append("AND o.createdAt BETWEEN :start AND :end ");
+		}
+
+		jpql.append("GROUP BY b.bookId, b.bookName, b.author, b.price, bi.imageUrl " +
+				"ORDER BY SUM(oi.quantity) DESC");
+
+		var query = entityManager.createQuery(jpql.toString(), BookSalesDTO.class);
+
+		if (start != null && end != null) {
+			query.setParameter("start", start);
+			query.setParameter("end", end);
+		}
+
+		return query.setMaxResults(4).getResultList(); // Limit to top 4
+	}
+
+	@Transactional(readOnly = true)
+	public BigDecimal getSalesRevenue(Timestamp start, Timestamp end) {
+		StringBuilder jpql = new StringBuilder(
+				"SELECT SUM(o.finalAmount) FROM Orders o WHERE o.orderStatus NOT IN ('已取消', '已退款') ");
+
+		if (start != null && end != null) {
+			jpql.append("AND o.createdAt BETWEEN :start AND :end");
+		}
+
+		var query = entityManager.createQuery(jpql.toString(), BigDecimal.class);
+
+		if (start != null && end != null) {
+			query.setParameter("start", start);
+			query.setParameter("end", end);
+		}
+
+		BigDecimal result = query.getSingleResult();
+		return result != null ? result : BigDecimal.ZERO;
+	}
+
+	@Transactional(readOnly = true)
+	public List<bookstore.dto.MonthlySalesDTO> getRecentSalesTrends() {
+		// Calculate start date: 1st day of 11 months ago (covering a 12-month span
+		// including current month)
+		java.time.LocalDate now = java.time.LocalDate.now();
+		java.time.LocalDate start = now.minusMonths(11).withDayOfMonth(1);
+		Timestamp startTs = Timestamp.valueOf(start.atStartOfDay());
+
+		String jpql = "SELECT new bookstore.dto.MonthlySalesDTO(" +
+				"function('year', o.createdAt), " +
+				"function('month', o.createdAt), " +
+				"SUM(o.finalAmount), " +
+				"COUNT(o)) " +
+				"FROM Orders o " +
+				"WHERE o.orderStatus NOT IN ('已取消', '已退款') " +
+				"AND o.createdAt >= :startDate " +
+				"GROUP BY function('year', o.createdAt), function('month', o.createdAt) " +
+				"ORDER BY function('year', o.createdAt), function('month', o.createdAt)";
+
+		return entityManager.createQuery(jpql, bookstore.dto.MonthlySalesDTO.class)
+				.setParameter("startDate", startTs)
+				.getResultList();
+	}
+
+	@Transactional(readOnly = true)
+	public bookstore.dto.SalesOverviewDTO getSalesOverview(Timestamp start, Timestamp end) {
+		// 1. Total Revenue
+		StringBuilder revenueJpql = new StringBuilder(
+				"SELECT SUM(o.finalAmount) FROM Orders o WHERE o.orderStatus NOT IN ('已取消', '已退款') ");
+		if (start != null && end != null) {
+			revenueJpql.append("AND o.createdAt BETWEEN :start AND :end");
+		}
+		var revenueQuery = entityManager.createQuery(revenueJpql.toString(), BigDecimal.class);
+		if (start != null && end != null) {
+			revenueQuery.setParameter("start", start);
+			revenueQuery.setParameter("end", end);
+		}
+		BigDecimal totalRevenue = revenueQuery.getSingleResult();
+		if (totalRevenue == null)
+			totalRevenue = BigDecimal.ZERO;
+
+		// 2. Total Orders
+		StringBuilder countJpql = new StringBuilder(
+				"SELECT COUNT(o) FROM Orders o WHERE o.orderStatus NOT IN ('已取消', '已退款') ");
+		if (start != null && end != null) {
+			countJpql.append("AND o.createdAt BETWEEN :start AND :end");
+		}
+		var countQuery = entityManager.createQuery(countJpql.toString(), Long.class);
+		if (start != null && end != null) {
+			countQuery.setParameter("start", start);
+			countQuery.setParameter("end", end);
+		}
+		Long totalOrders = countQuery.getSingleResult();
+		if (totalOrders == null)
+			totalOrders = 0L;
+
+		// 3. Total Books Sold
+		StringBuilder booksJpql = new StringBuilder(
+				"SELECT SUM(oi.quantity) FROM OrderItem oi JOIN oi.orders o WHERE o.orderStatus NOT IN ('已取消', '已退款') ");
+		if (start != null && end != null) {
+			booksJpql.append("AND o.createdAt BETWEEN :start AND :end");
+		}
+		var booksQuery = entityManager.createQuery(booksJpql.toString(), Long.class);
+		if (start != null && end != null) {
+			booksQuery.setParameter("start", start);
+			booksQuery.setParameter("end", end);
+		}
+		Long totalBooksSold = booksQuery.getSingleResult();
+		if (totalBooksSold == null)
+			totalBooksSold = 0L;
+
+		return new bookstore.dto.SalesOverviewDTO(totalRevenue, totalOrders, totalBooksSold);
+	}
+
 }

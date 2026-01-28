@@ -22,5 +22,5 @@ public interface BookClubsRepository extends JpaRepository<BookClubsBean, Intege
 
 	List<BookClubsBean> findByHost(UserBean host);
 	
-	long countByHostIdAndStatusIn(Integer userId, Collection<Integer> statuses);
+//	long countByHostIdAndStatusIn(Integer userId, Collection<Integer> statuses);
 }

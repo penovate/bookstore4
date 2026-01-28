@@ -15,6 +15,8 @@
   "dependencies": {
     "@mdi/font": "^7.4.47",
     "axios": "^1.13.2",
+    "docx": "^9.5.1",
+    "exceljs": "^4.4.0",
     "markdown-it": "^14.1.0",
     "mdi": "^2.2.43",
     "pinia": "^3.0.4",

@@ -101,6 +101,12 @@ const router = createRouter({
           component: () => import('../views/admin/users/UserLogList.vue'),
           meta: { title: '管理員操作日誌' },
         },
+        {
+          path: 'users/admin-chat',
+          name: 'admin-chat',
+          component: () => import('../views/admin/users/AdminChatView.vue'),
+          meta: {title : '管理員客服中心'},
+        },
         // 2.5 優惠券管理
         {
           path: 'coupons',
@@ -248,6 +254,12 @@ const router = createRouter({
           name: 'profile-edit',
           component: () => import('../views/public/user/UserProfileEdit.vue'),
           meta: { title: '會員資料修改' },
+        },
+        {
+          path: 'user-chat',
+          name: 'user-chat',
+          component: () => import('../views/public/user/UserChat.vue'),
+          meta: {title: '客服專區'},
         },
         {
           path: 'books',

@@ -125,7 +125,7 @@ const menuItems = ref([
     title: '客服專區',
     icon: 'mdi-chat-question-outline',
     color: 'blue-grey-darken-1',
-    to: '/dev/user/support',
+    to: '/dev/user/user-chat',
     desc: '聯絡我們或查看常見問題',
   },
 ])

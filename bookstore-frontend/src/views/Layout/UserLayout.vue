@@ -14,6 +14,7 @@ const userStore = useUserStore()
 
 const menuItems = ref([
   { title: '書籍專區', to: '/dev/user/books', icon: 'mdi-book-open-page-variant' },
+  { title: '讀者書評', to: '/dev/user/reviews', icon: 'mdi-comment-quote-outline' },
   { title: '歷史訂單', to: '/dev/user/orders', icon: 'mdi-history' },
   { title: '我的優惠券', to: '/dev/user/coupons', icon: 'mdi-ticket-percent' },
   { title: '關於我們', to: '', icon: 'mdi-information' },

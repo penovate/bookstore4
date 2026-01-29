@@ -233,6 +233,11 @@ const router = createRouter({
           name: 'userCoupons',
           component: () => import('../views/public/user/UserCoupon.vue'),
         },
+        {
+          path: 'reviews', 
+          name: 'user-reviews',
+          component: () => import('../views/public/reviews/BookReviewsHome.vue'), 
+        },
       ],
     },
   ],

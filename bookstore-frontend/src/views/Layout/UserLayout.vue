@@ -88,7 +88,7 @@ onMounted(() => {
           @click="$router.push('/dev/user/home')"
         >
           <v-icon icon="mdi-book-open-variant" class="me-2"></v-icon>
-          網路書籍商城
+          森林書屋
         </v-toolbar-title>
       </div>
 
@@ -127,16 +127,24 @@ onMounted(() => {
         <div v-if="userStore.isLoggedIn">
           <v-menu min-width="200px" rounded>
             <template v-slot:activator="{ props }">
-              <v-avatar color="surface" size="36" class="cursor-pointer" v-bind="props">
-                <span class="text-primary font-weight-bold">{{ userStore.name.charAt(0) }}</span>
+              <v-avatar color="surface" size="36" class="cursor-pointer border-sm elevation-1" v-bind="props">
+                <v-img 
+                  v-if="userStore.img" 
+                  :src="userStore.img" 
+                  cover
+                ></v-img>
+                
+                <span v-else class="text-primary font-weight-bold">
+                  {{ userStore.name.charAt(0) }}
+                </span>
               </v-avatar>
             </template>
 
             <v-list>
               <v-list-item
                 prepend-icon="mdi-account-circle"
-                title="個人檔案"
-                to="/dev/user/profile"
+                title="會員中心"
+                to="/dev/user/user-menu"
               ></v-list-item>
               <v-list-item
                 prepend-icon="mdi-history"
@@ -154,7 +162,15 @@ onMounted(() => {
           </v-menu>
         </div>
 
-        <v-btn v-else variant="outlined" color="surface" size="small" to="/dev/user/login">
+        <v-btn 
+          v-else 
+          color="white" 
+          class="login-btn-cute px-6 font-weight-bold" 
+          rounded="pill" 
+          elevation="2"
+          to="/dev/user/login"
+        >
+          <v-icon start icon="mdi-hand-wave-outline" class="jump-icon"></v-icon>
           登入
         </v-btn>
       </div>
@@ -221,7 +237,42 @@ onMounted(() => {
   background-color: #f2f2e9 !important;
 }
 
+:deep(.v-toolbar__content) {
+  overflow: visible !important;
+}
+
 .v-btn {
   text-transform: none;
+}
+
+.login-btn-cute {
+  background: linear-gradient(45deg, #ffffff 0%, #f9f9f0 100%) !important;
+  color: #2e5c43 !important;
+  border: 2px solid #2e5c43 !important;
+  
+  margin: 8px !important; 
+  
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  
+  overflow: visible !important; 
+}
+
+.login-btn-cute:hover {
+  transform: scale(1.05) rotate(-3deg); 
+  box-shadow: 0 6px 15px rgba(46, 92, 67, 0.3) !important;
+  background-color: #fdfdfd !important;
+}
+
+.jump-icon {
+  transition: transform 0.3s ease;
+}
+
+.login-btn-cute:hover .jump-icon {
+  animation: wave 0.5s infinite alternate;
+}
+
+@keyframes wave {
+  from { transform: rotate(-10deg); }
+  to { transform: rotate(20deg); }
 }
 </style>

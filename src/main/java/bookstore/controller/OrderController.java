@@ -461,28 +461,4 @@ public class OrderController {
 		}
 	}
 
-	@PostMapping("/order/api/checkout")//可從F12的網路->找到"checkout"請求，查看標頭Authorization
-	@ResponseBody
-	public Map<String, Object> checkout(@RequestBody CheckoutRequest checkoutRequest,
-			@RequestHeader(value = "Authorization", required = false) String token) {
-		Map<String, Object> response = new java.util.HashMap<>();
-		try {
-			// 從 Token 取得 User ID
-			// token有前綴詞Bearer_空白一格，把前綴詞拿掉取得token字串
-			if (token == null || !token.startsWith("Bearer ")) {
-				throw new Exception("Unauthorized: Missing token");
-			}
-			String jwt = token.substring(7);
-			Integer userId = Integer.parseInt(jwtUtil.getMemberId(jwt));
-
-			orderService.createOrderFromCart(userId, checkoutRequest);
-
-			response.put("success", true);
-			response.put("message", "Order created successfully");
-		} catch (Exception e) {
-			response.put("success", false);
-			response.put("message", e.getMessage());
-		}
-		return response;
-	}
 }

@@ -3,7 +3,7 @@
     <v-main class="forest-home-bg">
       <v-container class="fill-height d-flex flex-column justify-center align-center" fluid>
         <div class="text-center mb-10">
-          <h1 class="forest-main-title mb-2">網路書店後台系統</h1>
+          <h1 class="forest-main-title mb-2">森林書屋後台系統</h1>
           <p class="forest-subtitle">核心管理選單</p>
         </div>
 
@@ -45,7 +45,7 @@
           登出系統
         </v-btn>
 
-        <div class="text-caption text-grey-darken-1 mt-6">© 2026 BookStore Management System</div>
+        <div class="text-caption text-grey-darken-1 mt-6">© 2026 Forest BookStore Management System</div>
       </v-container>
     </v-main>
   </v-app>
@@ -66,7 +66,7 @@ const menuItems = [
   { title: '進退貨管理', icon: 'mdi-swap-horizontal-bold', path: '/returns' },
   { title: '數據報表分析', icon: 'mdi-chart-bar', path: '/reports' },
   { title: '讀書會管理', icon: 'mdi-book-multiple', path: '/bookclubs' },
-  { title: '網路書店前台', icon: 'mdi-storefront-outline', path: 'dev/user/home' },
+  { title: '線上書店前台', icon: 'mdi-storefront-outline', path: 'dev/user/home' },
 ]
 
 const handleLogout = () => {

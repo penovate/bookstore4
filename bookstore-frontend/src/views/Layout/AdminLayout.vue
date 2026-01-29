@@ -3,9 +3,11 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import { useUserStore } from '@/stores/userStore'
 
 const router = useRouter()
 const drawer = ref(true)
+const userStore = useUserStore()
 
 // 合併後的選單：補齊了訂單管理路徑，並採用更直觀的圖示
 const items = ref([
@@ -88,10 +90,19 @@ const handleLogout = () => {
 <template>
   <v-layout class="rounded rounded-md">
     <v-navigation-drawer v-model="drawer" color="primary">
-      <v-list-item title="BookStore" subtitle="後台管理系統" class="py-4" to="/home">
+      <v-list-item class="py-4" to="/home">
         <template v-slot:prepend>
-          <v-icon icon="mdi-book-open-variant" class="me-2"></v-icon>
+          <v-avatar color="accent" size="32" class="me-2">
+            <span class="text-white">{{ userStore.name.charAt(0) }}</span>
+          </v-avatar>
         </template>
+
+        <v-list-item-title class="font-weight-bold">
+          {{ userStore.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle>
+          {{ userStore.role === 'SUPER_ADMIN' ? '超級管理員' : '一般管理員' }}
+        </v-list-item-subtitle>
       </v-list-item>
 
       <v-divider></v-divider>
@@ -163,9 +174,7 @@ const handleLogout = () => {
       <v-spacer></v-spacer>
 
       <v-btn icon="mdi-bell-outline" color="secondary" variant="text"></v-btn>
-      <v-avatar class="mx-2" size="32" color="secondary">
-        <span class="text-white text-caption">Admin</span>
-      </v-avatar>
+
     </v-app-bar>
 
     <v-main class="bg-background" style="min-height: 100vh">

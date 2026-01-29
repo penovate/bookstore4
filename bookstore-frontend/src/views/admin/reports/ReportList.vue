@@ -5,7 +5,18 @@
     </div>
 
     <v-row class="mb-4" align="center">
-      <v-col cols="auto"> </v-col>
+      <v-col cols="auto">
+
+        <v-btn
+          color="success"
+          variant="elevated"
+          prepend-icon="mdi-file-excel"
+          class="rounded-lg font-weight-bold mr-2"
+          @click="exportReports"
+        >
+          匯出 Excel
+        </v-btn>
+      </v-col>
 
       <v-spacer></v-spacer>
 
@@ -46,6 +57,7 @@
         </v-tab>
       </v-tabs>
 
+      
       <v-data-table
         :headers="headers"
         :items="filteredReports"
@@ -216,6 +228,7 @@ import { ref, computed, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import reviewService from '@/api/reviewService.js'
 import { getReportLabel, getReportColor } from '@/utils/reportOptions.js'
+import * as XLSX from 'xlsx'
 
 // --- 資料與狀態 ---
 const tab = ref('pending')
@@ -323,6 +336,41 @@ const processReport = async (report, isSustain) => {
       loading.value = false
     }
   }
+}
+
+const exportReports = () => {
+    // 1. 準備資料
+    // 使用 filteredReports.value 確保匯出的是目前看到的資料 (包含搜尋結果)
+    const exportData = filteredReports.value.map((report) => ({
+    編號: report.id,
+    檢舉人: report.reporterName,
+    被檢舉人: report.reportedName,
+    書籍: report.bookTitle,
+    評價內容: report.reviewContent,
+    檢舉原因: getReportLabel(report.reason),
+    狀態: getStatusText(report.status),
+    檢舉時間: report.createdAt,
+    }))
+    // 2. 轉換為工作表 (Worksheet)
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    // 設定欄寬 (選用，讓 Excel 比較好看)
+    const wscols = [
+    { wch: 10 }, // 編號
+    { wch: 15 }, // 檢舉人
+    { wch: 15 }, // 被檢舉人
+    { wch: 30 }, // 書籍
+    { wch: 60 }, // 評價內容
+    { wch: 15 }, // 檢舉原因
+    { wch: 10 }, // 狀態
+    { wch: 20 }, // 檢舉時間
+    ]
+    worksheet['!cols'] = wscols
+    // 3. 建立活頁簿 (Workbook) 並加入工作表
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, '檢舉紀錄')
+    // 4. 下載檔案
+    const fileName = `檢舉紀錄_${new Date().toISOString().split('T')[0]}.xlsx`
+    XLSX.writeFile(workbook, fileName)
 }
 
 const getStatusColor = (status) => {

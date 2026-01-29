@@ -27,15 +27,6 @@ public class ReviewReportService {
     private ReviewReportRepository reportRepo;
     @Autowired
     private ReviewRepository reviewRepo;
-    @Autowired
-    private UserRepository userRepo;
-    @Autowired
-    private BookRepository bookRepo;
-
-    // 查詢全部
-    // public List<ReviewReportBean> findAllReports(){
-    // return reviewReportRepository.findAll();
-    // }
 
     // 查詢單筆
     public ReviewReportBean findById(Integer id) {
@@ -47,52 +38,49 @@ public class ReviewReportService {
         return reportRepo.save(report);
     }
 
-    // 刪除
-    // public void delete(Integer reviewId) {
-    // reviewReportRepository.deleteById(reviewId);
-    // }
-
     // 檢查是否存在
     public boolean hasReported(Integer userId, Integer reviewId) {
         return reportRepo.existsByUserIdAndReviewId(userId, reviewId);
     }
 
     public List<ReportList> getAllReportsForAdmin() {
-        List<ReviewReportBean> reports = reportRepo.findAll();
+    	// 使用 JOIN FETCH 一次撈取所有關聯資料 (User, Review, Book)
+        List<ReviewReportBean> reports = reportRepo.findAllWithDetails();
         List<ReportList> dtoList = new ArrayList<>();
 
         for (ReviewReportBean report : reports) {
-            // --- A. 找檢舉人名字 ---
-            String reporterName = "未知用戶";
-            Optional<UserBean> userOpt = userRepo.findById(report.getUserId());
-            if (userOpt.isPresent()) {
-                reporterName = userOpt.get().getUserName();
-            }
-
-            // --- B. 找書籍與評論內容 ---
+        	
+        	// 1. 取得檢舉人 (因為有 Fetch，絕不會是 null，除非 DB 資料異常)
+            String reporterName = (report.getUser() != null) ? report.getUser().getUserName() : "未知用戶";
+            
+            // 2. 取得關聯內容 (書籍、評論、被檢舉人)
+            String reportedName = "未知";
             String bookTitle = "未知書籍";
             String fullContent = "評論已刪除";
             String reviewContent = "評論已刪除";
 
-            Optional<ReviewBean> reviewOpt = reviewRepo.findById(report.getReviewId());
-            if (reviewOpt.isPresent()) {
-                ReviewBean review = reviewOpt.get();
+            if (report.getReview() != null) {
+                ReviewBean review = report.getReview();
+                
+                // 評價內容
                 fullContent = review.getComment();
-
-                // 摘要：只取前 20 個字，超過加 "..."
                 if (fullContent != null) {
                     reviewContent = fullContent.length() > 20 ? fullContent.substring(0, 20) + "..." : fullContent;
                 }
-
-                // 查書名
-                Optional<BooksBean> bookOpt = bookRepo.findById(review.getBookId());
-                if (bookOpt.isPresent()) {
-                    bookTitle = bookOpt.get().getBookName(); // 假設 BookBean 有 getBookName()
+                
+                // 書名
+                if (review.getBook() != null) {
+                    bookTitle = review.getBook().getBookName();
+                }
+                
+                // 被檢舉人
+                if (review.getUser() != null) {
+                    reportedName = review.getUser().getUserName();
                 }
             }
-
-            // 0:待處理, 1:成立(Hidden), 2:駁回(Public)
-            Integer statusInt = 0; // 預設待處理
+            
+         // 3. 轉換狀態碼
+            Integer statusInt = 0; // 0:待處理
             String dbStatus = report.getStatus();
             if ("已成立".equals(dbStatus)) {
                 statusInt = 1;
@@ -102,8 +90,9 @@ public class ReviewReportService {
 
             // --- D. 組裝 DTO ---
             ReportList dto = new ReportList(
-                    report.getReviewReportId(), // 假設 PK 是 reportId
+                    report.getReviewReportId(),
                     reporterName,
+                    reportedName,
                     bookTitle,
                     reviewContent,
                     fullContent,
@@ -117,45 +106,34 @@ public class ReviewReportService {
     }
 
     
-    // 2. 處理審核 (更新檢舉單 + 隱藏/顯示評論)
+    //  處理審核 (修正重複檢舉會誤開顯示的問題)
      
     @Transactional
     public void processReport(Integer reportId, Integer newStatus) {
+    	
         ReviewReportBean report = reportRepo.findById(reportId)
                 .orElseThrow(() -> new RuntimeException("找不到檢舉紀錄 ID: " + reportId));
 
-        // 根據前端傳來的數字，決定後端要存什麼狀態字串
+        
         if (newStatus == 1) {
-            // === 檢舉成立 ===
+            // 檢舉成立
             report.setStatus("已成立");
-            
             report.setProcessedAt(LocalDateTime.now());
-            report.setAdminResults("已下架隱藏。");
+            report.setAdminResults("已下架隱藏");
 
-            // 把該則評論隱藏 (status = 0)
-            Optional<ReviewBean> reviewOpt = reviewRepo.findById(report.getReviewId());
-            if (reviewOpt.isPresent()) {
-                ReviewBean review = reviewOpt.get();
-                review.setStatus(0); // 假設 ReviewBean 的 0 代表隱藏
+            // 隱藏評論
+            if (report.getReview() != null) {
+                ReviewBean review = report.getReview();
+                review.setStatus(0); 
                 reviewRepo.save(review);
             }
 
         } else if (newStatus == 2) {
-            // === 檢舉駁回 ===
+            // 檢舉駁回
             report.setStatus("已駁回");
             report.setProcessedAt(LocalDateTime.now());
-            report.setAdminResults("維持顯示。");
+            report.setAdminResults("檢舉不成立");
 
-            // 確保評論是顯示的 (status = 1) 
-            Optional<ReviewBean> reviewOpt = reviewRepo.findById(report.getReviewId());            
-            if (reviewOpt.isPresent()) {
-                ReviewBean review = reviewOpt.get();
-                // 只有原本是被隱藏的才需要恢復，避免誤觸其他邏輯
-                if (review.getStatus() == 0) {
-                    review.setStatus(1);
-                    reviewRepo.save(review);
-                }
-            }
         } else {
             report.setStatus("待處理");
         }

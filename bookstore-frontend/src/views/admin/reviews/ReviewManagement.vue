@@ -1,30 +1,38 @@
 <template>
-    <div>
+    <div class="list-page-wrapper">
+        <div class="header-section mb-6 text-left">
+            <h2 class="forest-main-title">書籍評價</h2>
+        </div>
+
         <v-row class="mb-4" align="center">
+            <v-col cols="auto"></v-col>
+            <v-spacer></v-spacer>
+
             <v-col cols="12" md="4">
-                <h2 class="text-h4 font-weight-bold text-primary">書籍評價</h2>
-            </v-col>
-            <v-col cols="12" md="4" offset-md="4">
-                <v-text-field 
+                <div class="d-flex align-center">
+                   <v-text-field 
                     v-model="search" 
                     label="搜尋書籍..." 
                     prepend-inner-icon="mdi-magnify" 
                     variant="outlined"
                     density="compact" 
                     hide-details 
+                    clearable
+                    bg-color="white"
                     color="primary" 
-                    class="bg-white rounded"
-                ></v-text-field>
+                    class="rounded-lg flex-grow-1"
+                ></v-text-field> 
+                </div>
             </v-col>
         </v-row>
 
-        <v-card class="rounded-lg elevation-2 border-t-4 border-primary">
+        <v-card class="forest-card-table">
             <v-data-table 
                 :headers="headers" 
                 :items="books" 
                 :loading="loading" 
                 :search="search" 
-                class="forest-table"
+                class="forest-table-style"
                 item-value="bookId" 
                 hover
             >
@@ -136,7 +144,26 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+.list-page-wrapper {
+  padding: 0;
+  width: 100%;
+}
+
+.forest-main-title {
+  color: #2e5c43;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0;
+}
+
+.forest-card-table {
+  background-color: white !important;
+  border-radius: 12px !important;
+  border-top: 5px solid #2e5c43 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
 /* 完全沿用原本的樣式設定 */
+.forest-table-style {
 :deep(.v-data-table-header) {
     background-color: #F9FBE7 !important;
 }
@@ -153,5 +180,6 @@ onMounted(() => {
 
 :deep(.v-data-table__tr:hover) {
     background-color: #F1F8E9 !important;
+}
 }
 </style>

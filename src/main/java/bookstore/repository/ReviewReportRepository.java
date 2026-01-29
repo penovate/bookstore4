@@ -3,6 +3,7 @@ package bookstore.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import bookstore.bean.ReviewReportBean;
 
@@ -15,4 +16,11 @@ public interface ReviewReportRepository extends JpaRepository<ReviewReportBean, 
     // 查詢 User 對某書籍 Review 是否已經檢舉過 (避免重複檢舉)
     boolean existsByUserIdAndReviewId(Integer userId, Integer reviewId);
     
+    
+    @Query("SELECT r FROM ReviewReportBean r " +
+    	       "JOIN FETCH r.user " +          
+    	       "JOIN FETCH r.review rev " +     
+    	       "JOIN FETCH rev.book " +         
+    	       "JOIN FETCH rev.user")
+    List<ReviewReportBean> findAllWithDetails();
 }

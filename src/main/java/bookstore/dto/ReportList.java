@@ -15,6 +15,7 @@ public class ReportList {
 
     private Integer id;
     private String reporterName;
+    private String reportedName;
     private String bookTitle;
     private String reviewContent;
     private String fullContent;

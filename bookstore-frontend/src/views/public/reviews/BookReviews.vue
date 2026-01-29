@@ -261,7 +261,7 @@
           <div class="mb-4 text-body-1">
             您想要檢舉
             <span class="font-weight-bold text-primary">{{ reportData.reviewUserName }}</span>
-            的評論嗎？
+            的評價嗎？
           </div>
 
           <v-select
@@ -764,7 +764,7 @@ const submitReport = async () => {
     console.error(error)
     // 處理重複檢舉錯誤
     if (error.response && error.response.status === 409) {
-      Swal.fire({ icon: 'warning', title: '重複檢舉', text: '您已經檢舉過這則評論了。' })
+      Swal.fire({ icon: 'warning', title: '重複檢舉', text: '您已經檢舉過這則評價了。' })
       reportDialog.value = false
     } else {
       Swal.fire({ icon: 'error', title: '檢舉失敗', text: '系統忙碌中，請稍後再試' })

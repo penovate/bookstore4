@@ -11,11 +11,32 @@
       </v-col>
     </v-row>
 
+    <v-row class="mb-4" align="center">
+    <v-spacer></v-spacer>
+    <v-col cols="12" md="4">
+      <div class="d-flex align-center">
+        <v-text-field
+          v-model="search"
+          label="搜尋評價內容、會員..."
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          density="compact"
+          hide-details
+          clearable
+          bg-color="white"
+          color="primary"
+          class="rounded-lg"
+        ></v-text-field>
+      </div>
+    </v-col>
+  </v-row>
+
     <v-card class="table-card">
         <v-data-table 
             :headers="headers" 
             :items="filteredReviews" 
-            :loading="loading" 
+            :loading="loading"
+            :search="search" 
             item-value="reviewId"
             class="forest-table"
             hover
@@ -64,7 +85,7 @@
             </template>
 
             <template v-slot:item.actions="{ item }">
-                <v-tooltip location="top" text="檢舉此評論">
+                <v-tooltip location="top" text="檢舉此評價">
                     <template v-slot:activator="{ props }">
                         <v-btn 
                             v-bind="props"
@@ -95,7 +116,7 @@
                 class="rounded-lg font-weight-bold px-6"
                 @click="router.push({ name: 'admin-reviews' })"
             >
-            返回評價管理
+            返回書籍評價
             </v-btn>
         </div>
   </v-container>
@@ -112,6 +133,7 @@ const route = useRoute();
 const router = useRouter();
 const reviews = ref([]);
 const loading = ref(false);
+const search = ref('');
 
 
 // 判斷目前是查看哪本書
@@ -258,7 +280,7 @@ const handleReport = async (item) => {
 
     // 1. 彈出輸入視窗
     const { value: reason } = await Swal.fire({
-        title: '檢舉評論',
+        title: '檢舉評價',
         input: 'select',
         inputOptions: swalOptions,
         inputPlaceholder: '請選擇檢舉原因',
@@ -299,7 +321,7 @@ const handleReport = async (item) => {
                 Swal.fire({
                     icon: 'warning',
                     title: '重複檢舉',
-                    text: '您已經檢舉過此評論了。'
+                    text: '您已經檢舉過此評價了。'
                 });
             } else {
                 console.error('檢舉失敗:', error);

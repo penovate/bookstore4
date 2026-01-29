@@ -1,7 +1,7 @@
 <template>
   <div class="list-page-wrapper">
     <div class="header-section mb-6 text-left">
-      <h2 class="forest-main-title">評論檢舉管理</h2>
+      <h2 class="forest-main-title">檢舉列表</h2>
     </div>
 
     <v-row class="mb-4" align="center">
@@ -9,7 +9,7 @@
 
       <v-spacer></v-spacer>
 
-      <v-col cols="12" md="6" lg="5">
+      <v-col cols="12" md="4">
         <div class="d-flex align-center">
           <v-text-field
             v-model="search"
@@ -156,6 +156,10 @@
                 <td>{{ selectedReport.reporterName }}</td>
               </tr>
               <tr>
+                <th class="label-col text-primary font-weight-bold">被檢舉人</th>
+                <td class="text-error font-weight-bold">{{ selectedReport.reportedName }}</td>
+              </tr>
+              <tr>
                 <th class="label-col text-primary font-weight-bold">書籍名稱</th>
                 <td class="font-weight-bold text-grey-darken-3">{{ selectedReport.bookTitle }}</td>
               </tr>
@@ -166,7 +170,7 @@
             </tbody>
           </v-table>
 
-          <div class="text-subtitle-1 font-weight-bold text-primary mb-2">評論完整內容：</div>
+          <div class="text-subtitle-1 font-weight-bold text-primary mb-2">評價完整內容：</div>
           <div class="pa-4 bg-grey-lighten-4 rounded border text-body-2">
             {{ selectedReport.fullContent }}
           </div>
@@ -223,6 +227,7 @@ const selectedReport = ref({})
 const headers = [
   { title: '編號', key: 'id', sortable: true, width: '90px', align: 'start' },
   { title: '檢舉人', key: 'reporterName', width: '120px', align: 'center' },
+  { title: '被檢舉人', key: 'reportedName', width: '120px' },
   { title: '書籍', key: 'bookTitle', sortable: true, align: 'start' },
   { title: '評價摘要', key: 'reviewContent', sortable: false, align: 'start' },
   { title: '檢舉原因', key: 'reason', sortable: false, width: '120px', align: 'center' },
@@ -274,19 +279,19 @@ const openDetail = (item) => {
 }
 
 const processReport = async (report, isSustain) => {
-  const actionText = isSustain ? '成立檢舉並下架評論' : '駁回檢舉並保留評論'
+  const actionText = isSustain ? '成立檢舉並下架評價' : '駁回檢舉並保留評價'
   const confirmColor = isSustain ? '#d32f2f' : '#2E5C43'
 
   const newStatus = isSustain ? 1 : 2
 
   const result = await Swal.fire({
     title: `確定要${actionText}嗎？`,
-    text: isSustain ? '該評論將在前台隱藏' : '該檢舉將被標記為已處理',
+    text: isSustain ? '該評價將在前台隱藏' : '該檢舉將被標記為已處理',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: confirmColor,
     cancelButtonColor: '#aaa',
-    confirmButtonText: '確定執行',
+    confirmButtonText: '確定',
     cancelButtonText: '取消',
   })
 
@@ -338,9 +343,9 @@ const getStatusText = (status) => {
     case 0:
       return '待處理'
     case 1:
-      return '已成立 (隱藏)'
+      return '已成立'
     case 2:
-      return '已駁回 (保留)'
+      return '已駁回'
     default:
       return '未知'
   }
@@ -404,5 +409,14 @@ onMounted(() => {
   vertical-align: top;
   padding-top: 10px !important;
   width: 100px;
+}
+</style>
+<style>
+/* 強制讓 SweetAlert 浮在 Vuetify Dialog (通常是 2400) 之上 */
+div:where(.swal2-container).swal2-center > .swal2-popup {
+  z-index: 9999 !important;
+}
+.swal2-container {
+  z-index: 9999 !important;
 }
 </style>

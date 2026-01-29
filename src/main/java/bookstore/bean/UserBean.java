@@ -102,14 +102,17 @@ public class UserBean implements java.io.Serializable {
 	@OneToMany(mappedBy = "userBean", fetch = FetchType.LAZY)
 	@JsonIgnore
 	@Builder.Default
+	@ToString.Exclude
 	private List<Orders> orders = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "adminUser", cascade = CascadeType.ALL)
 	@JsonIgnore
+	@ToString.Exclude
 	private List<UserLogBean> logs;
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonIgnore
+	@ToString.Exclude
 	private List<BrowsingHistoryBean> browsingHistories;
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

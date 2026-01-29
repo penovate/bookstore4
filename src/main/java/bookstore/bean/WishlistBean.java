@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "wishlist")
@@ -33,6 +34,7 @@ public class WishlistBean {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "userId")
 	@JsonIgnore
+	@ToString.Exclude
 	private UserBean user;
 	
 	@ManyToOne(fetch = FetchType.EAGER)

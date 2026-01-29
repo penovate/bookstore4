@@ -58,23 +58,28 @@ export default {
     return apiClient.get(`/clubs/${id}`)
   },
 
+  // 管理員審核
+  approveClub(id) {
+    return apiClient.put(`/approve/${id}`)
+  },
+
+  rejectClub(id, reason) {
+    return apiClient.put(`/reject/${id}`, { reason })
+  },
+
   // 刪除讀書會
   deleteClub(id) {
     return apiClient.delete(`/delete/${id}`)
   },
 
   // 新增讀書會
-  createClub(clubData, proposalFile, proofFile) {
+  createClub(clubData, proofFile) {
     const formData = new FormData()
     const jsonBlob = new Blob([JSON.stringify(clubData)], { type: 'application/json' })
 
     formData.append('bookclub', jsonBlob)
 
-    if (proposalFile) {
-      formData.append('proposalFile', proposalFile)
-    }
-
-    // proofFile is optional
+    // proofFile / Proposal Upload
     if (proofFile) {
       formData.append('proofFile', proofFile)
     }
@@ -86,16 +91,12 @@ export default {
 
   // 更新讀書會 (包含狀態審核，需帶入完整 Bean 與 檔案)
   // 注意：後端 Controller 需要 Multipart 格式
-  updateClub(id, clubData, proposalFile, proofFile) {
+  updateClub(id, clubData, proofFile) {
     const formData = new FormData()
     const jsonBlob = new Blob([JSON.stringify(clubData)], { type: 'application/json' })
 
     // 注意後端 @RequestPart("data")
     formData.append('data', jsonBlob)
-
-    if (proposalFile) {
-      formData.append('proposal', proposalFile)
-    }
 
     if (proofFile) {
       formData.append('proof', proofFile)

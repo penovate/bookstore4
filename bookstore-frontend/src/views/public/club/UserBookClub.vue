@@ -140,13 +140,9 @@ const openDetails = (club) => {
 
 // 一般使用者查看詳細資訊
 const viewClubInfo = (club) => {
-    // TODO: Implement actual details view or modal
-    console.log('View details for:', club.clubName);
-    Swal.fire({
-        title: club.clubName,
-        text: '詳細資訊功能開發中...',
-        icon: 'info',
-        confirmButtonColor: '#2E5C43'
+    router.push({
+        name: 'user-bookclub-detail-page',
+        params: { id: club.clubId }
     });
 };
 
@@ -304,10 +300,19 @@ onMounted(() => {
                                     </div>
                                 </template>
                                 <template v-slot:item.actions="{ item }">
-                                    <v-btn size="small" variant="text" color="primary" @click="openDetails(item)">
-                                        <v-icon start icon="mdi-clipboard-list"></v-icon>
-                                        報名明細
-                                    </v-btn>
+                                    <template v-if="item.status === 7 || item.status === 2">
+                                        <v-btn size="small" variant="text" color="success" class="mr-2"
+                                            @click="router.push({ path: '/dev/user/bookclubs/insert', query: { id: item.clubId } })">
+                                            <v-icon start icon="mdi-pencil"></v-icon>
+                                            編輯
+                                        </v-btn>
+                                    </template>
+                                    <template v-if="item.status === 1 || item.status === 3 || item.status === 4 || item.status === 5">
+                                        <v-btn size="small" variant="text" color="primary" @click="openDetails(item)">
+                                            <v-icon start icon="mdi-clipboard-list"></v-icon>
+                                            報名明細
+                                        </v-btn>
+                                    </template>
                                 </template>
                                 <template v-slot:no-data>
                                     <div class="text-center py-4 text-grey">目前沒有發起的讀書會</div>

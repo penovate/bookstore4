@@ -141,6 +141,11 @@ const router = createRouter({
           component: () => import('../views/admin/bookClubs/AdminBookClub.vue'),
         },
         {
+          path: 'bookclubs/review/:id',
+          name: 'admin-bookclubs-review',
+          component: () => import('../views/admin/bookClubs/AdminBookClubDetail.vue'),
+        },
+        {
           path: 'orders/update/:id',
           name: 'orderUpdate',
           component: () => import('../views/admin/orders/OrderUpdate.vue'),
@@ -201,7 +206,7 @@ const router = createRouter({
         {
           path: 'forgetpassword',
           name: 'user-forget-password',
-          component: () => import('../views/public/user/UserForgetPwd.vue')
+          component: () => import('../views/public/user/UserForgetPwd.vue'),
         },
         {
           path: 'reset-password-by-email',
@@ -263,6 +268,11 @@ const router = createRouter({
           path: 'bookclubs/insert',
           name: 'user-bookclubs-insert',
           component: () => import('../views/public/club/UserInsertBookClub.vue'),
+        },
+        {
+          path: 'bookclubs/detail/:id',
+          name: 'user-bookclub-detail-page',
+          component: () => import('../views/public/club/UserBookClubDetail.vue'),
         },
       ],
     },

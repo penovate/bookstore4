@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.DynamicInsert;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Data
 @Entity
@@ -17,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @NoArgsConstructor
 @AllArgsConstructor
 @DynamicInsert
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class BookClubsBean {
 
 	@Id
@@ -40,23 +41,23 @@ public class BookClubsBean {
 	private String clubName;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "category_id", nullable = false)
+	@JoinColumn(name = "category_id")
 	private ClubCategoriesBean categoriesBean;
 
-	@Column(name = "event_date", nullable = false)
+	@Column(name = "event_date")
 	private LocalDateTime eventDate;
 
-	@Column(name = "deadline", nullable = false)
+	@Column(name = "deadline")
 	private LocalDateTime deadline;
 
-	@Column(name = "location", nullable = false, length = 200)
+	@Column(name = "location", length = 200)
 	private String location;
 
-//	@Column(name = "proposal_path", nullable = false, length = 500)
-//	private String proposalPath;
-//
-//	@Column(name = "proof_path", length = 500)
-//	private String proofPath;
+	// @Column(name = "proposal_path", nullable = false, length = 500)
+	// private String proposalPath;
+	//
+	// @Column(name = "proof_path", length = 500)
+	// private String proofPath;
 
 	@Column(name = "organizer_type")
 	private Short organizerType; // TINYINT 對應 Short 或 Integer
@@ -76,6 +77,10 @@ public class BookClubsBean {
 	@Lob // 對應 NVARCHAR(MAX)
 	@Column(name = "ai_evaluation")
 	private String aiEvaluation;
+
+	@OneToOne(mappedBy = "mainClub", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private ClubDetail clubDetail;
 
 	@Column(name = "created_at", insertable = false, updatable = false)
 	private LocalDateTime createdAt;

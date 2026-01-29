@@ -14,17 +14,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 import bookstore.aop.BusinessException;
 import bookstore.bean.BookClubsBean;
-import bookstore.bean.ClubConstants;
 import bookstore.bean.BooksBean;
 import bookstore.bean.ClubCategoriesBean;
+import bookstore.bean.ClubConstants;
+import bookstore.bean.ClubDetail;
 import bookstore.bean.UserBean;
+import bookstore.dto.BookClubRequestDTO;
 import bookstore.repository.BookClubsRepository;
 import bookstore.repository.BookRepository;
 import bookstore.repository.ClubCategoriesRepository;
+import bookstore.repository.ClubDetailRepository;
 import bookstore.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import bookstore.bean.UserPoint;
 
 @Service
 @Transactional
@@ -43,11 +45,10 @@ public class BookClubService {
 	@Autowired
 	private ClubCategoriesRepository categoriesRepository;
 
-	private final String PROPOSAL_DIR = "C:\\uploads\\proposal\\";
+	@Autowired
+	private ClubDetailRepository clubDetailRepository;
 
-	private final String PROOF_DIR = "C:\\uploads\\proof\\";
-
-	private static final String ROOT_PATH = "C:/uploads/";
+	private static final String ROOT_PATH = "C:/uploads/proof/";
 
 	// 查詢全部讀書會
 	public List<BookClubsBean> getAllClubs() {
@@ -131,39 +132,126 @@ public class BookClubService {
 
 	}
 
-	// 發起讀書會
-	public BookClubsBean createBookClub(BookClubsBean bookClub, Integer userId) throws IOException {
-
-		UserBean host = userRepository.findById(userId).get();
-		bookClub.setHost(host);
-
-		if (bookClub.getCategoriesBean() != null) {
-			ClubCategoriesBean category = categoriesRepository.findById(bookClub.getCategoriesBean().getCategoryId())
-					.get();
-			bookClub.setCategoriesBean(category);
+	// 讀書會發起欄位驗證
+	private void validateFullClubDetail(BookClubRequestDTO dto) {
+		if (dto.getClubName() == null || dto.getClubName().trim().isBlank()) {
+			log.warn("讀書會名稱不可空白");
+			throw new BusinessException(400, "讀書會名稱不可空白");
+		}
+		if (dto.getEventDate() == null || dto.getDeadLine() == null) {
+			throw new BusinessException(400, "活動時間及截止時間不可空白");
 		}
 
-		if (bookClub.getBook() != null && bookClub.getBook().getBookId() != null) {
-			BooksBean book = bookRepository.findById(bookClub.getBook().getBookId()).get();
-			bookClub.setBook(book);
+		if (dto.getEventDate().isBefore(LocalDateTime.now())) {
+			throw new BusinessException(400, "活動時間不可在過去");
 		}
 
-		bookClub.setStatus(ClubConstants.STATUS_PEDING);
+		if (dto.getDeadLine().isAfter(dto.getEventDate())) {
+			throw new BusinessException(400, "活動截止時間不設定在活動時間之後");
+		}
 
-		return bookClubsRepository.save(bookClub);
+		if (dto.getPurpose() == null || dto.getPurpose().trim().isBlank()) {
+			throw new BusinessException(400, "活動宗旨不可空白");
+		}
+		if (dto.getAgenda() == null || dto.getAgenda().trim().isBlank()) {
+			throw new BusinessException(400, "活動議程不可空白");
+		}
+		if (dto.getLocation() == null || dto.getLocation().trim().isBlank()) {
+			throw new BusinessException(400, "活動地點不可空白");
+		}
 
+		// 難度等級驗證：巨木級(3) 必須上傳佐證資料
+		if (dto.getDifficulty() != null && dto.getDifficulty() == 3) {
+			if (dto.getProofPath() == null || dto.getProofPath().trim().isBlank()) {
+				throw new BusinessException(400, "巨木級(專家)讀書會需上傳佐證資料");
+			}
+		}
 	}
 
-	// 檔案上傳
-	private String saveToDisk(MultipartFile file, String path) throws IOException {
-		File folder = new File(path);
-		if (!folder.exists()) {
-			folder.mkdir();
+	// 將DTO映射到Club Entity
+	private void mapDtoToMainEntity(BookClubsBean club, BookClubRequestDTO dto) {
+		if (dto.getClubName() != null)
+			club.setClubName(dto.getClubName());
+		if (dto.getLocation() != null)
+			club.setLocation(dto.getLocation());
+		if (dto.getEventDate() != null)
+			club.setEventDate(dto.getEventDate());
+		if (dto.getDeadLine() != null)
+			club.setDeadline(dto.getDeadLine());
+		if (dto.getMaxParticipants() != null)
+			club.setMaxParticipants(dto.getMaxParticipants());
+
+		if (dto.getCategoryId() != null) {
+			categoriesRepository.findById(dto.getCategoryId()).ifPresent(club::setCategoriesBean);
 		}
-		String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-		File destination = new File(path + fileName);
-		file.transferTo(destination);
-		return destination.getAbsolutePath();
+
+		if (dto.getBookId() != null) {
+			bookRepository.findById(dto.getBookId()).ifPresent(club::setBook);
+		}
+	}
+
+	// 將DTO映射到Club Detail Entity
+	private void mapDtoToDetailEntity(ClubDetail detail, BookClubRequestDTO dto) {
+		if (dto.getPurpose() != null)
+			detail.setPurpose(dto.getPurpose());
+		if (dto.getAgenda() != null)
+			detail.setAgenda(dto.getAgenda());
+		if (dto.getModeType() != null)
+			detail.setModeType(dto.getModeType());
+		if (dto.getRequirement() != null)
+			detail.setRequirement(dto.getRequirement());
+		if (dto.getProofPath() != null)
+			detail.setProofPath(dto.getProofPath());
+		if (dto.getDifficulty() != null)
+			detail.setDiffultLevel(dto.getDifficulty());
+	}
+
+	// 發起讀書會
+	public BookClubsBean createBookClub(BookClubRequestDTO dto, Integer userId) throws IOException {
+
+		// 身分驗證
+		Optional<UserBean> host = userRepository.findById(userId);
+		if (host.isEmpty()) { // Fixed: host is Optional, check isEmpty()
+			log.warn("查無ID:{}的會員資訊", userId);
+			throw new BusinessException(404, "查無該會員資訊");
+		}
+		log.info("會員ID{}，姓名:{}正在發起讀書會", userId, host.get().getUserName());
+
+		// 身分等級驗證，讀書會發起場數限制
+		/*
+		 * 
+		 */
+
+		// 初始狀態決定
+		int targetStatus;
+		if ("DRAFT".equalsIgnoreCase(dto.getAction())) {
+			targetStatus = ClubConstants.STATUS_DRAFT;
+
+			if (dto.getClubName() == null || dto.getClubName().trim().isBlank()) {
+				throw new BusinessException(400, "至少需填寫讀書會名稱");
+			}
+		} else {
+			validateFullClubDetail(dto);
+			targetStatus = ClubConstants.STATUS_PEDING;
+		}
+
+		UserBean mainHost = host.get();
+		BookClubsBean mainclub = new BookClubsBean();
+		mainclub.setHost(mainHost);
+		mainclub.setStatus(targetStatus);
+		mainclub.setCreatedAt(LocalDateTime.now());
+
+		mapDtoToMainEntity(mainclub, dto);
+
+		BookClubsBean saveClub = bookClubsRepository.save(mainclub);
+
+		ClubDetail detail = new ClubDetail();
+		detail.setMainClub(mainclub);
+		mapDtoToDetailEntity(detail, dto);
+		clubDetailRepository.save(detail);
+		log.info("讀書會建立成功 ID:{} ，狀態:{}", saveClub.getClubId(), saveClub.getStatus());
+		return saveClub;
+
 	}
 
 	// 通用檔案上傳
@@ -193,14 +281,13 @@ public class BookClubService {
 	}
 
 	// 修改讀書會第一階段 權限與狀態檢查
-	public boolean VaidatePermissionAndState(BookClubsBean existing, Integer userRole, Integer userId) {
+	public boolean ValidatePermissionAndState(BookClubsBean existing, Integer userRole, Integer userId) {
 		int status = existing.getStatus();
 		boolean needTest = false;
-
 		// 會員邏輯
 		if (userRole == ClubConstants.ROLE_MEMBER) {
 			if (!Objects.equals(existing.getHost().getUserId(), userId)) {
-				throw new BusinessException(403, "您無權修改其他人發起的讀書會" + "");
+				throw new BusinessException(403, "您無權修改其他人發起的讀書會");
 			}
 
 			// 狀態檢查
@@ -211,14 +298,21 @@ public class BookClubService {
 			} else if (status == ClubConstants.STATUS_CANCELLED) {
 				throw new BusinessException(400, "讀書會已取消，不可修改");
 			} else if (status == ClubConstants.STATUS_REJECTED) {
-				needTest = true;
-			} else if (status != ClubConstants.STATUS_PEDING) {
+				needTest = true; // 駁回後可修改
+			} else if (status == ClubConstants.STATUS_DRAFT) {
+				// 草稿可修改，不做額外限制
+			} else if (status == ClubConstants.STATUS_PEDING) {
+				// 審核中通常不允許修改，或者視需求而定。依報告建議，審核中應鎖定。
+				throw new BusinessException(400, "審核中狀態無法進行修改");
+			} else {
+				// 其他未定義狀態
 				throw new BusinessException(400, "目前狀態無法進行修改");
 			}
 
 			// 管理員邏輯
 		} else if (userRole == ClubConstants.ROLE_ADMIN) {
-			throw new BusinessException(403, "活動已結束，一般管理員不可修改");
+			// 管理員修改權限邏輯，暫時保持原樣或依需求放寬
+			// if (status == ClubConstants.STATUS_ENDED) throw ...
 		}
 		return needTest;
 	}
@@ -276,35 +370,90 @@ public class BookClubService {
 			target.setBook(source.getBook());
 	}
 
+	// 處理狀態流轉邏輯
+	private void handleStateTransition(BookClubsBean club, BookClubRequestDTO dto) {
+		int currentStatus = club.getStatus();
+		String action = dto.getAction();
+
+		if ("SUBMIT".equalsIgnoreCase(action)) {
+			// 若從 草稿 或 駁回 狀態送出 -> 轉為 審核中
+			if (currentStatus == ClubConstants.STATUS_DRAFT || currentStatus == ClubConstants.STATUS_REJECTED) {
+				validateFullClubDetail(dto); // 送審前強制檢查
+				club.setStatus(ClubConstants.STATUS_PEDING);
+				club.setRejectionReason(null); // 清空之前的駁回原因
+				log.info("讀書會 ID: {} 狀態由 {} 轉為 審核中", club.getClubId(), currentStatus);
+			}
+		} else if ("DRAFT".equalsIgnoreCase(action)) {
+		}
+	}
+
 	// 修改讀書會主方法
-	public BookClubsBean updateBookclub(Integer clubId, BookClubsBean incomingClub, Integer currentUserId,
+	public BookClubsBean updateBookclub(Integer clubId, BookClubRequestDTO dto, Integer currentUserId,
 			Integer currentUserRole) throws IllegalStateException, IOException {
 
-		Optional<BookClubsBean> opt = bookClubsRepository.findById(clubId);
-		if (opt.isEmpty()) {
-			throw new BusinessException(404, "查無相關讀書會資料");
-		}
-		BookClubsBean existingclub = opt.get();
-
-		// 檢查權限與狀態(取得是否需要重置旗標)
-		boolean shouldResetStatus = VaidatePermissionAndState(existingclub, currentUserRole, currentUserId);
-
-		// 檢查欄位邏輯
-		validateFileds(existingclub, incomingClub);
-
-		// 執行資料合併
-		mergeClubData(existingclub, incomingClub);
-
-		// 執行狀態重置
-		// 如果判斷是被駁回後的修正則重置為審核中，並清空駁回原因欄位
-		if (shouldResetStatus) {
-			existingclub.setStatus((Integer) ClubConstants.STATUS_PEDING);
-			existingclub.setRejectionReason(null);
+		// 讀書會存在檢查
+		Optional<BookClubsBean> club = bookClubsRepository.findById(clubId);
+		if (club == null) {
+			throw new BusinessException(400, "查無該讀書會資料");
 		}
 
-		bookClubsRepository.save(existingclub);
-		return existingclub;
+		// 讀書會權限檢查 mmd
+		BookClubsBean existingClub = club.get();
+		ValidatePermissionAndState(existingClub, currentUserRole, currentUserId);
 
+		// 處理狀態流轉
+		handleStateTransition(existingClub, dto);
+
+		// 更新資料
+		// 主表更新
+		mapDtoToMainEntity(existingClub, dto);
+
+		// 更新附表
+		Optional<ClubDetail> detail = clubDetailRepository.findByMainClub_ClubId(clubId);
+		ClubDetail existingDetail = detail.get();
+
+		if (existingDetail.getMainClub() == null) {
+			existingDetail.setMainClub(existingClub);
+
+		}
+
+		mapDtoToDetailEntity(existingDetail, dto);
+
+		return bookClubsRepository.save(existingClub);
+
+	}
+
+	// 管理員核准讀書會
+	public BookClubsBean approveClub(Integer clubId, Integer adminId) {
+		BookClubsBean club = getClub(clubId);
+
+		// 狀態檢查，僅審核中可通過 (或視需求放寬)
+		// if (club.getStatus() != ClubConstants.STATUS_PEDING) {
+		// throw new BusinessException(400, "非審核中狀態，無法核准");
+		// }
+
+		// 設定為報名中 (1) 或 已核准 (1) - 假設 ClubConstants.STATUS_APPROVED = 1
+		// 根據常數定義 STATUS_REGISTERing = 1
+		club.setStatus(ClubConstants.STATUS_APPROVED); // 或 STATUS_REGISTERing
+		club.setRejectionReason(null); // 清空駁回原因
+
+		log.info("管理員ID:{} 核准了讀書會ID:{}", adminId, clubId);
+		return bookClubsRepository.save(club);
+	}
+
+	// 管理員駁回讀書會
+	public BookClubsBean rejectClub(Integer clubId, String reason, Integer adminId) {
+		BookClubsBean club = getClub(clubId);
+
+		if (reason == null || reason.trim().isEmpty()) {
+			throw new BusinessException(400, "駁回原因不可空白");
+		}
+
+		club.setStatus(ClubConstants.STATUS_REJECTED);
+		club.setRejectionReason(reason);
+
+		log.info("管理員ID:{} 駁回了讀書會ID:{}，原因:{}", adminId, clubId, reason);
+		return bookClubsRepository.save(club);
 	}
 
 	// 刪除讀書會

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import bookstore.bean.BookClubsBean;
 import bookstore.bean.ClubConstants;
+import bookstore.dto.BookClubRequestDTO;
 import bookstore.service.BookClubService;
 import bookstore.util.JwtUtil;
 
@@ -60,8 +61,11 @@ public class BookClubsControllerTest {
         @Test
         @DisplayName("Case 1: 未登入拒絕 (401 Unauthorized)")
         public void testUpdateClubUnauthenticated() throws Exception {
+                BookClubRequestDTO dto = new BookClubRequestDTO();
+                dto.setClubName("Test Club");
+
                 MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
-                                objectMapper.writeValueAsBytes(mockClub));
+                                objectMapper.writeValueAsBytes(dto));
 
                 mockMvc.perform(multipart("/api/clubs/update/{clubId}", 1)
                                 .file(dataPart)
@@ -82,12 +86,15 @@ public class BookClubsControllerTest {
                 when(jwtUtil.getRole(anyString())).thenReturn("MEMBER");
                 when(jwtUtil.getMemberId(anyString())).thenReturn("10");
 
+                BookClubRequestDTO dto = new BookClubRequestDTO();
+                dto.setClubName("Updated Name");
+
                 when(bookClubService.updateBookclub(
-                                eq(1), any(BookClubsBean.class), any(), any(), eq(10), eq(ClubConstants.ROLE_MEMBER)))
+                                eq(1), any(BookClubRequestDTO.class), eq(10), eq(ClubConstants.ROLE_MEMBER)))
                                 .thenReturn(mockClub);
 
                 MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
-                                objectMapper.writeValueAsBytes(mockClub));
+                                objectMapper.writeValueAsBytes(dto));
                 MockMultipartFile proposalPart = new MockMultipartFile("proposal", "prop.pdf", "application/pdf",
                                 "proposal".getBytes());
 
@@ -113,12 +120,15 @@ public class BookClubsControllerTest {
                 when(jwtUtil.getRole(anyString())).thenReturn("ADMIN");
                 when(jwtUtil.getMemberId(anyString())).thenReturn("99");
 
+                BookClubRequestDTO dto = new BookClubRequestDTO();
+                dto.setClubName("Admin Update");
+
                 when(bookClubService.updateBookclub(
-                                eq(1), any(BookClubsBean.class), any(), any(), eq(99), eq(ClubConstants.ROLE_ADMIN)))
+                                eq(1), any(BookClubRequestDTO.class), eq(99), eq(ClubConstants.ROLE_ADMIN)))
                                 .thenReturn(mockClub);
 
                 MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
-                                objectMapper.writeValueAsBytes(mockClub));
+                                objectMapper.writeValueAsBytes(dto));
 
                 mockMvc.perform(multipart("/api/clubs/update/{clubId}", 1)
                                 .file(dataPart)
@@ -141,8 +151,10 @@ public class BookClubsControllerTest {
                 when(jwtUtil.getRole(anyString())).thenReturn("MEMBER");
                 when(jwtUtil.getMemberId(anyString())).thenReturn("10");
 
+                BookClubRequestDTO dto = new BookClubRequestDTO();
+
                 when(bookClubService.updateBookclub(
-                                anyInt(), any(BookClubsBean.class), any(), any(), anyInt(), anyInt()))
+                                anyInt(), any(BookClubRequestDTO.class), anyInt(), anyInt()))
                                 .thenThrow(new RuntimeException("Business Logic Error: Not Owner"));
 
                 MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",

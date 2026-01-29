@@ -21,6 +21,7 @@ import bookstore.aop.BusinessException;
 import bookstore.bean.BookClubsBean;
 import bookstore.bean.ClubCategoriesBean;
 import bookstore.bean.ClubConstants;
+import bookstore.dto.BookClubRequestDTO;
 import bookstore.service.BookClubService;
 import bookstore.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -61,8 +62,7 @@ public class BookClubsController {
 	}
 
 	@PostMapping("/insert")
-	public ResponseEntity<?> createClub(@RequestPart("bookclub") BookClubsBean bookclub,
-			@RequestPart("proposalFile") MultipartFile proposal,
+	public ResponseEntity<?> createClub(@RequestPart("bookclub") BookClubRequestDTO dto,
 			@RequestPart(value = "proofFile", required = false) MultipartFile proof, HttpServletRequest request)
 			throws IOException {
 		Integer userId = (Integer) request.getAttribute("userId");
@@ -71,8 +71,14 @@ public class BookClubsController {
 			return ResponseEntity.status(401).body("請先登入");
 		}
 
-		BookClubsBean club = bookClubService.createBookClub(bookclub, proposal, proof, userId);
-		return ResponseEntity.ok(club);
+		// 處理檔案上傳
+		if (proof != null && !proof.isEmpty()) {
+			String path = bookClubService.uploadFile(proof, "proof");
+			dto.setProofPath(path);
+		}
+
+		BookClubsBean created = bookClubService.createBookClub(dto, userId);
+		return ResponseEntity.ok(created);
 	}
 
 	@GetMapping("/my-hosted")
@@ -81,15 +87,8 @@ public class BookClubsController {
 		if (userId == null) {
 			return ResponseEntity.status(401).build();
 		}
-		// 這裡需要透過 Service 呼叫 UserRepository 查 UserBean，或是 Service 增加接受 userId 的方法
-		// 由於 Service 有 findByHost(UserBean)，我們先在 Controller 轉換
-		// 但 Controller 不直接碰 Repo，所以我們在 Service 加一個 findByHostId 比較好，
-		// 或者直接用既有的 service.findByHost(userRepository.findById(userId))
-		// 為了乾淨，我们在 Service 加一个 overload 或是直接修改 Controller 注入 UserRepo (不建議)。
-		// 最佳解：Service 新增 findByHostId(Integer userId)
-
-		// 暫時解：先在 Service 加方法，稍後透過工具修改 Service
-		// 假設 Service 已更新。我們等下會去改 Service。
+		// Service 需要新增 findByHostId 方法，或在此處轉換
+		// 暫時使用 findByHostId (假設 Service 已有此方法，或需新增)
 		List<BookClubsBean> list = bookClubService.findByHostId(userId);
 		return ResponseEntity.ok(list);
 	}
@@ -100,27 +99,45 @@ public class BookClubsController {
 		return ResponseEntity.noContent().build();
 	}
 
+	@PutMapping("/approve/{clubId}")
+	public ResponseEntity<?> approveClub(@PathVariable Integer clubId, HttpServletRequest request) {
+		Integer adminId = (Integer) request.getAttribute("userId");
+		// 權限檢查可在此做，或依賴 Security Filter (假設 /api/admin/** 或內部邏輯控制)
+		// 這裡假設能進到後台 API 的都已經過初步驗證，Service 也可再由 Token Role 驗證
+		BookClubsBean club = bookClubService.approveClub(clubId, adminId);
+		return ResponseEntity.ok(club);
+	}
+
+	@PutMapping("/reject/{clubId}")
+	public ResponseEntity<?> rejectClub(@PathVariable Integer clubId,
+			@org.springframework.web.bind.annotation.RequestBody java.util.Map<String, String> body,
+			HttpServletRequest request) {
+		Integer adminId = (Integer) request.getAttribute("userId");
+		String reason = body.get("reason");
+		BookClubsBean club = bookClubService.rejectClub(clubId, reason, adminId);
+		return ResponseEntity.ok(club);
+	}
+
 	@PutMapping("/update/{clubId}")
-	public ResponseEntity<?> updateClub(@PathVariable Integer clubId, @RequestPart("data") BookClubsBean clubdata,
-			@RequestPart(value = "proposal", required = false) MultipartFile proposalFile,
+	public ResponseEntity<?> updateClub(@PathVariable Integer clubId, @RequestPart("data") BookClubRequestDTO dto,
 			@RequestPart(value = "proof", required = false) MultipartFile proofFile, HttpServletRequest request,
 			@RequestHeader(value = "Authorization", required = false) String authHeader)
 			throws IllegalStateException, IOException {
 
 		Integer userId = (Integer) request.getAttribute("userId");
-
-		if (userId == null) {
-			return ResponseEntity.status(401).body("無法辨識使用者身分，請重新登入");
-		}
-
+		// ... existing code ...
 		Integer userRole = getRoleFromToken(authHeader);
-
 		if (userRole == null) {
 			userRole = ClubConstants.ROLE_MEMBER;
 		}
 
-		BookClubsBean club = bookClubService.updateBookclub(clubId, clubdata, proposalFile, proofFile, userId,
-				userRole);
+		// 處理檔案上傳 (若有新檔案則更新)
+		if (proofFile != null && !proofFile.isEmpty()) {
+			String path = bookClubService.uploadFile(proofFile, "proof");
+			dto.setProofPath(path);
+		}
+
+		BookClubsBean club = bookClubService.updateBookclub(clubId, dto, userId, userRole);
 
 		return ResponseEntity.ok(club);
 

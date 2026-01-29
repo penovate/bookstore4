@@ -3,20 +3,15 @@ package bookstore.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import bookstore.bean.BooksBean;
 import bookstore.bean.ReviewBean;
 import bookstore.bean.ReviewReportBean;
-import bookstore.bean.UserBean;
 import bookstore.dto.ReportList;
-import bookstore.repository.BookRepository;
 import bookstore.repository.ReviewReportRepository;
 import bookstore.repository.ReviewRepository;
-import bookstore.repository.UserRepository;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -44,15 +39,15 @@ public class ReviewReportService {
     }
 
     public List<ReportList> getAllReportsForAdmin() {
-    	// 使用 JOIN FETCH 一次撈取所有關聯資料 (User, Review, Book)
+        // 使用 JOIN FETCH 一次撈取所有關聯資料 (User, Review, Book)
         List<ReviewReportBean> reports = reportRepo.findAllWithDetails();
         List<ReportList> dtoList = new ArrayList<>();
 
         for (ReviewReportBean report : reports) {
-        	
-        	// 1. 取得檢舉人 (因為有 Fetch，絕不會是 null，除非 DB 資料異常)
+
+            // 1. 取得檢舉人 (因為有 Fetch，絕不會是 null，除非 DB 資料異常)
             String reporterName = (report.getUser() != null) ? report.getUser().getUserName() : "未知用戶";
-            
+
             // 2. 取得關聯內容 (書籍、評論、被檢舉人)
             String reportedName = "未知";
             String bookTitle = "未知書籍";
@@ -61,25 +56,25 @@ public class ReviewReportService {
 
             if (report.getReview() != null) {
                 ReviewBean review = report.getReview();
-                
+
                 // 評價內容
                 fullContent = review.getComment();
                 if (fullContent != null) {
                     reviewContent = fullContent.length() > 20 ? fullContent.substring(0, 20) + "..." : fullContent;
                 }
-                
+
                 // 書名
                 if (review.getBook() != null) {
                     bookTitle = review.getBook().getBookName();
                 }
-                
+
                 // 被檢舉人
                 if (review.getUser() != null) {
                     reportedName = review.getUser().getUserName();
                 }
             }
-            
-         // 3. 轉換狀態碼
+
+            // 3. 轉換狀態碼
             Integer statusInt = 0; // 0:待處理
             String dbStatus = report.getStatus();
             if ("已成立".equals(dbStatus)) {
@@ -105,16 +100,13 @@ public class ReviewReportService {
         return dtoList;
     }
 
-    
-    //  處理審核 (修正重複檢舉會誤開顯示的問題)
-     
+    // 處理審核 (修正重複檢舉會誤開顯示的問題)
     @Transactional
     public void processReport(Integer reportId, Integer newStatus) {
-    	
+
         ReviewReportBean report = reportRepo.findById(reportId)
                 .orElseThrow(() -> new RuntimeException("找不到檢舉紀錄 ID: " + reportId));
 
-        
         if (newStatus == 1) {
             // 檢舉成立
             report.setStatus("已成立");
@@ -124,7 +116,7 @@ public class ReviewReportService {
             // 隱藏評論
             if (report.getReview() != null) {
                 ReviewBean review = report.getReview();
-                review.setStatus(0); 
+                review.setStatus(0);
                 reviewRepo.save(review);
             }
 

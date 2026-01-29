@@ -146,9 +146,9 @@
               <tr>
                 <th class="label-col text-primary font-weight-bold">檢舉原因</th>
                 <td>
-                  <v-chip :color="getReportColor(selectedReport.reason)" size="small" label>{{
-                    selectedReport.reason
-                  }}</v-chip>
+                  <v-chip :color="getReportColor(selectedReport.reason)" size="small" label>
+                    {{ getReportLabel(selectedReport.reason) }}
+                  </v-chip>
                 </td>
               </tr>
               <tr>
@@ -187,7 +187,7 @@
               prepend-icon="mdi-check"
               @click="processReport(selectedReport, false)"
             >
-              檢舉不成立 (保留)
+              檢舉不成立
             </v-btn>
             <v-btn
               variant="flat"
@@ -196,7 +196,7 @@
               prepend-icon="mdi-gavel"
               @click="processReport(selectedReport, true)"
             >
-              檢舉屬實 (下架)
+              檢舉屬實
             </v-btn>
           </template>
           <template v-else>

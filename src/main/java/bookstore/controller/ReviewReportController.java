@@ -34,6 +34,13 @@ public class ReviewReportController {
         if (report.getReviewId() == null || report.getUserId() == null || report.getReason() == null) {
             return ResponseEntity.badRequest().body("欄位缺漏");
         }
+        
+        
+        // 檢查評論是否為「顯示中」(如果不顯示，代表已被隱藏或刪除，則不可檢舉)
+        boolean isVisible = rsReport.isReviewVisible(report.getReviewId());
+        if (!isVisible) {
+            return ResponseEntity.badRequest().body("無法檢舉此評論（評論已隱藏或不存在）");
+        }
 
         // 檢查是否重複檢舉
         boolean exists = rsReport.hasReported(report.getUserId(), report.getReviewId());

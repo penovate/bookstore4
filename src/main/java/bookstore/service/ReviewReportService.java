@@ -38,6 +38,13 @@ public class ReviewReportService {
         return reportRepo.existsByUserIdAndReviewId(userId, reviewId);
     }
 
+    // 檢查評論是否可被檢舉
+    public boolean isReviewVisible(Integer reviewId) {
+        ReviewBean review = reviewRepo.findById(reviewId).orElse(null);
+        return review != null && review.getStatus() != null && review.getStatus() == 1;
+    }
+    
+    
     public List<ReportList> getAllReportsForAdmin() {
         // 使用 JOIN FETCH 一次撈取所有關聯資料 (User, Review, Book)
         List<ReviewReportBean> reports = reportRepo.findAllWithDetails();

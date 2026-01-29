@@ -1,13 +1,9 @@
 package bookstore.controller;
 
-import java.io.IOException;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,15 +11,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import bookstore.bean.BooksBean;
 import bookstore.bean.ReviewBean;
 import bookstore.dto.ReviewList;
 import bookstore.service.ReviewsService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/public/admin/reviews")
@@ -49,6 +41,7 @@ public class ReviewController {
 	public ReviewBean insertReviewForVue(@RequestBody ReviewBean review) {
 		
 		review.setCreatedAt(LocalDateTime.now());
+		review.setStatus(1);
 		reviewsService.save(review);
 		
 		return review;

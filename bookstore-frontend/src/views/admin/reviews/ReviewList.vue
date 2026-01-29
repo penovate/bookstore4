@@ -90,6 +90,7 @@
                 variant="text"
                 color="error"
                 class="action-btn"
+                :disabled="item.status !== 1"
                 @click="handleReport(item)"
               >
                 <v-icon>mdi-alert-circle-outline</v-icon>

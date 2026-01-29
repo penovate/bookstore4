@@ -711,6 +711,16 @@ const handleToggleStatus = (review) => {
 }
 
 const handleReport = async (review) => {
+
+  if (review.status === 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: '無法檢舉',
+      text: '此評論已被隱藏，無法檢舉',
+    })
+    return
+  }
+
   if (!currentUserId.value) {
     Swal.fire({
       icon: 'warning',

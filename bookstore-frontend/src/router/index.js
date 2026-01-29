@@ -136,21 +136,13 @@ const router = createRouter({
           name: 'admin-bookclubs',
           component: () => import('../views/admin/bookClubs/ClubList.vue'),
         },
-        {
-          path: 'orders/update/:id',
-          name: 'orderUpdate',
-          component: () => import('../views/admin/orders/OrderUpdate.vue'),
-        },
+
         {
           path: 'orders/items/add/:id',
           name: 'orderAddItem',
           component: () => import('../views/admin/orders/OrderAddItem.vue'),
         },
-        {
-          path: 'orders/items/update/:itemId',
-          name: 'orderItemUpdate',
-          component: () => import('../views/admin/orders/OrderItemUpdate.vue'),
-        },
+
         // 4.評價管理
         {
           path: 'reviews',

@@ -28,6 +28,8 @@ import bookstore.repository.UserCouponRepository; // Added
 import bookstore.bean.UserCouponBean; // Added
 import bookstore.dto.BookSalesDTO;
 import bookstore.dto.CheckoutRequest;
+import bookstore.dto.OrderFullUpdateDTO;
+import bookstore.dto.ItemUpdateDTO;
 
 @Service
 @Transactional
@@ -351,6 +353,70 @@ public class OrderService {
 		updateOrderTotalAmount(item.getOrders().getOrderId());
 	}
 
+	// 全局更新訂單 (含狀態與明細)
+	public void updateFullOrder(OrderFullUpdateDTO dto) {
+		Orders order = ordersRepository.findById(dto.getOrderId())
+				.orElseThrow(() -> new BusinessException(400, "找不到訂單 ID: " + dto.getOrderId()));
+
+		// 1. 更新基本資料
+		order.setRecipientAt(dto.getRecipientAt());
+		order.setPhone(dto.getPhone());
+		order.setAddress(dto.getAddress());
+		order.setPaymentMethod(dto.getPaymentMethod());
+		order.setDeliveryMethod(dto.getDeliveryMethod());
+
+		// 2. 更新狀態與時間點
+		String newPaymentStatus = dto.getPaymentStatus();
+		if (newPaymentStatus != null && !newPaymentStatus.equals(order.getPaymentStatus())) {
+			order.setPaymentStatus(newPaymentStatus);
+			if ("已付款".equals(newPaymentStatus)) {
+				order.setPaidAt(new Timestamp(System.currentTimeMillis()));
+			}
+		}
+
+		String newOrderStatus = dto.getOrderStatus();
+		if (newOrderStatus != null && !newOrderStatus.equals(order.getOrderStatus())) {
+			order.setOrderStatus(newOrderStatus);
+			Timestamp now = new Timestamp(System.currentTimeMillis());
+			if ("已出貨".equals(newOrderStatus)) {
+				order.setShippedAt(now);
+			} else if ("已送達".equals(newOrderStatus)) {
+				order.setDeliveredAt(now);
+			} else if ("已收貨".equals(newOrderStatus)) {
+				order.setReceivedAt(now);
+			} else if ("已完成".equals(newOrderStatus)) {
+				order.setCompletedAt(now);
+			}
+		}
+
+		// 3. 更新明細
+		if (dto.getItems() != null) {
+			for (ItemUpdateDTO itemDto : dto.getItems()) {
+				OrderItem item = orderItemRepository.findById(itemDto.getOrderItemId())
+						.orElseThrow(() -> new BusinessException(400, "找不到明細 ID: " + itemDto.getOrderItemId()));
+
+				// 驗證是否屬於該訂單
+				if (!item.getOrders().getOrderId().equals(order.getOrderId())) {
+					continue;
+				}
+
+				item.setQuantity(itemDto.getQuantity());
+				// 重算小計
+				item.setSubtotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
+				orderItemRepository.save(item);
+			}
+		}
+
+		// 設定更新時間
+		order.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+		// 先存基本資料，因為 updateOrderTotalAmount 會重新 fetch
+		ordersRepository.save(order);
+
+		// 4. 重算整筆訂單金額 (含運費規則) 並存檔
+		updateOrderTotalAmount(order.getOrderId());
+	}
+
 	// 刪除訂單(硬刪除)
 	// 專題後續採軟刪除，此方法不會用，但保留
 	public void deleteOrder(Integer orderId) {
@@ -367,37 +433,27 @@ public class OrderService {
 		if (optional.isPresent()) {
 			Orders order = optional.get();
 
+			// 避免重複取消
+			if ("已取消".equals(order.getOrderStatus())) {
+				return;
+			}
+
 			// 修改訂單狀態為已取消
 			order.setOrderStatus("已取消");
+
+			// 庫存回補
+			List<OrderItem> items = orderItemRepository.findByOrders_OrderId(orderId);
+			for (OrderItem item : items) {
+				BooksBean book = item.getBooksBean();
+				// 加回庫存
+				book.setStock(book.getStock() + item.getQuantity());
+				bookRepository.save(book);
+			}
 
 			// 更新訂單
 			ordersRepository.save(order);
 		} else {
 			// 沒找到訂單就丟例外
-			throw new RuntimeException("找不到訂單 ID: " + orderId);
-		}
-	}
-
-	// 還原訂單
-	public void processRestoreOrder(Integer orderId) {
-
-		Optional<Orders> optional = ordersRepository.findById(orderId);
-
-		if (optional.isPresent()) {
-			Orders order = optional.get();
-
-			// 確定訂單狀態為已取消才可以還原訂單
-			if ("已取消".equals(order.getOrderStatus())) {
-				order.setOrderStatus("待處理");
-				ordersRepository.save(order);
-
-			} else {
-				// 如果訂單狀態不是已取消，丟例外，不能還原
-				throw new RuntimeException("訂單狀態非「已取消」，無法還原");
-			}
-
-		} else {
-			// 找不到訂單，丟例外，找不到訂單
 			throw new RuntimeException("找不到訂單 ID: " + orderId);
 		}
 	}

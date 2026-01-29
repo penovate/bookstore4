@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <div class="header-section mb-6 text-left">
-       <h2 class="forest-main-title">優惠券管理</h2>
+      <h2 class="forest-main-title">優惠券管理</h2>
     </div>
 
     <!-- 頂部操作與篩選區 -->
@@ -21,16 +21,16 @@
       <v-spacer></v-spacer>
       <v-col cols="12" md="6" lg="5">
         <v-text-field
-            v-model="search"
-            label="搜尋優惠券"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            density="compact"
-            hide-details
-            bg-color="white"
-            color="primary"
-            class="rounded-lg"
-            clearable
+          v-model="search"
+          label="搜尋優惠券"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          density="compact"
+          hide-details
+          bg-color="white"
+          color="primary"
+          class="rounded-lg"
+          clearable
         ></v-text-field>
       </v-col>
     </v-row>
@@ -60,8 +60,8 @@
                 <span>${{ item.minSpend }}</span>
               </template>
               <template v-slot:item.isAvailable="{ item }">
-                <v-chip 
-                  :color="item.isAvailable === 1 ? 'success' : 'error'" 
+                <v-chip
+                  :color="item.isAvailable === 1 ? 'success' : 'error'"
                   size="small"
                   class="cursor-pointer font-weight-bold"
                   variant="outlined"
@@ -73,15 +73,15 @@
               <template v-slot:item.createdAt="{ item }">
                 {{ formatDate(item.createdAt) }}
               </template>
-               <template v-slot:item.updatedAt="{ item }">
+              <template v-slot:item.updatedAt="{ item }">
                 {{ formatDate(item.updatedAt) }}
               </template>
               <!-- Actions -->
               <template v-slot:item.actions="{ item }">
                 <div class="d-flex align-center justify-center">
-                    <v-btn icon size="small" variant="text" color="primary" @click="editItem(item)">
-                        <v-icon>mdi-pencil</v-icon>
-                    </v-btn>
+                  <v-btn icon size="small" variant="text" color="primary" @click="editItem(item)">
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
                 </div>
               </template>
             </v-data-table>
@@ -97,18 +97,25 @@
               class="forest-table-style"
             >
               <template v-slot:item.userBean="{ item }">
-                  <div class="d-flex align-center">
-                    <v-avatar size="32" color="secondary" class="mr-2">
-                        <span class="text-white text-caption">{{ (item.userBean?.userName || 'U').charAt(0) }}</span>
-                    </v-avatar>
-                    {{ item.userBean?.userName || item.userId }}
-                  </div>
+                <div class="d-flex align-center">
+                  <v-avatar size="32" color="secondary" class="mr-2">
+                    <span class="text-white text-caption">{{
+                      (item.userBean?.userName || 'U').charAt(0)
+                    }}</span>
+                  </v-avatar>
+                  {{ item.userBean?.userName || item.userId }}
+                </div>
               </template>
               <template v-slot:item.couponBean="{ item }">
                 {{ item.couponBean?.couponName }} ({{ item.couponBean?.couponCode }})
               </template>
               <template v-slot:item.status="{ item }">
-                <v-chip :color="item.status === 1 ? 'grey' : 'success'" size="small" variant="outlined" class="font-weight-bold">
+                <v-chip
+                  :color="item.status === 1 ? 'grey' : 'success'"
+                  size="small"
+                  variant="outlined"
+                  class="font-weight-bold"
+                >
                   {{ item.status === 1 ? '已使用' : '未使用' }}
                 </v-chip>
               </template>
@@ -135,27 +142,49 @@
           <v-container>
             <v-row>
               <v-col cols="12">
-                <v-text-field v-model="editedItem.couponName" label="優惠券名稱" required variant="outlined" color="primary"></v-text-field>
+                <v-text-field
+                  v-model="editedItem.couponName"
+                  label="優惠券名稱"
+                  required
+                  variant="outlined"
+                  color="primary"
+                ></v-text-field>
               </v-col>
               <v-col cols="12">
-                <v-text-field 
-                    v-model="editedItem.couponCode" 
-                    label="優惠碼 (Code)" 
-                    required 
-                    :disabled="editedIndex > -1"
-                    :error-messages="duplicateCodeError"
-                    variant="outlined" 
-                    color="primary"
+                <v-text-field
+                  v-model="editedItem.couponCode"
+                  label="優惠碼 (Code)"
+                  required
+                  :disabled="editedIndex > -1"
+                  :error-messages="duplicateCodeError"
+                  variant="outlined"
+                  color="primary"
                 ></v-text-field>
-                 <span v-if="editedIndex > -1" class="text-caption text-grey">優惠碼建立後不可修改</span>
+                <span v-if="editedIndex > -1" class="text-caption text-grey"
+                  >優惠碼建立後不可修改</span
+                >
               </v-col>
               <v-col cols="12" sm="6">
-                <v-text-field v-model="editedItem.discountAmount" label="折扣金額" type="number" prefix="$" variant="outlined" color="primary"></v-text-field>
+                <v-text-field
+                  v-model="editedItem.discountAmount"
+                  label="折扣金額"
+                  type="number"
+                  prefix="$"
+                  variant="outlined"
+                  color="primary"
+                ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6">
-                <v-text-field v-model="editedItem.minSpend" label="最低消費" type="number" prefix="$" variant="outlined" color="primary"></v-text-field>
+                <v-text-field
+                  v-model="editedItem.minSpend"
+                  label="最低消費"
+                  type="number"
+                  prefix="$"
+                  variant="outlined"
+                  color="primary"
+                ></v-text-field>
               </v-col>
-               <v-col cols="12">
+              <v-col cols="12">
                 <v-switch
                   v-model="editedItem.isAvailable"
                   :label="`狀態: ${editedItem.isAvailable === 1 ? '開放領取' : '暫停領取'}`"
@@ -167,17 +196,26 @@
               </v-col>
             </v-row>
             <div v-if="editedIndex > -1" class="text-caption text-grey mt-2">
-                建立時間: {{ formatDate(editedItem.createdAt) }}<br>
-                更新時間: {{ formatDate(editedItem.updatedAt) }}
+              建立時間: {{ formatDate(editedItem.createdAt) }}<br />
+              更新時間: {{ formatDate(editedItem.updatedAt) }}
             </div>
           </v-container>
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
-          <v-btn v-if="editedIndex === -1" color="success" variant="text" prepend-icon="mdi-magic-staff" @click="fillDemoData">一鍵帶入</v-btn>
+          <v-btn
+            v-if="editedIndex === -1"
+            color="success"
+            variant="text"
+            prepend-icon="mdi-magic-staff"
+            @click="fillDemoData"
+            >一鍵帶入</v-btn
+          >
           <v-spacer></v-spacer>
           <v-btn color="grey-darken-1" variant="text" @click="closeDialog">取消</v-btn>
-          <v-btn color="primary" variant="elevated" @click="saveCoupon" :disabled="isSaveDisabled">儲存</v-btn>
+          <v-btn color="primary" variant="elevated" @click="saveCoupon" :disabled="isSaveDisabled"
+            >儲存</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -197,8 +235,8 @@
 }
 
 .forest-subtitle {
-     color: #5d7a66;
-     letter-spacing: 1px;
+  color: #5d7a66;
+  letter-spacing: 1px;
 }
 
 .forest-card-table {
@@ -230,10 +268,10 @@
   }
 }
 .forest-bg-light {
-    background-color: #f1f8e9;
+  background-color: #f1f8e9;
 }
 .forest-text-dark {
-    color: #2e5c43;
+  color: #2e5c43;
 }
 </style>
 <script setup>
@@ -254,7 +292,7 @@ const defaultItem = {
   couponCode: '',
   discountAmount: 0,
   minSpend: 0,
-  isAvailable: 1
+  isAvailable: 1,
 }
 
 const editedItem = ref({ ...defaultItem })
@@ -288,14 +326,14 @@ const formTitle = computed(() => {
 const duplicateCodeError = computed(() => {
   if (editedIndex.value > -1) return '' // 更新時不檢查
   if (!editedItem.value.couponCode) return ''
-  
+
   const code = editedItem.value.couponCode.trim()
-  const exists = definitions.value && definitions.value.some(d => d.couponCode === code)
+  const exists = definitions.value && definitions.value.some((d) => d.couponCode === code)
   return exists ? '此優惠碼已存在，請使用其他代碼' : ''
 })
 
 const isSaveDisabled = computed(() => {
-    return !!duplicateCodeError.value || !editedItem.value.couponName || !editedItem.value.couponCode
+  return !!duplicateCodeError.value || !editedItem.value.couponName || !editedItem.value.couponCode
 })
 
 const fetchDefinitions = async () => {
@@ -345,28 +383,27 @@ const closeDialog = () => {
 }
 
 const fillDemoData = () => {
-    const num = Math.floor(Math.random() * 1000)
-    editedItem.value = {
-        couponName: `森呼吸．讀書趣${num}`,
-        couponCode: `read${num}`,
-        discountAmount: 50,
-        minSpend: 499,
-        isAvailable: 1
-    }
+  editedItem.value = {
+    couponName: '森呼吸．讀書趣',
+    couponCode: 'read',
+    discountAmount: 50,
+    minSpend: 499,
+    isAvailable: 1,
+  }
 }
 
 const saveCoupon = async () => {
   if (isSaveDisabled.value) return
 
-  try { 
+  try {
     editedItem.value.discountAmount = Number(editedItem.value.discountAmount)
     editedItem.value.minSpend = Number(editedItem.value.minSpend)
 
     let response
     if (editedIndex.value > -1) {
-        response = await couponService.updateCoupon(editedItem.value)
+      response = await couponService.updateCoupon(editedItem.value)
     } else {
-        response = await couponService.createCoupon(editedItem.value)
+      response = await couponService.createCoupon(editedItem.value)
     }
 
     if (response.data.success) {
@@ -386,12 +423,12 @@ const toggleStatus = async (item) => {
     const newStatus = item.isAvailable === 1 ? 0 : 1
     // Create a copy to update
     const updateData = { ...item, isAvailable: newStatus }
-    
+
     // Optimistic update (optional, but UI feels faster)
-    // item.isAvailable = newStatus 
+    // item.isAvailable = newStatus
 
     const response = await couponService.updateCoupon(updateData)
-    
+
     if (response.data.success) {
       // Update local data
       item.isAvailable = newStatus
@@ -402,7 +439,7 @@ const toggleStatus = async (item) => {
         icon: 'success',
         title: `已${newStatus === 1 ? '開放' : '停用'}`,
         showConfirmButton: false,
-        timer: 1500
+        timer: 1500,
       })
     } else {
       Swal.fire('失敗', response.data.message, 'error')

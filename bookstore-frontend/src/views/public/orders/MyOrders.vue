@@ -18,20 +18,54 @@
       </div>
 
       <div v-else>
-        <!-- 搜尋欄 -->
-        <v-text-field
-          v-model="search"
-          prepend-inner-icon="mdi-magnify"
-          label="搜尋訂單..."
-          single-line
-          hide-details
-          variant="outlined"
-          class="mb-6"
-          density="compact"
-        ></v-text-field>
+        <!-- 篩選與搜尋欄 -->
+        <v-row class="mb-4">
+            <v-col cols="12" md="6">
+                <div class="d-flex gap-2">
+                    <v-text-field
+                        v-model="filters.startDate"
+                        label="開始日期"
+                        type="date"
+                        variant="outlined"
+                        density="compact"
+                        hide-details
+                        bg-color="white"
+                        color="primary"
+                        class="rounded-lg"
+                        :max="filters.endDate || today"
+                    ></v-text-field>
+                    <v-text-field
+                        v-model="filters.endDate"
+                        label="結束日期"
+                        type="date"
+                        variant="outlined"
+                        density="compact"
+                        hide-details
+                        bg-color="white"
+                        color="primary"
+                        class="rounded-lg"
+                        :min="filters.startDate"
+                        :max="today"
+                    ></v-text-field>
+                </div>
+            </v-col>
+            <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="search"
+                  prepend-inner-icon="mdi-magnify"
+                  label="搜尋訂單..."
+                  single-line
+                  hide-details
+                  variant="outlined"
+                  class="rounded-lg"
+                  density="compact"
+                  bg-color="white"
+                ></v-text-field>
+            </v-col>
+        </v-row>
 
         <v-data-iterator
-          :items="orders"
+          :items="filteredOrders"
           :items-per-page="itemsPerPage"
           :search="search"
         >
@@ -47,8 +81,17 @@
                   <div class="text-subtitle-1 font-weight-bold text-grey-darken-2">
                     訂單編號 #{{ item.raw.orderId }}
                   </div>
-                  <v-chip :color="getStatusColor(item.raw.orderStatus)" size="small" label class="font-weight-bold">
+                  <v-chip 
+                    :color="getStatusColor(item.raw.orderStatus)" 
+                    size="small" 
+                    label 
+                    class="font-weight-bold cursor-pointer"
+                    variant="elevated"
+                    elevation="1"
+                    @click.stop="openHistory(item.raw)"
+                  >
                     {{ item.raw.orderStatus }}
+                    <v-icon end icon="mdi-history" size="x-small"></v-icon>
                   </v-chip>
                 </v-card-title>
                 
@@ -98,6 +141,35 @@
             </div>
           </template>
         </v-data-iterator>
+
+        <!-- 訂單狀態歷程 Dialog -->
+        <v-dialog v-model="historyDialog" max-width="500px">
+          <v-card class="rounded-lg">
+            <v-card-title class="bg-forest-light text-forest-primary d-flex align-center px-6 py-4">
+               <v-icon class="mr-2">mdi-history</v-icon>
+               <span class="text-h6 font-weight-bold">訂單狀態歷程</span>
+               <v-spacer></v-spacer>
+               <v-btn icon="mdi-close" variant="text" size="small" @click="historyDialog = false"></v-btn>
+            </v-card-title>
+            
+            <v-card-text class="pa-6">
+                <v-timeline density="compact" align="start" side="end">
+                    <v-timeline-item
+                      v-for="(history, index) in selectedOrderHistory"
+                      :key="index"
+                      :dot-color="history.color"
+                      size="x-small"
+                    >
+                      <div class="mb-4">
+                        <div class="font-weight-bold text-subtitle-1">{{ history.title }}</div>
+                        <div class="text-caption text-grey">{{ history.time }}</div>
+                        <div class="text-body-2 mt-1">{{ history.description }}</div>
+                      </div>
+                    </v-timeline-item>
+                </v-timeline>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
 
         <!-- 訂單明細 Dialog -->
         <v-dialog v-model="detailsDialog" max-width="1200px" scrollable>
@@ -305,6 +377,16 @@ const selectedOrderId = ref(null)
 const detailsLoading = ref(false)
 const currentOrderItems = ref([])
 const currentOrder = ref(null)
+
+const filters = ref({
+    startDate: '',
+    endDate: ''
+})
+
+const today = new Date().toISOString().split('T')[0]
+
+import { computed } from 'vue'
+
 const formatDate = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
@@ -316,6 +398,143 @@ const formatDate = (dateString) => {
     minute: '2-digit'
   })
 }
+
+const filteredOrders = computed(() => {
+    let source = orders.value
+
+    // 日期篩選
+    if (filters.value.startDate || filters.value.endDate) {
+        source = source.filter(order => {
+             // 處理 order.createdAt，可能是陣列 [y,m,d,h,min] 或 ISO 字串
+             let orderTime = 0
+             if (Array.isArray(order.createdAt)) {
+                 // 注意月份要 -1
+                 orderTime = new Date(order.createdAt[0], order.createdAt[1] - 1, order.createdAt[2]).getTime()
+             } else if (order.createdAt) {
+                 // 嘗試解析字串
+                 const d = new Date(order.createdAt)
+                 orderTime = d.setHours(0,0,0,0)
+             } else {
+                 return true // 無日期則不過濾
+             }
+             
+             let isValid = true
+             
+             // 解析 filters.startDate (YYYY-MM-DD)
+             if (filters.value.startDate) {
+                 const [sy, sm, sd] = filters.value.startDate.split('-').map(Number)
+                 const startTime = new Date(sy, sm - 1, sd).getTime()
+                 if (orderTime < startTime) isValid = false
+             }
+             
+             // 解析 filters.endDate (YYYY-MM-DD)
+             if (filters.value.endDate && isValid) {
+                 const [ey, em, ed] = filters.value.endDate.split('-').map(Number)
+                 const endTime = new Date(ey, em - 1, ed).getTime()
+                 if (orderTime > endTime) isValid = false
+             }
+             
+             return isValid
+        })
+    }
+    
+    return source
+})
+const selectedOrderHistory = ref([])
+const historyDialog = ref(false)
+
+const openHistory = (order) => {
+    const history = []
+    
+    // 1. 訂單建立
+    if (order.createdAt) {
+        history.push({
+            title: '訂單成立',
+            time: formatDate(order.createdAt),
+            color: 'primary',
+            icon: 'mdi-file-document-outline',
+            description: '您的訂單已成功建立。'
+        })
+    }
+    
+    // 2. 付款完成 (信用卡)
+    if (order.paidAt&&order.paymentMethod=='信用卡') {
+        history.push({
+            title: '付款完成',
+            time: formatDate(order.paidAt),
+            color: 'success',
+            icon: 'mdi-credit-card-check-outline',
+            description: '感謝您的付款，我們正在處理您的訂單。'
+        })
+    }
+
+    // 3. 處理中/出貨 
+    if (order.shippedAt) {
+        history.push({
+            title: '商品已出貨',
+            time: formatDate(order.shippedAt),
+            color: 'info',
+            icon: 'mdi-truck-delivery-outline',
+            description: '商品已經寄出，正在運送途中。'
+        })
+    }
+    
+    // 4. 送達 
+    if (order.deliveredAt) {
+        history.push({
+            title: '商品已送達',
+            time: formatDate(order.deliveredAt),
+            color: 'success',
+            icon: 'mdi-package-variant-closed',
+            description: '商品已送達指定地點/門市。'
+        })
+    }
+
+    // 5. 收到 (貨到付款)，訂單完成
+    if (order.receivedAt&&order.paymentMethod=='貨到付款') {
+        history.push({
+            title: '收到',
+            time: formatDate(order.receivedAt),
+            color: 'success',
+            icon: 'mdi-package-variant-closed',
+            description: '感謝您的購買，交易已完成。'
+        })
+    }
+
+    // 6. 收到，訂單完成
+    if (order.receivedAt && order.completedAt) {
+        const time = order.receivedAt || order.completedAt
+        history.push({
+            title: '訂單已完成',
+            time: formatDate(time),
+            color: 'success',
+            icon: 'mdi-check-circle-outline',
+            description: '感謝您的購買，交易已完成。'
+        })
+    }
+    
+    // 7. 取消
+    if (order.orderStatus === '已取消') {
+        history.push({
+            title: '訂單已取消',
+            time: formatDate(order.updatedAt), // 用最後修改時間作為取消時間
+            color: 'error',
+            icon: 'mdi-close-circle-outline',
+            description: '此訂單已被取消。'
+        })
+    }
+    
+    // 排序：時間越新的在越上面 (timeline 預設也是這樣比較好看，或反之)
+    // 這裡我們讓時間舊的在上面 (流程由上往下)
+    // 但因為我們是依序 push 的，若時間序正確應該這就是順序。
+    // 為了保險，可以 sort 一下，但 array 本身就已經大致有序。
+    // history.sort((a,b) => new Date(a.time) - new Date(b.time)) 
+    // 因 formatDate 轉成字串了，直接用 push 順序通常是正確的邏輯順序
+
+    selectedOrderHistory.value = history
+    historyDialog.value = true
+}
+
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -443,5 +662,13 @@ onMounted(() => {
 .book-link:hover {
   color: #2e5c43 !important; /* 主題綠色 */
   text-decoration: underline;
+}
+
+.bg-forest-light {
+    background-color: #f1f8e9 !important;
+}
+
+.text-forest-primary {
+    color: #2e5c43 !important;
 }
 </style>

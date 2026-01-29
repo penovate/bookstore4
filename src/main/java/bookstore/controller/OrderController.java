@@ -22,12 +22,10 @@ import bookstore.bean.UserBean;
 import bookstore.service.OrderService;
 import bookstore.service.bookService;
 import bookstore.dto.BookSalesDTO;
-import bookstore.dto.CheckoutRequest;
+import bookstore.dto.OrderFullUpdateDTO;
 import bookstore.util.JwtUtil;
-//import bookstore.service.BookService; 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 @Controller
 public class OrderController {
@@ -226,27 +224,6 @@ public class OrderController {
 		return "redirect:/order/activeList";
 	}
 
-	// 還原訂單
-	@PostMapping("/order/restore")
-	public String restoreOrder(@RequestParam("id") Integer orderId, RedirectAttributes redirectAttributes) {
-		try {
-			orderService.processRestoreOrder(orderId);
-			return "redirect:/order/cancelledList";
-		} catch (Exception e) {
-			redirectAttributes.addAttribute("error", "還原訂單失敗");
-			return "redirect:/order/cancelledList";
-		}
-	}
-
-	// 徹底刪除訂單-硬刪除(專題目前改用軟刪除 廢棄掉了)
-	/*
-	 * @PostMapping("/order/delete")
-	 * public String deleteOrder(@RequestParam("id") Integer id) {
-	 * orderService.deleteOrder(id);
-	 * return "redirect:/order/activeList";
-	 * }
-	 */
-
 	// 刪除單筆明細
 	@PostMapping("/order/deleteItem")
 	public String deleteItem(@RequestParam("orderItemId") Integer orderItemId,
@@ -386,22 +363,25 @@ public class OrderController {
 		}
 	}
 
+	@PostMapping("/order/api/updateFull")
+	@ResponseBody
+	public Map<String, Object> updateFullOrderApi(@RequestBody OrderFullUpdateDTO dto) {
+		Map<String, Object> response = new java.util.HashMap<>();
+		try {
+			orderService.updateFullOrder(dto);
+			response.put("success", true);
+		} catch (Exception e) {
+			response.put("success", false);
+			response.put("message", e.getMessage());
+		}
+		return response;
+	}
+
 	@PostMapping("/order/api/cancel")
 	@ResponseBody
 	public String cancelOrderApi(@RequestParam("id") Integer orderId) {
 		orderService.processCancelOrder(orderId);
 		return "success";
-	}
-
-	@PostMapping("/order/api/restore")
-	@ResponseBody
-	public String restoreOrderApi(@RequestParam("id") Integer orderId) {
-		try {
-			orderService.processRestoreOrder(orderId);
-			return "success";
-		} catch (Exception e) {
-			return "error";
-		}
 	}
 
 	@PostMapping("/order/api/deleteItem")

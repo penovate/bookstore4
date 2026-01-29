@@ -29,6 +29,35 @@
 
       <v-spacer></v-spacer>
       <v-col cols="12" md="6" lg="5">
+         <div class="d-flex gap-2">
+            <v-text-field
+              v-model="filters.startDate"
+              label="開始日期"
+              type="date"
+              variant="outlined"
+              density="compact"
+              hide-details
+              bg-color="white"
+              color="primary"
+              class="rounded-lg"
+              :max="filters.endDate || today"
+            ></v-text-field>
+             <v-text-field
+              v-model="filters.endDate"
+              label="結束日期"
+              type="date"
+              variant="outlined"
+              density="compact"
+              hide-details
+              bg-color="white"
+              color="primary"
+              class="rounded-lg"
+              :min="filters.startDate"
+              :max="today"
+            ></v-text-field>
+         </div>
+      </v-col>
+      <v-col cols="12" md="6" lg="4">
         <v-text-field
           v-model="filters.keyword"
           label="搜尋訂單編號/訂購人"
@@ -54,7 +83,7 @@
     <v-card class="forest-card-table">
       <v-data-table
         :headers="tableHeaders"
-        :items="currentTab === 'active' ? activeOrders : cancelledOrders"
+        :items="filteredOrders"
         :search="filters.keyword"
         :items-per-page="10"
         class="forest-table-style"
@@ -127,50 +156,18 @@
         <!-- 操作按鈕 -->
         <template v-slot:item.action="{ item }">
           <div class="d-flex justify-center gap-2">
-
-
-            <template v-if="currentTab === 'active'">
-              <v-tooltip text="修改" location="top">
+              <v-tooltip text="查看明細" location="top">
                 <template v-slot:activator="{ props }">
                   <v-btn
                     v-bind="props"
-                    icon="mdi-pencil-outline"
+                    icon="mdi-eye-outline"
                     variant="text"
                     color="primary"
                     size="small"
-                    @click="goToUpdate(item.orderId)"
+                    @click="goToDetail(item.orderId)"
                   ></v-btn>
                 </template>
               </v-tooltip>
-
-              <v-tooltip text="取消訂單" location="top">
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon="mdi-close-circle-outline"
-                    variant="text"
-                    color="error"
-                    size="small"
-                    @click="handleCancel(item)"
-                  ></v-btn>
-                </template>
-              </v-tooltip>
-            </template>
-
-            <template v-else>
-              <v-tooltip text="還原訂單" location="top">
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon="mdi-restore"
-                    variant="text"
-                    color="success"
-                    size="small"
-                    @click="handleRestore(item)"
-                  ></v-btn>
-                </template>
-              </v-tooltip>
-            </template>
           </div>
         </template>
       </v-data-table>
@@ -190,7 +187,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import orderService from '@/api/orderService.js'
@@ -202,6 +199,52 @@ const cancelledOrders = ref([])
 
 const filters = reactive({
   keyword: '',
+  startDate: '',
+  endDate: ''
+})
+
+const today = new Date().toISOString().split('T')[0]
+
+const filteredOrders = computed(() => {
+    let source = currentTab.value === 'active' ? activeOrders.value : cancelledOrders.value
+    
+    // 日期篩選
+    if (filters.startDate || filters.endDate) {
+        source = source.filter(order => {
+             // 處理 order.createdAt，可能是陣列 [y,m,d,h,min] 或 ISO 字串
+             let orderTime = 0
+             if (Array.isArray(order.createdAt)) {
+                 // 注意月份要 -1
+                 orderTime = new Date(order.createdAt[0], order.createdAt[1] - 1, order.createdAt[2]).getTime()
+             } else if (order.createdAt) {
+                 // 嘗試解析字串，若為 ISO 字串需注意時區，這裡假設是 UTC 或 ISO
+                 const d = new Date(order.createdAt)
+                 orderTime = d.setHours(0,0,0,0)
+             } else {
+                 return true // 無日期則不過濾
+             }
+             
+             let isValid = true
+             
+             // 解析 filters.startDate (YYYY-MM-DD) 為本地時間 00:00:00
+             if (filters.startDate) {
+                 const [sy, sm, sd] = filters.startDate.split('-').map(Number)
+                 const startTime = new Date(sy, sm - 1, sd).getTime()
+                 if (orderTime < startTime) isValid = false
+             }
+             
+             // 解析 filters.endDate (YYYY-MM-DD) 為本地時間 00:00:00
+             if (filters.endDate && isValid) {
+                 const [ey, em, ed] = filters.endDate.split('-').map(Number)
+                 const endTime = new Date(ey, em - 1, ed).getTime()
+                 if (orderTime > endTime) isValid = false
+             }
+             
+             return isValid
+        })
+    }
+    
+    return source
 })
 
 const tableHeaders = [
@@ -210,8 +253,8 @@ const tableHeaders = [
   { title: '訂單金額', key: 'finalAmount', align: 'end', sortable: true },
   { title: '付款方式', key: 'paymentMethod', align: 'center' },
   { title: '訂單狀態', key: 'orderStatus', align: 'center' },
-  { title: '訂單時間', key: 'createdAt', align: 'end', sortable: true },
-  { title: '修改時間', key: 'updatedAt', align: 'end', sortable: true },
+  { title: '訂單時間', key: 'createdAt', align: 'center', sortable: true },
+  { title: '異動時間', key: 'updatedAt', align: 'center', sortable: true },
   { title: '操作', key: 'action', align: 'center', sortable: false },
 ]
 
@@ -249,66 +292,7 @@ const fetchCancelledOrders = async () => {
   }
 }
 
-const handleCancel = (order) => {
-  Swal.fire({
-    title: `確定要取消訂單 #${order.orderId} 嗎？`,
-    text: '取消後訂單將移至已取消列表',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#aaa',
-    confirmButtonText: '確認取消',
-    cancelButtonText: '按錯了',
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      try {
-        await orderService.cancelOrder(order.orderId)
-        Swal.fire({
-          icon: 'success',
-          title: '訂單已取消',
-          showConfirmButton: false,
-          timer: 1500,
-        })
-        fetchActiveOrders()
-      } catch (error) {
-        Swal.fire('錯誤', '取消失敗', 'error')
-      }
-    }
-  })
-}
-
-const handleRestore = (order) => {
-  Swal.fire({
-    title: `確定要還原訂單 #${order.orderId} 嗎？`,
-    text: '還原後訂單將回到活動列表',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#2E5C43',
-    cancelButtonColor: '#aaa',
-    confirmButtonText: '確認還原',
-    cancelButtonText: '再想想',
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      try {
-        // 呼叫 restoreOrder 還原訂單
-        await orderService.restoreOrder(order.orderId)
-        
-        Swal.fire({
-          icon: 'success',
-          title: '訂單已還原',
-          showConfirmButton: false,
-          timer: 1500,
-        })
-        fetchCancelledOrders()
-      } catch (error) {
-        Swal.fire('錯誤', '還原失敗', 'error')
-      }
-    }
-  })
-}
-
 const goToDetail = (id) => router.push({ name: 'orderDetail-admin', params: { id } })
-const goToUpdate = (id) => router.push({ name: 'orderUpdate', params: { id } })
 
 watch(currentTab, (newTab) => {
   if (newTab === 'active') fetchActiveOrders()

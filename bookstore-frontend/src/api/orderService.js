@@ -115,12 +115,6 @@ export default {
         return apiClient.post('/order/api/cancel', params, getAuthHeaders());
     },
 
-    // 還原訂單
-    restoreOrder(orderId) {
-        const params = new URLSearchParams();
-        params.append('id', orderId);
-        return apiClient.post('/order/api/restore', params, getAuthHeaders());
-    },
 
     // --- 訂單項目管理 ---
 
@@ -144,6 +138,11 @@ export default {
         if (bookId) params.append('booksBean.bookId', bookId);
 
         return apiClient.post('/order/api/updateItem', params, getAuthHeaders());
+    },
+
+    // 更新訂單與明細
+    updateFullOrder(orderData) {
+        return apiClient.post('/order/api/updateFull', orderData, getAuthHeaders());
     },
 
     // 刪除訂單項目

@@ -1,6 +1,7 @@
 package bookstore.controller;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,13 +18,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import bookstore.bean.BooksBean;
 import bookstore.bean.OrderItem;
+import bookstore.bean.OrderReturnBean;
 import bookstore.bean.Orders;
 import bookstore.bean.UserBean;
 import bookstore.service.OrderService;
 import bookstore.service.bookService;
 import bookstore.dto.BookSalesDTO;
 import bookstore.dto.OrderFullUpdateDTO;
-import bookstore.util.JwtUtil;
+import bookstore.dto.OrderReturnRequest;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -35,9 +38,6 @@ public class OrderController {
 
 	@Autowired
 	private bookService bookService;
-
-	@Autowired
-	private JwtUtil jwtUtil;
 
 	// ==================新增類 Controller==================//
 
@@ -261,8 +261,12 @@ public class OrderController {
 		Orders order = orderService.getOrderById(orderId);
 		if (order != null) {
 			List<OrderItem> items = orderService.getOrderItemsByOrderId(orderId);
+			// 取得退貨資訊
+			OrderReturnBean returnInfo = orderService.getReturnRequestByOrderId(orderId);
+
 			response.put("order", order);
 			response.put("items", items);
+			response.put("returnInfo", returnInfo);
 		}
 		return response;
 	}
@@ -384,6 +388,17 @@ public class OrderController {
 		return "success";
 	}
 
+	@PostMapping("/order/api/return")
+	@ResponseBody
+	public String returnOrderApi(@RequestBody OrderReturnRequest request) {
+		try {
+			orderService.processReturnOrder(request.getOrderId(), request.getReason(), request.getDescription());
+			return "success";
+		} catch (Exception e) {
+			return "error: " + e.getMessage();
+		}
+	}
+
 	@PostMapping("/order/api/deleteItem")
 	@ResponseBody
 	public String deleteItemApi(@RequestParam("orderItemId") Integer orderItemId) {
@@ -495,16 +510,16 @@ public class OrderController {
 		return orderService.getRecentSalesTrends();
 	}
 
-	private java.sql.Timestamp parseTimestamp(String dateStr) {
+	private Timestamp parseTimestamp(String dateStr) {
 		if (dateStr == null || dateStr.trim().isEmpty()) {
 			return null;
 		}
 		try {
-			// Assume format matches standard or long (append time if just date)
+			// 假設格式符合標準或長格式（若僅有日期則補上時間）
 			if (dateStr.length() <= 10) {
-				return java.sql.Timestamp.valueOf(dateStr + " 00:00:00");
+				return Timestamp.valueOf(dateStr + " 00:00:00");
 			}
-			return java.sql.Timestamp.valueOf(dateStr);
+			return Timestamp.valueOf(dateStr);
 		} catch (Exception e) {
 			return null;
 		}

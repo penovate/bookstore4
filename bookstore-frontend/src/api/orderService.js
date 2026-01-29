@@ -115,6 +115,11 @@ export default {
         return apiClient.post('/order/api/cancel', params, getAuthHeaders());
     },
 
+    // 申请退货
+    returnOrder(data) {
+        return apiClient.post('/order/api/return', data, getAuthHeaders());
+    },
+
 
     // --- 訂單項目管理 ---
 

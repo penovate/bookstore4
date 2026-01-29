@@ -350,9 +350,68 @@
                   </v-card>
                 </div>
 
+                  <!-- Return Button -->
+                  <div class="mt-4 text-center">
+                    <v-btn
+                      v-if="currentOrder && currentOrder.orderStatus !== '已取消'" 
+                      color="error" 
+                      variant="outlined" 
+                      prepend-icon="mdi-keyboard-return"
+                      @click="openReturnDialog(currentOrder)"
+                    >
+                      申請退貨 / 取消訂單
+                    </v-btn>
+                  </div>
+
               </div>
             </v-card-text>
           </v-card>
+        </v-dialog>
+
+        <!-- 退貨申請 Dialog -->
+        <v-dialog v-model="returnDialog" max-width="500px">
+            <v-card class="rounded-lg">
+                <v-card-title class="bg-error text-white d-flex align-center px-6 py-4">
+                    <v-icon class="mr-2">mdi-keyboard-return</v-icon>
+                    <span class="text-h6 font-weight-bold">申請退貨</span>
+                    <v-spacer></v-spacer>
+                    <v-btn icon="mdi-close" variant="text" color="white" @click="returnDialog = false"></v-btn>
+                </v-card-title>
+                <v-card-text class="pa-6">
+                    <v-alert type="info" variant="tonal" class="mb-4 text-body-2" density="compact">
+                        請填寫退貨原因，送出後系統將自動取消訂單並進行後續處理。
+                    </v-alert>
+                    
+                    <v-select
+                        v-model="returnForm.reason"
+                        :items="returnReasons"
+                        label="退貨原因 *"
+                        variant="outlined"
+                        color="primary"
+                        class="mb-2"
+                    ></v-select>
+                    
+                    <v-textarea
+                        v-model="returnForm.description"
+                        label="詳細說明 (選填)"
+                        variant="outlined"
+                        color="primary"
+                        rows="3"
+                        placeholder="請補充說明退貨原因..."
+                    ></v-textarea>
+                </v-card-text>
+                <v-card-actions class="pa-4 pt-0 justify-end">
+                    <v-btn color="grey-darken-1" variant="text" @click="returnDialog = false">取消</v-btn>
+                    <v-btn 
+                        color="error" 
+                        variant="elevated" 
+                        :loading="returnLoading"
+                        @click="submitReturn"
+                    >
+                        確認送出
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
         </v-dialog>
       </div>
 
@@ -442,6 +501,69 @@ const filteredOrders = computed(() => {
 })
 const selectedOrderHistory = ref([])
 const historyDialog = ref(false)
+
+// 退貨相關
+const returnDialog = ref(false)
+const returnLoading = ref(false)
+const returnForm = ref({
+    orderId: null,
+    reason: null,
+    description: ''
+})
+const returnReasons = [
+    '商品有瑕疵',
+    '收到錯誤商品',
+    '商品與描述不符',
+    '改變心意',
+    '其他'
+]
+
+const openReturnDialog = (order) => {
+    returnForm.value = {
+        orderId: order.orderId,
+        reason: null,
+        description: ''
+    }
+    returnDialog.value = true
+}
+
+const submitReturn = async () => {
+    if (!returnForm.value.reason) {
+        Swal.fire('提示', '請選擇退貨原因', 'warning')
+        return
+    }
+
+    returnLoading.value = true
+    try {
+        const response = await orderService.returnOrder(returnForm.value)
+        if (response.data === 'success') {
+            returnDialog.value = false
+            detailsDialog.value = false // 關閉詳細頁
+            
+            // 判斷成功訊息
+            const order = orders.value.find(o => o.orderId === returnForm.value.orderId)
+            let msg = '退貨申請已送出，訂單已取消。'
+            if (order && (order.orderStatus === '已完成' || order.deliveredAt)) {
+                msg = '退貨申請已送出！請將商品包裝好，我們將派人前往取件。'
+            }
+            
+            await Swal.fire({
+                icon: 'success',
+                title: '申請成功',
+                text: msg
+            })
+            
+            fetchUserOrders() // 重整列表
+        } else {
+             throw new Error(response.data)
+        }
+    } catch (error) {
+        console.error('Return error:', error)
+        Swal.fire('錯誤', '退貨申請失敗: ' + error.message, 'error')
+    } finally {
+        returnLoading.value = false
+    }
+}
 
 const openHistory = (order) => {
     const history = []

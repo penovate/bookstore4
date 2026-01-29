@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import bookstore.bean.OrderItem;
+import bookstore.bean.OrderReturnBean;
 import bookstore.bean.Orders;
 import bookstore.bean.UserBean;
 import bookstore.aop.BusinessException;
@@ -19,6 +20,7 @@ import bookstore.bean.CouponBean;
 import bookstore.repository.BookRepository;
 import bookstore.repository.CartRepository;
 import bookstore.repository.OrderItemRepository;
+import bookstore.repository.OrderReturnRepository;
 import bookstore.repository.OrdersRepository;
 import bookstore.repository.UserRepository;
 import jakarta.persistence.EntityManager;
@@ -51,7 +53,10 @@ public class OrderService {
 	private UserRepository userRepository;
 
 	@Autowired
-	private UserCouponRepository userCouponRepository; // Changed from CouponRepository
+	private UserCouponRepository userCouponRepository;
+
+	@Autowired
+	private OrderReturnRepository orderReturnRepository;
 
 	// 從購物車轉訂單 (Checkout Transcation)
 	@SuppressWarnings("null")
@@ -456,6 +461,59 @@ public class OrderService {
 			// 沒找到訂單就丟例外
 			throw new RuntimeException("找不到訂單 ID: " + orderId);
 		}
+	}
+
+	// 申請退貨
+	public void processReturnOrder(Integer orderId, String reason, String description) {
+		Optional<Orders> optional = ordersRepository.findById(orderId);
+
+		if (optional.isPresent()) {
+			Orders order = optional.get();
+
+			// 避免重複處理
+			if ("已取消".equals(order.getOrderStatus())) {
+				// 如果已經取消，檢查是否已經有退貨紀錄，若無則補上
+				Optional<OrderReturnBean> existingReturn = orderReturnRepository.findByOrders_OrderId(orderId);
+				if (existingReturn.isPresent()) {
+					return; // 已經有紀錄且已取消，不處理
+				}
+				// 若沒紀錄但已取消，可能只是之前單純取消，這裡我們可以選擇不動作或補紀錄
+				// 依照需求，這裡視為新申請
+			}
+
+			// 1. 建立退貨紀錄
+			OrderReturnBean returnBean = new OrderReturnBean();
+			returnBean.setOrders(order);
+			returnBean.setReason(reason);
+			returnBean.setDescription(description);
+			orderReturnRepository.save(returnBean);
+			// 2. 只有當訂單尚未取消時，才進行狀態更新與庫存回補
+			// 如果訂單已經是「已取消」，則不再重複回補庫存
+			if (!"已取消".equals(order.getOrderStatus())) {
+				order.setOrderStatus("已取消"); // 統一設為已取消
+
+				// 3. 庫存回補
+				List<OrderItem> items = orderItemRepository.findByOrders_OrderId(orderId);
+				for (OrderItem item : items) {
+					BooksBean book = item.getBooksBean();
+					book.setStock(book.getStock() + item.getQuantity());
+					bookRepository.save(book);
+				}
+
+				// 更新修改時間
+				order.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+				ordersRepository.save(order);
+			}
+
+		} else {
+			throw new RuntimeException("找不到訂單 ID: " + orderId);
+		}
+	}
+
+	// 取得退貨資訊
+	public OrderReturnBean getReturnRequestByOrderId(Integer orderId) {
+		return orderReturnRepository.findByOrders_OrderId(orderId).orElse(null);
 	}
 
 	// 刪除訂單明細

@@ -323,9 +323,33 @@
         </tbody>
       </v-table>
 
-      <!-- 總計區域 -->
-      <v-row justify="end">
-        <v-col cols="12" md="4" lg="3">
+      <!-- 總計區域與退貨資訊 -->
+      <v-row>
+        <!-- 退貨資訊顯示區 -->
+        <v-col cols="12" md="8">
+            <v-alert
+              v-if="returnInfo"
+              type="error"
+              variant="tonal"
+              border="start"
+              class="mb-4"
+              prominent
+            >
+              <div class="text-subtitle-1 font-weight-bold mb-1">
+                <v-icon start>mdi-keyboard-return</v-icon>
+                使用者已申請退貨
+              </div>
+              <v-divider class="my-2 border-opacity-25"></v-divider>
+              <div class="d-flex flex-column gap-1">
+                 <div><strong>退貨原因：</strong> {{ returnInfo.reason }}</div>
+                 <div v-if="returnInfo.description"><strong>詳細說明：</strong> {{ returnInfo.description }}</div>
+                 <div class="text-caption text-grey-darken-1 mt-1">申請時間：{{ returnInfo.createdAt }}</div>
+              </div>
+            </v-alert>
+        </v-col>
+
+        <!-- 金額總計 -->
+        <v-col cols="12" md="4">
           <v-card variant="tonal" color="primary" class="pa-4 rounded-lg">
             <div class="d-flex justify-space-between mb-2">
                <span class="text-grey-darken-2">商品小計</span>
@@ -388,6 +412,7 @@ const orderId = route.params.id
 
 const order = ref({})
 const orderItems = ref([])
+const returnInfo = ref(null) // 新增 returnInfo ref
 const loading = ref(true)
 const saving = ref(false)
 
@@ -422,8 +447,11 @@ const getStatusColor = (status) => {
 const fetchOrderDetail = async () => {
   try {
     const response = await orderService.getOrderDetail(orderId)
-    order.value = response.data.order
-    orderItems.value = response.data.items || []
+    if (response.data) {
+        order.value = response.data.order || {}
+        orderItems.value = response.data.items || []
+        returnInfo.value = response.data.returnInfo || null // 獲取退貨資訊
+    }
   } catch (error) {
     console.error('Fetch detail failed', error)
     Swal.fire('錯誤', '無法讀取訂單明細', 'error')

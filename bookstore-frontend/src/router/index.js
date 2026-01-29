@@ -208,6 +208,12 @@ const router = createRouter({
       component: () => import('../views/Layout/UserLayout.vue'),
       children: [
         {
+          path: 'about-us',
+          name: 'about-us',
+          component: () => import('../views/public/AboutUs.vue'),
+          meta: {title : '關於我們'},
+        },
+        {
           path: 'login',
           name: 'user-login',
           component: () => import('../views/public/user/UserLogin.vue'),

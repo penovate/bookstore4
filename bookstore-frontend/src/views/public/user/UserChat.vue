@@ -1,5 +1,6 @@
 <template>
-  <v-container class="py-10 d-flex justify-center bg-transparent">
+  <v-container class="py-10 d-flex flex-column align-center bg-transparent">
+    
     <v-card width="600" height="700" class="rounded-xl elevation-4 d-flex flex-column border bg-white" @mousedown="triggerMarkRead">
       <v-toolbar color="#2D5A41" flat>
         <v-icon icon="mdi-book-open-variant" class="ms-4" color="white"></v-icon>
@@ -45,6 +46,18 @@
         ></v-text-field>
       </v-card-actions>
     </v-card>
+
+    <v-btn
+      prepend-icon="mdi-arrow-left"
+      variant="flat"
+      color="#2D5A41"
+      size="large"
+      class="mt-8 rounded-pill text-white font-weight-bold px-12 elevation-2"
+      @click="$router.go(-1)"
+    >
+      返回上一頁
+    </v-btn>
+
   </v-container>
 </template>
 
@@ -52,12 +65,14 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useUserStore } from '@/stores/userStore'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
 
 axios.defaults.withCredentials = true;
 const userStore = useUserStore()
 const messages = ref([])
 const inputMsg = ref('')
 const msgContainer = ref(null)
+const router = useRouter()
 let socket = null
 
 const connectWebSocket = () => {
@@ -81,7 +96,6 @@ const connectWebSocket = () => {
       if (newMsg && newMsg.content) {
         messages.value.push(newMsg);
         scrollToBottom();
-        // 收到管理員訊息後，回報「我讀了」給管理員
         triggerMarkRead(); 
       }
     } catch (e) { console.warn("數據攔截:", event.data); }
@@ -89,9 +103,15 @@ const connectWebSocket = () => {
 };
 
 const triggerMarkRead = async () => {
+  if (!userStore.userId) return;
   try {
     await axios.get(`http://localhost:8080/api/chat/markRead/1/${userStore.userId}`);
-  } catch (e) { console.error("標記已讀失敗", e); }
+    
+    userStore.setUnreadCount(0); 
+    
+  } catch (e) {
+    console.error("標記已讀失敗", e);
+  }
 };
 
 const fetchHistory = async () => {
@@ -129,17 +149,21 @@ const formatTime = (timeStr) => {
 }
 
 onMounted(async () => {
-  if (userStore.isLoggedIn) {
-    await fetchHistory();
-    connectWebSocket(); 
+  if (!userStore.isLoggedIn) {
+    router.push('/dev/user/login')
+    return 
   }
-});
+
+  userStore.setUnreadCount(0) 
+  await triggerMarkRead()
+  await fetchHistory()
+  connectWebSocket() 
+})
 
 onUnmounted(() => { if (socket) socket.close() });
 </script>
 
 <style scoped>
-/* 💡 徹底移除格紋點點 */
 .messages-area {
   background-color: #ffffff !important;
   background-image: none !important;

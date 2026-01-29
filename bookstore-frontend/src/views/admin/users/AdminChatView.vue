@@ -9,7 +9,13 @@
           </v-toolbar>
           <v-list lines="two" class="pa-0 overflow-y-auto flex-grow-1 bg-white">
             <v-list-item v-for="chat in chatList" :key="chat.userId" :active="activeUser?.userId === chat.userId" @click="selectUser(chat)" link class="border-b px-4 bg-white">
-              <template v-slot:prepend><v-avatar size="48" color="grey-lighten-4"><v-img :src="chat.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'"></v-img></v-avatar></template>
+              <template v-slot:prepend><v-avatar size="48" color="grey-lighten-4">
+            <v-img 
+              :src="chat.userImg && chat.userImg.startsWith('/uploads/') 
+                    ? `http://localhost:8080${chat.userImg}` 
+                    : (chat.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png')"
+            ></v-img>
+          </v-avatar></template>
               <v-list-item-title class="font-weight-bold text-success">{{ chat.userName }}</v-list-item-title>
               <v-list-item-subtitle class="text-truncate">{{ chat.lastMsg }}</v-list-item-subtitle>
               <template v-slot:append>
@@ -91,11 +97,16 @@ const triggerMarkRead = async () => {
   if (!activeUser.value) return;
   try { 
     await axios.get(`http://localhost:8080/api/chat/markRead/${activeUser.value.userId}/1`); 
+    
+    fetchChatList(); 
   } catch (e) { console.error(e); }
 };
 
 const selectUser = async (user) => {
   activeUser.value = user;
+  
+  user.unreadCount = 0; 
+  
   await triggerMarkRead(); 
   
   const res = await axios.get(`http://localhost:8080/api/chat/history/${user.userId}?t=${new Date().getTime()}`);
@@ -105,9 +116,9 @@ const selectUser = async (user) => {
     isRead: m.isRead === true || m.isRead === 1 || m.read === true || m.read === 1
   })) : [];
   
-  console.log("目前的訊息列表：", messages.value);
-  user.unreadCount = 0;
   scrollToBottom();
+
+  fetchChatList();
 };
 
 const fetchChatList = async () => { 

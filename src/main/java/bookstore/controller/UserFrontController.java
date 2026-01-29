@@ -1,7 +1,7 @@
 package bookstore.controller;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -101,6 +101,7 @@ public class UserFrontController {
 	            response.put("message", "歡迎回來！");
 	            response.put("userId", user.getUserId());
 	            response.put("img", user.getImg());
+	            System.out.println("使用者 " + user.getUserName() + " 登入，頭貼路徑為: " + user.getImg());
 	        } else {
 	            response.put("success", false);
 	            response.put("message", "密碼錯誤！");
@@ -370,10 +371,17 @@ public class UserFrontController {
 			user.setAddress(address);
 			
 			if (img != null && !img.isEmpty()) {
-				byte[] imgBytes = img.getBytes();
-				String base64String = Base64.getEncoder().encodeToString(imgBytes);
-				user.setImg("data:" + img.getContentType() + ";base64," + base64String);
-			}
+				String uploadDir = "C:/uploads/avatars/";
+	            String fileName = "user_" + userId + "_" + System.currentTimeMillis() + ".png";
+	            
+	            File dir = new File(uploadDir);
+	            if (!dir.exists()) dir.mkdirs();
+	            
+	            img.transferTo(new java.io.File(uploadDir + fileName));
+	            
+	            user.setImg("/uploads/avatars/" + fileName); 
+	            response.put("newImg", "/uploads/avatars/" + fileName);
+	        }
 				
 			userService.saveUser(user);
 			response.put("success", true);

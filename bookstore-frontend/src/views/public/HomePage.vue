@@ -3,6 +3,7 @@
   import { useRouter } from 'vue-router';
   import bookService from '@/api/bookService';
   import BookCard from './books/BookCard.vue';
+  import Swal from 'sweetalert2'
 
   const router = useRouter();
   const hotBooks = ref([]); 
@@ -32,6 +33,21 @@
 
   onMounted(() => {
     fetchAllHomeBooks();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('logout')) {
+      Swal.fire({
+        icon: 'success',
+        title: '登出成功',
+        text: '期待與您再次相遇！',
+        confirmButtonColor: '#2e5c43',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true, 
+      });
+
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   });
 </script>
 <template>

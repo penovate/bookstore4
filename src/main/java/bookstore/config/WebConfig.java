@@ -46,7 +46,8 @@ public class WebConfig implements WebMvcConfigurer {
 			registry.addInterceptor(jwtInterceptor)
 					.addPathPatterns("/cart/api/**")
 					.addPathPatterns("/orders/**")
-					.excludePathPatterns("/orders/ecpay/**");
+					.excludePathPatterns("/orders/ecpay/**")
+					.excludePathPatterns("/uploads/**");
 			// .addPathPatterns("/api/books**")
 			// .addPathPatterns("/api/**")
 			// .excludePathPatterns("/api/books/getAllBooks",
@@ -61,6 +62,8 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		registry.addResourceHandler("/upload-images/**")
 				.addResourceLocations("file:" + uploadDir);
+		registry.addResourceHandler("/uploads/**")
+        		.addResourceLocations("file:///C:/uploads/");
 	}
 
 }

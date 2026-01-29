@@ -35,5 +35,12 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageBean, In
 	           "             ORDER BY createdAt DESC) m " +
 	           "ORDER BY m.createdAt DESC", nativeQuery = true)
 	List<Map<String, Object>> getAdminChatList(@Param("adminId") Integer adminId);
+	
+	@Query("SELECT COUNT(c) FROM ChatMessageBean c WHERE c.senderId = :adminId AND c.receiverId = :userId AND c.isRead = false")
+	Integer countUnreadMessages(@Param("adminId") Integer adminId, @Param("userId") Integer userId);
+	
+	@Query("SELECT COUNT(DISTINCT c.senderId) FROM ChatMessageBean c " +
+		       "WHERE c.receiverId = :adminId AND c.isRead = false")
+		long countUnreadUsers(@Param("adminId") Integer adminId);
 
 }

@@ -59,4 +59,18 @@ public class ChatController {
 	    chatHandler.sendToUser(targetId, "READ_SIGNAL");
 	}
 	
+	@GetMapping("/unread/{userId}")
+	@ResponseBody
+	public ResponseEntity<Integer> getUnreadCount(@PathVariable Integer userId) {
+		Integer count = chatRepo.countUnreadMessages(1, userId);
+		return ResponseEntity.ok(count);
+	}
+	
+	@GetMapping("/admin/unread-users")
+	@ResponseBody
+	public ResponseEntity<Long> getUnreadUserCount() {
+		long count = chatRepo.countUnreadUsers(1);
+		return ResponseEntity.ok(count);
+	}
+	
 }

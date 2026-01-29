@@ -69,7 +69,7 @@ public class UserBean implements java.io.Serializable {
 	@Column(name = "address")
 	private String address;
 	
-	@Column(name = "img", columnDefinition = "NVARCHAR(MAX)") 
+	@Column(name = "img", length = 255) 
 	private String img;
 	
 	@Column(name = "points")

@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import bookstore.bean.UserBean;
 
@@ -22,7 +21,7 @@ public interface UserRepository extends JpaRepository<UserBean, Integer> {
 	
 	@Modifying
 	@Query("UPDATE UserBean u SET u.status = :status WHERE u.userId = :id")
-	void updateStatus(@PathVariable("id") Integer id, @PathVariable("status") Integer status);
+	void updateStatus(@Param("id") Integer id, @Param("status") Integer status);
 	
 	@Query("SELECT u FROM UserBean u WHERE " +
 		       "(:keyword IS NULL OR " +

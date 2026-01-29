@@ -9,16 +9,19 @@
       >
         <div class="header-overlay pa-6 d-flex align-center">
           <v-avatar size="100" class="elevation-4 profile-avatar mr-6">
-            <v-img :src="userStore.img" cover>
-              <template v-slot:placeholder>
-                <div
-                  class="bg-accent fill-height d-flex align-center justify-center text-h3 text-white"
-                >
-                  {{ userStore.name.charAt(0) }}
-                </div>
-              </template>
-            </v-img>
-          </v-avatar>
+              <v-img 
+                :src="userStore.img && userStore.img.includes('/uploads/') 
+                      ? `http://localhost:8080${userStore.img}` 
+                      : userStore.img" 
+                cover
+              >
+                <template v-slot:placeholder>
+                  <div class="bg-accent fill-height d-flex align-center justify-center text-h3 text-white">
+                    {{ userStore.name?.charAt(0) }}
+                  </div>
+                </template>
+              </v-img>
+            </v-avatar>
           <div>
             <h1 class="text-h4 font-weight-bold mb-1">
               嗨～{{ userStore.name }}！歡迎進入閱讀的世界！
@@ -38,9 +41,18 @@
             class="menu-card rounded-lg transition-swing text-center pa-6 h-100"
             @click="navigateTo(item.to)"
           >
-            <v-avatar :color="item.color" size="64" class="mb-4">
-              <v-icon :icon="item.icon" color="white" size="32"></v-icon>
-            </v-avatar>
+            <v-badge
+              :content="item.unreadCount"
+              :model-value="item.unreadCount > 0"
+              color="error"
+              overlap
+              offset-x="10"
+              offset-y="10"
+            >
+              <v-avatar :color="item.color" size="64" class="mb-4">
+                <v-icon :icon="item.icon" color="white" size="32"></v-icon>
+              </v-avatar>
+            </v-badge>
             <v-card-title class="font-weight-bold justify-center">{{ item.title }}</v-card-title>
             <v-card-subtitle>{{ item.desc }}</v-card-subtitle>
           </v-card>
@@ -51,9 +63,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
+import axios from 'axios'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -85,6 +98,7 @@ const menuItems = ref([
     color: 'primary',
     to: '/dev/user/profile/password-confirmation',
     desc: '修改基本資料與密碼',
+    unreadCount: 0,
   },
   {
     title: '書本收藏清單',
@@ -92,6 +106,7 @@ const menuItems = ref([
     color: 'secondary',
     to: '/dev/user/wishlist',
     desc: '查看已收藏的心儀書籍',
+    unreadCount: 0,
   },
   {
     title: '瀏覽紀錄',
@@ -99,6 +114,7 @@ const menuItems = ref([
     color: 'brown-lighten-1',
     to: '/dev/user/history',
     desc: '最近看過的書籍清單',
+    unreadCount: 0,
   },
   {
     title: '優惠券',
@@ -106,6 +122,7 @@ const menuItems = ref([
     color: 'orange-darken-2',
     to: '/dev/user/coupons',
     desc: '領取與查詢您的專屬折扣',
+    unreadCount: 0,
   },
   {
     title: '歷史訂單',
@@ -113,6 +130,7 @@ const menuItems = ref([
     color: 'teal-darken-1',
     to: '/dev/user/orders',
     desc: '追蹤訂單進度與紀錄',
+    unreadCount: 0,
   },
   {
     title: '個人評價歷史',
@@ -120,22 +138,54 @@ const menuItems = ref([
     color: 'yellow-darken-3',
     to: '/dev/user/reviews',
     desc: '管理您留下的讀後感想',
+    unreadCount: 0,
   },
   {
     title: '客服專區',
     icon: 'mdi-chat-question-outline',
     color: 'blue-grey-darken-1',
-    to: '/dev/user/support',
+    to: '/dev/user/user-chat',
     desc: '聯絡我們或查看常見問題',
+    unreadCount: 0,
   },
 ])
+
+watch(
+  () => userStore.unreadCount,
+  (newCount) => {
+    const chatItem = menuItems.value.find(item => item.title === '客服專區')
+    if (chatItem) {
+      chatItem.unreadCount = newCount
+    }
+  },
+  { immediate: true }
+)
 
 const navigateTo = (path) => {
   router.push(path)
 }
 
+const fetchUnreadCount = async () => {
+  if (!userStore.userId) return
+  try {
+    const res = await axios.get(`http://localhost:8080/api/chat/unread/${userStore.userId}`)
+    
+    const count = typeof res.data === 'object' ? res.data.count : res.data;
+
+    const chatItem = menuItems.value.find(item => item.title === '客服專區')
+    if (chatItem) {
+      chatItem.unreadCount = parseInt(count) || 0; // 強制轉為數字
+    }
+  } catch (error) {
+    console.error("獲取未讀訊息失敗", error)
+  }
+}
+
 onMounted(() => {
   getRandomQuote()
+  if (userStore.isLoggedIn) {
+    userStore.fetchUnreadCount() 
+  }
 })
 </script>
 

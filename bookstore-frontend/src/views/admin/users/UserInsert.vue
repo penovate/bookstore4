@@ -11,7 +11,7 @@
     >
       <v-card-item class="text-center mb-4">
         <v-icon icon="mdi-account-plus-outline" size="large" color="primary" class="mb-2"></v-icon>
-        <v-card-title class="text-h5 font-weight-bold text-primary"> 填寫會員資訊 </v-card-title>
+        <v-card-title class="text-h5 font-weight-bold text-primary"> 填寫帳號資訊 </v-card-title>
       </v-card-item>
 
       <v-divider class="my-4"></v-divider>
@@ -121,8 +121,8 @@
                 v-model="formData.userType"
                 label="權限等級"
                 :items="[
-                  { title: '超級管理員', value: 0 },
-                  { title: '一般管理員', value: 1 },
+                  { title: '系統管理員', value: 0 },
+                  { title: '營運專員', value: 1 },
                 ]"
                 :rules="[(v) => (v !== null && v !== '') || '請選擇權限等級']"
                 variant="outlined"
@@ -144,7 +144,7 @@
             size="large"
             class="px-10 mr-4 rounded-lg font-weight-bold"
           >
-            確認新增會員
+            確認新增帳號
           </v-btn>
           <v-btn
             color="primary"

@@ -74,7 +74,7 @@
                   @click="quickLogin('SUPER_ADMIN')"
                 >
                   <v-icon icon="mdi-shield-check" size="small"></v-icon>
-                  <span class="btn-label">超管</span>
+                  <span class="btn-label">系統管理員</span>
                 </v-btn>
               </v-col>
 
@@ -87,7 +87,7 @@
                   @click="quickLogin('ADMIN')"
                 >
                   <v-icon icon="mdi-account-cog" size="small"></v-icon>
-                  <span class="btn-label">管理員</span>
+                  <span class="btn-label">營運專員</span>
                 </v-btn>
               </v-col>
 
@@ -100,7 +100,7 @@
                   @click="quickLogin('USER')"
                 >
                   <v-icon icon="mdi-account" size="small"></v-icon>
-                  <span class="btn-label">會員</span>
+                  <span class="btn-label">正式會員</span>
                 </v-btn>
               </v-col>
 
@@ -113,7 +113,7 @@
                   @click="quickLogin('BANNED')"
                 >
                   <v-icon icon="mdi-account-off" size="small"></v-icon>
-                  <span class="btn-label">停權</span>
+                  <span class="btn-label">被停權者</span>
                 </v-btn>
               </v-col>
             </v-row>
@@ -173,12 +173,9 @@ const handleLogin = async () => {
         return
       }
 
-      userStore.login(response.data)
+      localStorage.clear()
 
-      localStorage.setItem('userToken', response.data.token)
-      localStorage.setItem('userRole', response.data.role)
-      localStorage.setItem('userName', response.data.userName || '')
-      localStorage.setItem('userId', response.data.userId)
+      await userStore.login(response.data)
 
       Swal.fire({
         icon: 'success',
@@ -188,7 +185,7 @@ const handleLogin = async () => {
         timer: 1500,
         timerProgressBar: true,
       }).then(() => {
-        router.push('/home')
+        window.location.href = '/home'
       })
     } else {
       Swal.fire({

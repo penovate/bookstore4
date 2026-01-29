@@ -189,11 +189,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import orderService from '@/api/orderService.js'
+import { useCartStore } from '@/stores/cartStore'
 
 const router = useRouter()
 const cartItems = ref([])
 const totalAmount = ref(0)
 const alertMessage = ref('')
+const cartStore = useCartStore()
 
 const hasInvalidItems = computed(() => {
   return cartItems.value.some((item) => item.cartStatus === 'OFF_SHELF' || item.quantity === 0)
@@ -319,6 +321,7 @@ const removeItem = (item) => {
             showConfirmButton: false,
             timer: 1500,
           })
+          await cartStore.fetchCartCount()
           fetchCart()
         } else {
           Swal.fire('錯誤', '移除失敗', 'error')

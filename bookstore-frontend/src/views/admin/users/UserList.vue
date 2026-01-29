@@ -1,7 +1,7 @@
 <template>
   <div class="list-page-wrapper">
     <div class="header-section mb-6 text-left">
-      <h2 class="forest-main-title">會員管理列表</h2>
+      <h2 class="forest-main-title">會員資料列表</h2>
     </div>
 
     <v-row class="mb-4" align="center">
@@ -14,7 +14,7 @@
           class="rounded-lg font-weight-bold"
           @click="router.push('/dev/admin/users/insert')"
         >
-          新增會員資料
+          新增管理帳號
         </v-btn>
         <v-btn
           color="secondary"
@@ -81,6 +81,25 @@
         class="forest-table-style"
         hover
       >
+        <template v-slot:item.img="{ item }">
+          <v-avatar size="40" class="elevation-1 border-sm bg-grey-lighten-4">
+            <v-img 
+              v-if="item.img"
+              :src="item.img.startsWith('/uploads/') 
+                    ? `http://localhost:8080${item.img}` 
+                    : item.img" 
+              cover
+            >
+              <template v-slot:placeholder>
+                <div class="d-flex align-center justify-center fill-height bg-primary text-caption text-white">
+                  {{ item.userName?.charAt(0) }}
+                </div>
+              </template>
+            </v-img>
+            <v-icon v-else icon="mdi-account-circle" color="grey-lighten-1" size="32"></v-icon>
+          </v-avatar>
+        </template>
+
         <template v-slot:item.userName="{ item }">
           <a href="#" @click.prevent="goToDetail(item.userId)" class="user-detail-link">
             {{ item.userName }}
@@ -145,13 +164,14 @@ const currentUserId = localStorage.getItem('userId')
 const filters = reactive({ keyword: '', userTypeFilter: '' })
 const roleOptions = [
   { title: '顯示所有使用者', value: '' },
-  { title: '超級管理員', value: '0' },
-  { title: '一般管理員', value: '1' },
-  { title: '一般會員', value: '2' },
+  { title: '系統管理員', value: '0' },
+  { title: '營運專員', value: '1' },
+  { title: '正式會員', value: '2' },
 ]
 
 const headers = [
   { title: '編號', key: 'userId', sortable: true, width: '100px', align: 'center' },
+  { title: '頭像', key: 'img', sortable: false, width: '80px', align: 'center' },
   { title: '姓名', key: 'userName', sortable: true, align: 'center' },
   { title: 'Email', key: 'email', align: 'center' },
   { title: '電話', key: 'phoneNum', align: 'center' },
@@ -161,7 +181,7 @@ const headers = [
 ]
 
 const formatUserType = (type) =>
-  ({ 0: '超級管理員', 1: '一般管理員', 2: '一般會員' })[type] || '未知'
+  ({ 0: '系統管理員', 1: '營運專員', 2: '正式會員' })[type] || '未知'
 
 const getRoleColor = (type) => ({ 0: 'primary', 1: 'secondary' })[type] || 'grey'
 

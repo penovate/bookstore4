@@ -101,6 +101,12 @@ const router = createRouter({
           component: () => import('../views/admin/users/UserLogList.vue'),
           meta: { title: '管理員操作日誌' },
         },
+        {
+          path: 'users/admin-chat',
+          name: 'admin-chat',
+          component: () => import('../views/admin/users/AdminChatView.vue'),
+          meta: {title : '管理員客服中心'},
+        },
         // 2.5 優惠券管理
         {
           path: 'coupons',
@@ -202,6 +208,12 @@ const router = createRouter({
       component: () => import('../views/Layout/UserLayout.vue'),
       children: [
         {
+          path: 'about-us',
+          name: 'about-us',
+          component: () => import('../views/public/AboutUs.vue'),
+          meta: {title : '關於我們'},
+        },
+        {
           path: 'login',
           name: 'user-login',
           component: () => import('../views/public/user/UserLogin.vue'),
@@ -248,6 +260,24 @@ const router = createRouter({
           name: 'profile-edit',
           component: () => import('../views/public/user/UserProfileEdit.vue'),
           meta: { title: '會員資料修改' },
+        },
+        {
+          path: 'user-chat',
+          name: 'user-chat',
+          component: () => import('../views/public/user/UserChat.vue'),
+          meta: {title: '客服專區'},
+        },
+        {
+          path: 'history',
+          name: 'view-history',
+          component: () => import('../views/public/user/BrowsingHistory.vue'),
+          meta: { title: '書籍瀏覽紀錄'},
+        },
+        {
+          path: 'wishlist',
+          name: 'wishlist',
+          component: () => import('../views/public/user/WishList.vue'),
+          meta: { title: '書籍收藏清單'},
         },
         {
           path: 'books',

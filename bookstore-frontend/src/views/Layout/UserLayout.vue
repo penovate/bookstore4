@@ -38,10 +38,11 @@ const socialLinks = [
 ]
 
 watch(
-  () => route.path,
-  () => {
-    if (userStore.isLoggedIn) {
-      userStore.fetchUnreadCount() 
+  () => userStore.isLoggedIn,
+  (isLoggedIn) => {
+    if (isLoggedIn) {
+      cartStore.fetchCartCount(); 
+      cartStore.setCartCount(0);
     }
   }
 )
@@ -93,13 +94,16 @@ const connectNotifySocket = () => {
 onMounted(() => {
   if (userStore.isLoggedIn) {
     userStore.fetchUnreadCount();
+    
+    cartStore.fetchCartCount(); 
+    
     connectNotifySocket();
     
     setInterval(() => {
        if (route.path !== '/dev/user/user-chat') {
          userStore.fetchUnreadCount();
        }
-    }, 100);
+    }, 10000);
   }
 });
 

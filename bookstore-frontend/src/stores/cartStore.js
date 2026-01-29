@@ -15,7 +15,9 @@ export const useCartStore = defineStore('cart', () => {
                 return;
             }
 
-            const response = await axios.get('/cart/api/items');
+            const response = await axios.get('/cart/api/items', {
+                withCredentials: true
+            });
             if (response.data.success) {
                 const items = response.data.cartItems || [];
                 cartCount.value = items.length; // 使用品項數量 (List size)

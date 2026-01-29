@@ -268,6 +268,18 @@ const router = createRouter({
           meta: {title: '客服專區'},
         },
         {
+          path: 'history',
+          name: 'view-history',
+          component: () => import('../views/public/user/BrowsingHistory.vue'),
+          meta: { title: '書籍瀏覽紀錄'},
+        },
+        {
+          path: 'wishlist',
+          name: 'wishlist',
+          component: () => import('../views/public/user/WishList.vue'),
+          meta: { title: '書籍收藏清單'},
+        },
+        {
           path: 'books',
           name: 'user-books',
           component: () => import('../views/public/books/UserBookList.vue'),

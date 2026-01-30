@@ -127,17 +127,9 @@ public class BookClubService {
 
 	// 讀書會發起，發起人等級驗證
 	public void HostPointCheck(Integer userId) {
-<<<<<<< HEAD
-	Optional<UserBean> user = userRepository.findById(userId);
-	Integer userPoint = user.get().getPoints();
-	
-	
-	
-=======
 		Optional<UserBean> user = userRepository.findById(userId);
 		Integer userPoint = user.get().getPoints();
 
->>>>>>> 980fd80109ce3498cdf33dfc02b6fb135dbebbe3
 	}
 
 	// 讀書會發起欄位驗證

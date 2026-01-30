@@ -72,7 +72,7 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
@@ -217,6 +217,12 @@ const handleLogin = async () => {
     Swal.fire({ icon: 'error', title: '連線失敗', text: '伺服器目前無法連線，請稍後再試' })
   }
 }
+
+onMounted(() => {
+  if (userStore.isLoggedIn) {
+    router.replace('/dev/user/home') 
+  }
+})
 </script>
 
 <style scoped>

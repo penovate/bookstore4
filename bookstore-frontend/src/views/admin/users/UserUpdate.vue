@@ -256,11 +256,11 @@ const passwordData = reactive({
 
 const roleSelectOptions = computed(() => {
   const options = [
-    { title: '超級管理員', value: 0 },
-    { title: '一般管理員', value: 1 },
+    { title: '系統管理員', value: 0 },
+    { title: '營運專員', value: 1 },
   ]
   if (formData.value.userType === 2) {
-    options.unshift({ title: '一般會員 (禁止修改權限)', value: 2, props: { disabled: true } })
+    options.unshift({ title: '正式會員 (禁止修改權限)', value: 2, props: { disabled: true } })
   }
   return options
 })
@@ -373,9 +373,9 @@ const validateUnique = async (type) => {
 
 const getRoleName = (type) => {
   const roles = {
-    0: '超級管理員',
-    1: '一般管理員',
-    2: '一般會員',
+    0: '系統管理員',
+    1: '營運專員',
+    2: '正式會員',
   }
   return roles[type] || '未知等級'
 }

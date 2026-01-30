@@ -75,6 +75,7 @@ public class UserController {
 				response.put("message", "系統生成證件失敗！");
 				return response;
 			}
+<<<<<<< HEAD
 			response.put("success", true);
 			response.put("message", "登入成功！");
 			response.put("token", token);
@@ -87,6 +88,38 @@ public class UserController {
 			response.put("message", "帳號或密碼錯誤！");
 			return response;
 		}
+=======
+            response.put("success", true);
+            response.put("message", "登入成功！");
+            response.put("token", token);
+            response.put("role", role);
+            response.put("userName", user.getUserName());
+            response.put("userId", user.getUserId());
+            response.put("img", user.getImg());
+            return response;
+        } else {
+            response.put("success", false);
+            response.put("message", "帳號或密碼錯誤！");
+            return response;
+        }
+    }
+	
+	@GetMapping("/api/data/list")
+	@ResponseBody 
+	public List<UserBean> getUsersListApi(
+	        @RequestParam(required = false) String keyword,
+	        @RequestParam(required = false) Integer userTypeFilter) {
+	    
+	    try {
+	        String cleanKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword : null;
+	        
+	        List<UserBean> users = userService.searchUsers(cleanKeyword, userTypeFilter);
+	        return users;
+	    } catch (Exception e) {
+	        e.printStackTrace(); 
+	        return null;
+	    }
+>>>>>>> master
 	}
 
 	@GetMapping("/api/data/list")

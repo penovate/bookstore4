@@ -51,7 +51,7 @@ public class ClubRegistrationService {
 
 	// 根據讀書會找全部報名表
 	public List<ClubRegistrationsBean> getRegistrationsByClubId(Integer clubId) {
-		List<ClubRegistrationsBean> regList = clubRegistrationsRepository.findByBookClub_ClubId(clubId);
+		List<ClubRegistrationsBean> regList = clubRegistrationsRepository.findAllByClubId(clubId);
 		log.info("查詢成功 - 讀書會ID:{} 共有{}份報名表", clubId, regList.size());
 		return regList;
 	}
@@ -75,6 +75,11 @@ public class ClubRegistrationService {
 			throw new BusinessException(400, "該讀書會目前未開放報名或已結束");
 		}
 
+		// 檢查是否為發起人 (不可報名自己的讀書會)
+		if (club.getHost() != null && club.getHost().getUserId().equals(userId)) {
+			throw new BusinessException(400, "發起人不可報名自己的讀書會");
+		}
+
 		// 檢查是否已報名
 		Optional<ClubRegistrationsBean> existOpt = clubRegistrationsRepository
 				.findByBookClub_ClubIdAndUser_UserId(clubId, userId);
@@ -82,9 +87,10 @@ public class ClubRegistrationService {
 		if (existOpt.isPresent()) {
 			ClubRegistrationsBean exist = existOpt.get();
 			// 若是已取消(status=2)，允許重新報名
-			if (exist.getStatus() == 1) {
-				exist.setStatus(0); // 1: 報名成功
+			if (exist.getStatus() == 2) {
+				exist.setStatus(1); // 1: 報名成功
 				exist.setCheckIn(false);
+				exist.setRegisteredAt(java.time.LocalDateTime.now());
 				updateClubParticipants(club, 1);
 				return clubRegistrationsRepository.save(exist);
 			}
@@ -106,6 +112,7 @@ public class ClubRegistrationService {
 		newReg.setUser(user);
 		newReg.setStatus(1); // 1: 報名成功
 		newReg.setCheckIn(false);
+		newReg.setRegisteredAt(java.time.LocalDateTime.now());
 
 		updateClubParticipants(club, 1);
 

@@ -15,11 +15,8 @@ const unreadCount = computed(() => userStore.unreadCount)
 
 const menuItems = ref([
   { title: '書籍專區', to: '/dev/user/books', icon: 'mdi-book-open-page-variant' },
-<<<<<<< HEAD
   { title: '讀書會', to: '/dev/user/bookclubs', icon: 'mdi-account-group' },
-=======
   { title: '會員中心', to: '/dev/user/user-menu', icon: 'mdi-account-circle' },
->>>>>>> master
   { title: '歷史訂單', to: '/dev/user/orders', icon: 'mdi-history' },
   { title: '我的優惠券', to: '/dev/user/coupons', icon: 'mdi-ticket-percent' },
   { title: '關於我們', to: '/dev/user/about-us', icon: 'mdi-information' },
@@ -182,16 +179,6 @@ onUnmounted(() => {
     </template>
   </v-img>
 
-<<<<<<< HEAD
-            <v-list>
-              <v-list-item prepend-icon="mdi-account-circle" title="會員中心" to="/dev/user/profile"></v-list-item>
-              <v-list-item prepend-icon="mdi-history" title="歷史訂單" :to="{ name: 'myOrders' }"></v-list-item>
-              <v-divider></v-divider>
-              <v-list-item prepend-icon="mdi-logout" title="登出" @click="handleLogout" class="text-error"></v-list-item>
-            </v-list>
-          </v-menu>
-        </div>
-=======
   <span v-else class="text-primary font-weight-bold">
     {{ userStore.name?.charAt(0).toUpperCase() }}
   </span>
@@ -210,6 +197,12 @@ onUnmounted(() => {
                   </template>
                 </v-list-item>
 
+                <v-list-item 
+                  prepend-icon="mdi-history" 
+                  title="歷史訂單" 
+                  :to="{ name: 'myOrders' }"
+                ></v-list-item>
+
                 <v-divider></v-divider>
 
                 <v-list-item
@@ -221,7 +214,6 @@ onUnmounted(() => {
               </v-list>
             </v-menu>
           </div>
->>>>>>> master
 
         <v-btn v-else color="white" class="login-btn-cute px-6 font-weight-bold" rounded="pill" elevation="2"
           to="/dev/user/login">

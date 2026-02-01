@@ -5,30 +5,16 @@
         class="align-end text-white">
         <div class="header-overlay pa-6 d-flex align-center">
           <v-avatar size="100" class="elevation-4 profile-avatar mr-6">
-<<<<<<< HEAD:bookstore-frontend/src/views/public/user/UserProfile.vue
-            <v-img :src="userAvatar" cover>
+            <v-img :src="userStore.img && userStore.img.includes('/uploads/')
+              ? `http://localhost:8080${userStore.img}`
+              : userStore.img" cover>
               <template v-slot:placeholder>
                 <div class="bg-accent fill-height d-flex align-center justify-center text-h3 text-white">
-                  {{ userStore.name.charAt(0) }}
+                  {{ userStore.name?.charAt(0) }}
                 </div>
               </template>
             </v-img>
           </v-avatar>
-=======
-              <v-img 
-                :src="userStore.img && userStore.img.includes('/uploads/') 
-                      ? `http://localhost:8080${userStore.img}` 
-                      : userStore.img" 
-                cover
-              >
-                <template v-slot:placeholder>
-                  <div class="bg-accent fill-height d-flex align-center justify-center text-h3 text-white">
-                    {{ userStore.name?.charAt(0) }}
-                  </div>
-                </template>
-              </v-img>
-            </v-avatar>
->>>>>>> master:bookstore-frontend/src/views/public/user/UserMenu.vue
           <div>
             <h1 class="text-h4 font-weight-bold mb-1">
               嗨～{{ userStore.name }}！歡迎進入閱讀的世界！
@@ -42,32 +28,14 @@
     <v-row>
       <v-col v-for="(item, index) in menuItems" :key="index" cols="12" sm="6" md="4" lg="3">
         <v-hover v-slot="{ isHovering, props }">
-<<<<<<< HEAD:bookstore-frontend/src/views/public/user/UserProfile.vue
           <v-card v-bind="props" :elevation="isHovering ? 8 : 2"
             class="menu-card rounded-lg transition-swing text-center pa-6 h-100" @click="navigateTo(item.to)">
-            <v-avatar :color="item.color" size="64" class="mb-4">
-              <v-icon :icon="item.icon" color="white" size="32"></v-icon>
-            </v-avatar>
-=======
-          <v-card
-            v-bind="props"
-            :elevation="isHovering ? 8 : 2"
-            class="menu-card rounded-lg transition-swing text-center pa-6 h-100"
-            @click="navigateTo(item.to)"
-          >
-            <v-badge
-              :content="item.unreadCount"
-              :model-value="item.unreadCount > 0"
-              color="error"
-              overlap
-              offset-x="10"
-              offset-y="10"
-            >
+            <v-badge :content="item.unreadCount" :model-value="item.unreadCount > 0" color="error" overlap offset-x="10"
+              offset-y="10">
               <v-avatar :color="item.color" size="64" class="mb-4">
                 <v-icon :icon="item.icon" color="white" size="32"></v-icon>
               </v-avatar>
             </v-badge>
->>>>>>> master:bookstore-frontend/src/views/public/user/UserMenu.vue
             <v-card-title class="font-weight-bold justify-center">{{ item.title }}</v-card-title>
             <v-card-subtitle>{{ item.desc }}</v-card-subtitle>
           </v-card>
@@ -192,7 +160,7 @@ const fetchUnreadCount = async () => {
   if (!userStore.userId) return
   try {
     const res = await axios.get(`http://localhost:8080/api/chat/unread/${userStore.userId}`)
-    
+
     const count = typeof res.data === 'object' ? res.data.count : res.data;
 
     const chatItem = menuItems.value.find(item => item.title === '客服專區')
@@ -207,7 +175,7 @@ const fetchUnreadCount = async () => {
 onMounted(() => {
   getRandomQuote()
   if (userStore.isLoggedIn) {
-    userStore.fetchUnreadCount() 
+    userStore.fetchUnreadCount()
   }
 })
 </script>

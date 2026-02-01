@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +49,19 @@ public class ClubRegistrationController {
 		if (clubId == null) {
 			throw new BusinessException(400, "讀書會ID不可為空白");
 		}
+		System.out.println("收到查詢報名請求, ClubId: " + clubId);
 		List<ClubRegistrationsBean> regList = regService.getRegistrationsByClubId(clubId);
+		System.out.println("查詢結果筆數: " + (regList != null ? regList.size() : "null"));
+
+		if (regList != null) {
+			for (ClubRegistrationsBean reg : regList) {
+				// 強制初始化 User 以確保序列化正常 (若 JOIN FETCH 失效)
+				if (reg.getUser() != null) {
+					reg.getUser().getUserName();
+				}
+			}
+		}
+
 		return ResponseEntity.ok(regList);
 	}
 

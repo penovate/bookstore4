@@ -100,9 +100,7 @@ public class UsersService {
 	public UserBean findByEmailAndBirth(String email, String birth) {
 		return userRepo.findByEmailAndBirthString(email, birth);
 	}
-<<<<<<< HEAD
 
-=======
 	
 	@Value("${file.avatar-dir}")
 	private String avatarDir; 
@@ -135,5 +133,4 @@ public class UsersService {
 	    }
 	}
 	
->>>>>>> master
 }

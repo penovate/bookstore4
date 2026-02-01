@@ -32,8 +32,11 @@ const headers = [
 const loadRegistrations = async () => {
     if (!props.clubId) return;
     loading.value = true;
+    loading.value = true;
     try {
+        console.log('[RegistrationDetails] Requesting for ClubId:', props.clubId);
         const response = await bookClubService.getClubRegistrations(props.clubId);
+        console.log('[RegistrationDetails] API Response:', response.data);
         registrations.value = response.data || [];
     } catch (error) {
         console.error('無法載入報名明細', error);
@@ -83,6 +86,12 @@ const getStatusColor = (status) => {
 // 監聽 Modal 開啟時載入資料
 watch(() => props.modelValue, (newVal) => {
     if (newVal && props.clubId) {
+        loadRegistrations();
+    }
+});
+
+onMounted(() => {
+    if (props.modelValue && props.clubId) {
         loadRegistrations();
     }
 });

@@ -28,7 +28,8 @@ const statusFilter = ref(null);
 
 // Helper: Check if user is the host
 const isHost = (club) => {
-    return userStore.userId && club.host && club.host.userId === userStore.userId;
+    // 使用 == 寬鬆檢查以防 ID 型別差異 (String vs Number)
+    return userStore.userId && club.host && club.host.userId == userStore.userId;
 };
 
 // 載入我參加的讀書會 (用於判斷狀態)
@@ -181,6 +182,15 @@ watch(tab, (newVal) => {
     }
 });
 
+// 監聽 User ID 變化 (防止重新整理時 Pinia 還沒載入)
+watch(() => userStore.userId, (newVal) => {
+    if (newVal) {
+        if (tab.value === 'all') loadAllClubs();
+        else if (tab.value === 'hosted') loadHostedClubs();
+        else if (tab.value === 'participated') loadMyRegistrations();
+    }
+});
+
 onMounted(() => {
     // 預設載入目前 Tab 的資料
     if (tab.value === 'all') loadAllClubs();
@@ -241,7 +251,6 @@ onMounted(() => {
                                         <v-btn icon="mdi-eye" size="large" variant="text" color="primary"
                                             @click="viewClubInfo(item)"></v-btn>
                                         <div class="ai-comment-placeholder mt-1">
-                                            (AI 評語)
                                         </div>
                                     </div>
                                 </template>
@@ -253,10 +262,14 @@ onMounted(() => {
                                 -->
                                     <template v-if="isHost(item)">
                                         <v-chip color="info" size="small" variant="outlined" class="mr-2">我是發起人</v-chip>
+                                        <v-btn size="small" variant="text" color="primary" @click="openDetails(item)">
+                                            <v-icon start icon="mdi-clipboard-list"></v-icon>
+                                            報名明細
+                                        </v-btn>
                                     </template>
                                     <template v-else-if="myRegistrationIds.has(item.clubId)">
                                         <v-btn size="small" color="error" variant="flat" @click="handleCancel(item)">
-                                            已報名 (取消)
+                                            取消報名
                                         </v-btn>
                                     </template>
                                     <template v-else>
@@ -307,7 +320,8 @@ onMounted(() => {
                                             編輯
                                         </v-btn>
                                     </template>
-                                    <template v-if="item.status === 1 || item.status === 3 || item.status === 4 || item.status === 5">
+                                    <template
+                                        v-if="item.status === 1 || item.status === 3 || item.status === 4 || item.status === 5">
                                         <v-btn size="small" variant="text" color="primary" @click="openDetails(item)">
                                             <v-icon start icon="mdi-clipboard-list"></v-icon>
                                             報名明細

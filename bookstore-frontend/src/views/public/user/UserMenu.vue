@@ -136,7 +136,7 @@ const menuItems = ref([
     title: '個人評價歷史',
     icon: 'mdi-star-face',
     color: 'yellow-darken-3',
-    to: '/dev/user/reviews',
+    to: '/dev/user/myreviews',
     desc: '管理您留下的讀後感想',
     unreadCount: 0,
   },

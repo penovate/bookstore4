@@ -47,4 +47,9 @@ export default {
   getPendingReportCount() {
     return axios.get('/api/admin/reports/pending-count')
   },
+
+  // 取得特定使用者的所有評價
+  getUserReviews(userId) {
+    return axios.get(`${API_URL}/user/${userId}`)
+  },
 }

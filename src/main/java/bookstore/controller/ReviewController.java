@@ -80,5 +80,11 @@ public class ReviewController {
 	public List<ReviewList> getBooksWithReviewStats() {
 		return reviewsService.findAllBooksWithStats();
 	}
+	
+	// 取得指定 User 的所有評價
+    @GetMapping("/user/{userId}")
+    public List<ReviewBean> getUserReviews(@PathVariable Integer userId) {
+        return reviewsService.findReviewsByUserId(userId);
+    }
 
 }

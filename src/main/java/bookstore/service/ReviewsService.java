@@ -105,4 +105,16 @@ public class ReviewsService {
 
 		return resultList;
 	}
+	
+	// 查詢某使用者的所有評價
+    public List<ReviewBean> findReviewsByUserId(Integer userId) {
+        List<ReviewBean> reviews = reviewRepository.findByUser_UserId(userId);
+        // 為了避免前端讀取 user 物件轉 JSON 出錯或需要額外資訊，可以在這裡補上 userType 等邏輯
+        for (ReviewBean review : reviews) {
+            if (review.getUser() != null) {
+                review.setUserType(review.getUser().getUserType());
+            }
+        }
+        return reviews;
+    }
 }

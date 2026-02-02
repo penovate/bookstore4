@@ -339,6 +339,11 @@ const router = createRouter({
           component: () => import('../views/public/reviews/BookReviewsHome.vue'),
           meta: { title: '讀者書評' }, 
         },
+        {
+          path: 'myreviews',
+          name: 'my-reviews',
+          component: () => import('../views/public/reviews/MyReviews.vue')
+        },
       ],
     },
   ],
@@ -353,7 +358,7 @@ router.beforeEach((to, from, next) => {
   document.title = pageTitle ? `${pageTitle} | 森林書屋` : '森林書屋'
 
   const isAdminRoute = to.path.startsWith('/dev/admin') || to.name === 'home'
-  const isUserProtectedRoute = ['myOrders', 'checkout', 'cart', 'userCoupons', 'profile-edit', 'password-confirmation'].includes(to.name)
+  const isUserProtectedRoute = ['myOrders', 'checkout', 'cart', 'userCoupons', 'profile-edit', 'password-confirmation','my-reviews'].includes(to.name)
   const isLoginPage = to.name === 'user-login'
 
   if (isLoginPage && token) {

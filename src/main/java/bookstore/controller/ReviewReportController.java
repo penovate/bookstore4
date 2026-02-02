@@ -79,7 +79,7 @@ public class ReviewReportController {
         }
     }
     
-    // [新增] 取得待處理檢舉數量 (給側邊欄通知用)
+    // 取得待處理檢舉數量 (給側邊欄通知)
     @GetMapping("/admin/reports/pending-count")
     public ResponseEntity<?> getPendingReportCount() {
         try {

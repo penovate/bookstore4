@@ -4,8 +4,12 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 import { useUserStore } from '@/stores/userStore'
+import reviewService from '@/api/reviewService'
+import { onMounted } from 'vue'
+
 
 const router = useRouter()
+const pendingReportCount = ref(0)
 const drawer = ref(true)
 const userStore = useUserStore()
 
@@ -42,7 +46,8 @@ const items = ref([
       { title: '書籍評價', to: '/dev/admin/reviews', icon: 'mdi-comment-text-multiple-outline' },
       { title: '檢舉列表', 
         to: '/dev/admin/reviews/reports',
-        icon: 'mdi-alert-octagon-outline' // 或 mdi-flag-outline
+        icon: 'mdi-alert-octagon-outline', // 或 mdi-flag-outline
+        showBadge: true
       },
     ],
   },
@@ -85,6 +90,21 @@ const handleLogout = () => {
     }
   })
 }
+
+const fetchPendingCount = async () => {
+  try {
+    const res = await reviewService.getPendingReportCount()
+    if (res.data && res.data.count !== undefined) {
+      pendingReportCount.value = res.data.count
+    }
+  } catch (error) {
+    console.error('取得檢舉數量失敗', error)
+  }
+}
+
+onMounted(() => {
+  fetchPendingCount()
+})
 </script>
 
 <template>
@@ -116,7 +136,16 @@ const handleLogout = () => {
                 v-bind="props"
                 :prepend-icon="item.icon"
                 :title="item.title"
-              ></v-list-item>
+              >
+                <template v-slot:append>
+                  <v-badge
+                  v-if="item.title === '評價管理' && pendingReportCount > 0"
+                  color="red"
+                  :content="pendingReportCount"
+                  inline
+                  ></v-badge>
+                </template>
+              </v-list-item>
             </template>
 
             <v-list-item
@@ -127,7 +156,16 @@ const handleLogout = () => {
               :to="child.to"
               :value="child.title"
               color="accent"
-            ></v-list-item>
+            >
+              <template v-slot:append>
+                <v-badge
+                  v-if="child.showBadge && pendingReportCount > 0"
+                  color="red"
+                  :content="pendingReportCount"
+                  inline
+                ></v-badge>
+              </template>
+          </v-list-item>
           </v-list-group>
 
           <!-- 一般選單 -->

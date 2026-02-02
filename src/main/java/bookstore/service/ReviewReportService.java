@@ -44,7 +44,11 @@ public class ReviewReportService {
         return review != null && review.getStatus() != null && review.getStatus() == 1;
     }
     
-    
+    // 取得待處理的檢舉數量
+    public long countPendingReports() {
+        return reportRepo.countByStatus("待處理");
+    }
+
     public List<ReportList> getAllReportsForAdmin() {
         // 使用 JOIN FETCH 一次撈取所有關聯資料 (User, Review, Book)
         List<ReviewReportBean> reports = reportRepo.findAllWithDetails();

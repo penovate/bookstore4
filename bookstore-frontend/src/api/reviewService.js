@@ -42,4 +42,9 @@ export default {
   updateReportStatus(id, newStatus) {
     return axios.put(`/api/admin/reports/${id}`, { status: newStatus })
   },
+
+  // (後台) 取得待處理檢舉數量
+  getPendingReportCount() {
+    return axios.get('/api/admin/reports/pending-count')
+  },
 }

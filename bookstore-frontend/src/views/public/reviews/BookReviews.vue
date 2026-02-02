@@ -96,9 +96,6 @@
                     <div class="user-name">
                       {{ review.userName || `User ${review.userId}` }}
                     </div>
-                    <div class="user-role">
-                      {{ getRoleName(review.userType) }}
-                    </div>
 
                     <v-chip
                       v-if="review.status === 0"

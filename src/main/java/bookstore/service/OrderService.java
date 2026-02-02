@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import bookstore.bean.OrderItem;
+import bookstore.bean.OrderReturnBean;
 import bookstore.bean.Orders;
 import bookstore.bean.UserBean;
 import bookstore.aop.BusinessException;
@@ -19,10 +20,18 @@ import bookstore.bean.CouponBean;
 import bookstore.repository.BookRepository;
 import bookstore.repository.CartRepository;
 import bookstore.repository.OrderItemRepository;
+import bookstore.repository.OrderReturnRepository;
 import bookstore.repository.OrdersRepository;
 import bookstore.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import bookstore.repository.CouponRepository;
+import bookstore.repository.UserCouponRepository; // Added
+import bookstore.bean.UserCouponBean; // Added
+import bookstore.dto.BookSalesDTO;
 import bookstore.dto.CheckoutRequest;
+import bookstore.dto.OrderFullUpdateDTO;
+import bookstore.dto.ItemUpdateDTO;
 
 @Service
 @Transactional
@@ -44,7 +53,10 @@ public class OrderService {
 	private UserRepository userRepository;
 
 	@Autowired
-	private CouponRepository couponRepository;
+	private UserCouponRepository userCouponRepository;
+
+	@Autowired
+	private OrderReturnRepository orderReturnRepository;
 
 	// 從購物車轉訂單 (Checkout Transcation)
 	@SuppressWarnings("null")
@@ -155,26 +167,30 @@ public class OrderService {
 
 		// 8. 處理優惠券 (如果有)
 		if (order.getCouponId() != null) {
-			CouponBean coupon = couponRepository.findById(order.getCouponId())
+			// 使用 UserCouponRepository 查找 UserCouponBean (代表使用者領取的優惠券)
+			UserCouponBean userCoupon = userCouponRepository.findById(order.getCouponId())
 					.orElseThrow(() -> new BusinessException(400, "優惠券不存在"));
 
 			// 驗證優惠券歸屬
-			if (!coupon.getUserId().equals(order.getUserBean().getUserId())) {
+			if (!userCoupon.getUserId().equals(order.getUserBean().getUserId())) {
 				throw new BusinessException(400, "這張優惠券不屬於您");
 			}
 
 			// 驗證是否已使用
-			if (coupon.getStatus() == 1) {
+			if (userCoupon.getStatus() == 1) {
 				throw new BusinessException(400, "優惠券已使用");
 			}
 
+			// 獲取優惠券定義 (CouponBean) 以檢查規則
+			CouponBean couponDef = userCoupon.getCouponBean();
+
 			// 驗證低消
-			if (order.getTotalAmount().compareTo(coupon.getMinSpend()) < 0) {
-				throw new BusinessException(400, "未達優惠券最低消費金額: " + coupon.getMinSpend());
+			if (order.getTotalAmount().compareTo(couponDef.getMinSpend()) < 0) {
+				throw new BusinessException(400, "未達優惠券最低消費金額: " + couponDef.getMinSpend());
 			}
 
 			// 套用折扣
-			BigDecimal discount = coupon.getDiscountAmount();
+			BigDecimal discount = couponDef.getDiscountAmount();
 			order.setDiscount(discount);
 
 			// 重新計算實付金額
@@ -186,9 +202,9 @@ public class OrderService {
 			order.setFinalAmount(newFinal);
 
 			// 標記已使用
-			coupon.setStatus(1);
-			coupon.setUsedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-			couponRepository.save(coupon);
+			userCoupon.setStatus(1);
+			userCoupon.setUsedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+			userCouponRepository.save(userCoupon);
 			ordersRepository.save(order); // 更新訂單的折扣和最終金額
 		}
 
@@ -267,26 +283,29 @@ public class OrderService {
 
 		// 8. 處理優惠券 (如果有)
 		if (order.getCouponId() != null) {
-			CouponBean coupon = couponRepository.findById(order.getCouponId())
+			// 使用 UserCouponRepository 查找 UserCouponBean
+			UserCouponBean userCoupon = userCouponRepository.findById(order.getCouponId())
 					.orElseThrow(() -> new BusinessException(400, "優惠券不存在"));
 
 			// 驗證優惠券歸屬
-			if (!coupon.getUserId().equals(order.getUserBean().getUserId())) {
+			if (!userCoupon.getUserId().equals(order.getUserBean().getUserId())) {
 				throw new BusinessException(400, "這張優惠券不屬於您");
 			}
 
 			// 驗證是否已使用
-			if (coupon.getStatus() == 1) {
+			if (userCoupon.getStatus() == 1) {
 				throw new BusinessException(400, "優惠券已使用");
 			}
 
+			CouponBean couponDef = userCoupon.getCouponBean();
+
 			// 驗證低消
-			if (order.getTotalAmount().compareTo(coupon.getMinSpend()) < 0) {
-				throw new BusinessException(400, "未達優惠券最低消費金額: " + coupon.getMinSpend());
+			if (order.getTotalAmount().compareTo(couponDef.getMinSpend()) < 0) {
+				throw new BusinessException(400, "未達優惠券最低消費金額: " + couponDef.getMinSpend());
 			}
 
 			// 套用折扣
-			BigDecimal discount = coupon.getDiscountAmount();
+			BigDecimal discount = couponDef.getDiscountAmount();
 			order.setDiscount(discount);
 
 			// 重新計算實付金額
@@ -298,9 +317,9 @@ public class OrderService {
 			order.setFinalAmount(newFinal);
 
 			// 標記已使用
-			coupon.setStatus(1);
-			coupon.setUsedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-			couponRepository.save(coupon);
+			userCoupon.setStatus(1);
+			userCoupon.setUsedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+			userCouponRepository.save(userCoupon);
 			ordersRepository.save(order); // 更新訂單的折扣和最終金額
 		}
 	}
@@ -339,6 +358,70 @@ public class OrderService {
 		updateOrderTotalAmount(item.getOrders().getOrderId());
 	}
 
+	// 全局更新訂單 (含狀態與明細)
+	public void updateFullOrder(OrderFullUpdateDTO dto) {
+		Orders order = ordersRepository.findById(dto.getOrderId())
+				.orElseThrow(() -> new BusinessException(400, "找不到訂單 ID: " + dto.getOrderId()));
+
+		// 1. 更新基本資料
+		order.setRecipientAt(dto.getRecipientAt());
+		order.setPhone(dto.getPhone());
+		order.setAddress(dto.getAddress());
+		order.setPaymentMethod(dto.getPaymentMethod());
+		order.setDeliveryMethod(dto.getDeliveryMethod());
+
+		// 2. 更新狀態與時間點
+		String newPaymentStatus = dto.getPaymentStatus();
+		if (newPaymentStatus != null && !newPaymentStatus.equals(order.getPaymentStatus())) {
+			order.setPaymentStatus(newPaymentStatus);
+			if ("已付款".equals(newPaymentStatus)) {
+				order.setPaidAt(new Timestamp(System.currentTimeMillis()));
+			}
+		}
+
+		String newOrderStatus = dto.getOrderStatus();
+		if (newOrderStatus != null && !newOrderStatus.equals(order.getOrderStatus())) {
+			order.setOrderStatus(newOrderStatus);
+			Timestamp now = new Timestamp(System.currentTimeMillis());
+			if ("已出貨".equals(newOrderStatus)) {
+				order.setShippedAt(now);
+			} else if ("已送達".equals(newOrderStatus)) {
+				order.setDeliveredAt(now);
+			} else if ("已收貨".equals(newOrderStatus)) {
+				order.setReceivedAt(now);
+			} else if ("已完成".equals(newOrderStatus)) {
+				order.setCompletedAt(now);
+			}
+		}
+
+		// 3. 更新明細
+		if (dto.getItems() != null) {
+			for (ItemUpdateDTO itemDto : dto.getItems()) {
+				OrderItem item = orderItemRepository.findById(itemDto.getOrderItemId())
+						.orElseThrow(() -> new BusinessException(400, "找不到明細 ID: " + itemDto.getOrderItemId()));
+
+				// 驗證是否屬於該訂單
+				if (!item.getOrders().getOrderId().equals(order.getOrderId())) {
+					continue;
+				}
+
+				item.setQuantity(itemDto.getQuantity());
+				// 重算小計
+				item.setSubtotal(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
+				orderItemRepository.save(item);
+			}
+		}
+
+		// 設定更新時間
+		order.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+		// 先存基本資料，因為 updateOrderTotalAmount 會重新 fetch
+		ordersRepository.save(order);
+
+		// 4. 重算整筆訂單金額 (含運費規則) 並存檔
+		updateOrderTotalAmount(order.getOrderId());
+	}
+
 	// 刪除訂單(硬刪除)
 	// 專題後續採軟刪除，此方法不會用，但保留
 	public void deleteOrder(Integer orderId) {
@@ -355,8 +438,22 @@ public class OrderService {
 		if (optional.isPresent()) {
 			Orders order = optional.get();
 
+			// 避免重複取消
+			if ("已取消".equals(order.getOrderStatus())) {
+				return;
+			}
+
 			// 修改訂單狀態為已取消
 			order.setOrderStatus("已取消");
+
+			// 庫存回補
+			List<OrderItem> items = orderItemRepository.findByOrders_OrderId(orderId);
+			for (OrderItem item : items) {
+				BooksBean book = item.getBooksBean();
+				// 加回庫存
+				book.setStock(book.getStock() + item.getQuantity());
+				bookRepository.save(book);
+			}
 
 			// 更新訂單
 			ordersRepository.save(order);
@@ -366,28 +463,57 @@ public class OrderService {
 		}
 	}
 
-	// 還原訂單
-	public void processRestoreOrder(Integer orderId) {
-
+	// 申請退貨
+	public void processReturnOrder(Integer orderId, String reason, String description) {
 		Optional<Orders> optional = ordersRepository.findById(orderId);
 
 		if (optional.isPresent()) {
 			Orders order = optional.get();
 
-			// 確定訂單狀態為已取消才可以還原訂單
+			// 避免重複處理
 			if ("已取消".equals(order.getOrderStatus())) {
-				order.setOrderStatus("待處理");
-				ordersRepository.save(order);
+				// 如果已經取消，檢查是否已經有退貨紀錄，若無則補上
+				Optional<OrderReturnBean> existingReturn = orderReturnRepository.findByOrders_OrderId(orderId);
+				if (existingReturn.isPresent()) {
+					return; // 已經有紀錄且已取消，不處理
+				}
+				// 若沒紀錄但已取消，可能只是之前單純取消，這裡我們可以選擇不動作或補紀錄
+				// 依照需求，這裡視為新申請
+			}
 
-			} else {
-				// 如果訂單狀態不是已取消，丟例外，不能還原
-				throw new RuntimeException("訂單狀態非「已取消」，無法還原");
+			// 1. 建立退貨紀錄
+			OrderReturnBean returnBean = new OrderReturnBean();
+			returnBean.setOrders(order);
+			returnBean.setReason(reason);
+			returnBean.setDescription(description);
+			orderReturnRepository.save(returnBean);
+			// 2. 只有當訂單尚未取消時，才進行狀態更新與庫存回補
+			// 如果訂單已經是「已取消」，則不再重複回補庫存
+			if (!"已取消".equals(order.getOrderStatus())) {
+				order.setOrderStatus("已取消"); // 統一設為已取消
+
+				// 3. 庫存回補
+				List<OrderItem> items = orderItemRepository.findByOrders_OrderId(orderId);
+				for (OrderItem item : items) {
+					BooksBean book = item.getBooksBean();
+					book.setStock(book.getStock() + item.getQuantity());
+					bookRepository.save(book);
+				}
+
+				// 更新修改時間
+				order.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+				ordersRepository.save(order);
 			}
 
 		} else {
-			// 找不到訂單，丟例外，找不到訂單
 			throw new RuntimeException("找不到訂單 ID: " + orderId);
 		}
+	}
+
+	// 取得退貨資訊
+	public OrderReturnBean getReturnRequestByOrderId(Integer orderId) {
+		return orderReturnRepository.findByOrders_OrderId(orderId).orElse(null);
 	}
 
 	// 刪除訂單明細
@@ -524,4 +650,161 @@ public class OrderService {
 
 		ordersRepository.save(order);
 	}
+
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	@Transactional(readOnly = true)
+	public List<BookSalesDTO> getTopSellingBooks() {
+		return getTopSellingBooks(null, null);
+	}
+
+	@Transactional(readOnly = true)
+	public List<BookSalesDTO> getTopSellingBooks(Timestamp start, Timestamp end) {
+		StringBuilder jpql = new StringBuilder(
+				"SELECT new bookstore.dto.BookSalesDTO(b.bookName, SUM(oi.quantity)) " +
+						"FROM OrderItem oi " +
+						"JOIN oi.booksBean b " +
+						"JOIN oi.orders o " +
+						"WHERE o.orderStatus NOT IN ('已取消', '已退款') ");
+
+		if (start != null && end != null) {
+			jpql.append("AND o.createdAt BETWEEN :start AND :end ");
+		}
+
+		jpql.append("GROUP BY b.bookName ORDER BY SUM(oi.quantity) DESC");
+
+		var query = entityManager.createQuery(jpql.toString(), BookSalesDTO.class);
+
+		if (start != null && end != null) {
+			query.setParameter("start", start);
+			query.setParameter("end", end);
+		}
+
+		return query.getResultList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<BookSalesDTO> getTopSellingBooksFull(Timestamp start, Timestamp end) {
+		StringBuilder jpql = new StringBuilder(
+				"SELECT new bookstore.dto.BookSalesDTO(" +
+						"b.bookId, b.bookName, b.author, b.price, bi.imageUrl, SUM(oi.quantity)) " +
+						"FROM OrderItem oi " +
+						"JOIN oi.booksBean b " +
+						"LEFT JOIN b.bookImageBean bi " +
+						"JOIN oi.orders o " +
+						"WHERE o.orderStatus NOT IN ('已取消', '已退款') " +
+						"AND b.onShelf = 1 ");
+
+		if (start != null && end != null) {
+			jpql.append("AND o.createdAt BETWEEN :start AND :end ");
+		}
+
+		jpql.append("GROUP BY b.bookId, b.bookName, b.author, b.price, bi.imageUrl " +
+				"ORDER BY SUM(oi.quantity) DESC");
+
+		var query = entityManager.createQuery(jpql.toString(), BookSalesDTO.class);
+
+		if (start != null && end != null) {
+			query.setParameter("start", start);
+			query.setParameter("end", end);
+		}
+
+		return query.setMaxResults(4).getResultList(); // Limit to top 4
+	}
+
+	@Transactional(readOnly = true)
+	public BigDecimal getSalesRevenue(Timestamp start, Timestamp end) {
+		StringBuilder jpql = new StringBuilder(
+				"SELECT SUM(o.finalAmount) FROM Orders o WHERE o.orderStatus NOT IN ('已取消', '已退款') ");
+
+		if (start != null && end != null) {
+			jpql.append("AND o.createdAt BETWEEN :start AND :end");
+		}
+
+		var query = entityManager.createQuery(jpql.toString(), BigDecimal.class);
+
+		if (start != null && end != null) {
+			query.setParameter("start", start);
+			query.setParameter("end", end);
+		}
+
+		BigDecimal result = query.getSingleResult();
+		return result != null ? result : BigDecimal.ZERO;
+	}
+
+	@Transactional(readOnly = true)
+	public List<bookstore.dto.MonthlySalesDTO> getRecentSalesTrends() {
+		// Calculate start date: 1st day of 11 months ago (covering a 12-month span
+		// including current month)
+		java.time.LocalDate now = java.time.LocalDate.now();
+		java.time.LocalDate start = now.minusMonths(11).withDayOfMonth(1);
+		Timestamp startTs = Timestamp.valueOf(start.atStartOfDay());
+
+		String jpql = "SELECT new bookstore.dto.MonthlySalesDTO(" +
+				"function('year', o.createdAt), " +
+				"function('month', o.createdAt), " +
+				"SUM(o.finalAmount), " +
+				"COUNT(o)) " +
+				"FROM Orders o " +
+				"WHERE o.orderStatus NOT IN ('已取消', '已退款') " +
+				"AND o.createdAt >= :startDate " +
+				"GROUP BY function('year', o.createdAt), function('month', o.createdAt) " +
+				"ORDER BY function('year', o.createdAt), function('month', o.createdAt)";
+
+		return entityManager.createQuery(jpql, bookstore.dto.MonthlySalesDTO.class)
+				.setParameter("startDate", startTs)
+				.getResultList();
+	}
+
+	@Transactional(readOnly = true)
+	public bookstore.dto.SalesOverviewDTO getSalesOverview(Timestamp start, Timestamp end) {
+		// 1. Total Revenue
+		StringBuilder revenueJpql = new StringBuilder(
+				"SELECT SUM(o.finalAmount) FROM Orders o WHERE o.orderStatus NOT IN ('已取消', '已退款') ");
+		if (start != null && end != null) {
+			revenueJpql.append("AND o.createdAt BETWEEN :start AND :end");
+		}
+		var revenueQuery = entityManager.createQuery(revenueJpql.toString(), BigDecimal.class);
+		if (start != null && end != null) {
+			revenueQuery.setParameter("start", start);
+			revenueQuery.setParameter("end", end);
+		}
+		BigDecimal totalRevenue = revenueQuery.getSingleResult();
+		if (totalRevenue == null)
+			totalRevenue = BigDecimal.ZERO;
+
+		// 2. Total Orders
+		StringBuilder countJpql = new StringBuilder(
+				"SELECT COUNT(o) FROM Orders o WHERE o.orderStatus NOT IN ('已取消', '已退款') ");
+		if (start != null && end != null) {
+			countJpql.append("AND o.createdAt BETWEEN :start AND :end");
+		}
+		var countQuery = entityManager.createQuery(countJpql.toString(), Long.class);
+		if (start != null && end != null) {
+			countQuery.setParameter("start", start);
+			countQuery.setParameter("end", end);
+		}
+		Long totalOrders = countQuery.getSingleResult();
+		if (totalOrders == null)
+			totalOrders = 0L;
+
+		// 3. Total Books Sold
+		StringBuilder booksJpql = new StringBuilder(
+				"SELECT SUM(oi.quantity) FROM OrderItem oi JOIN oi.orders o WHERE o.orderStatus NOT IN ('已取消', '已退款') ");
+		if (start != null && end != null) {
+			booksJpql.append("AND o.createdAt BETWEEN :start AND :end");
+		}
+		var booksQuery = entityManager.createQuery(booksJpql.toString(), Long.class);
+		if (start != null && end != null) {
+			booksQuery.setParameter("start", start);
+			booksQuery.setParameter("end", end);
+		}
+		Long totalBooksSold = booksQuery.getSingleResult();
+		if (totalBooksSold == null)
+			totalBooksSold = 0L;
+
+		return new bookstore.dto.SalesOverviewDTO(totalRevenue, totalOrders, totalBooksSold);
+	}
+
 }

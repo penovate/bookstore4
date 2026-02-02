@@ -186,9 +186,14 @@ const saveProfile = async () => {
 
       if (response.data.success) {
         Swal.fire({ icon: 'success', title: '修改成功', confirmButtonColor: '#2e5c43', timer: 1500 })
-        userStore.img = avatarPreview.value
-        localStorage.setItem('userImg', avatarPreview.value)
+        const newPath = response.data.newImg; 
+        if (newPath) {
+          userStore.img = newPath;
+          localStorage.setItem('userImg', newPath);
+          avatarPreview.value = `http://localhost:8080${newPath}`;
+        }
         originalData = { ...user }
+        selectedFile = null
       } else {
         Swal.fire('失敗', response.data.message, 'error')
       }
@@ -251,7 +256,16 @@ onMounted(async () => {
       user.email = dbData.email;
       user.phoneNum = dbData.phoneNum;
       user.address = dbData.address;
-      avatarPreview.value = dbData.img || ''; 
+
+      const dbImg = dbData.img || '';
+      avatarPreview.value = dbImg.startsWith('/uploads/') 
+                            ? `http://localhost:8080${dbImg}` 
+                            : dbImg;
+
+      if (userStore.img !== dbImg) {
+        userStore.img = dbImg;
+        localStorage.setItem('userImg', dbImg);
+      }
       originalData = { ...user }; 
     }
   } catch (error) {

@@ -1,23 +1,25 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useDisplay } from 'vuetify'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue' 
 import { useCartStore } from '@/stores/cartStore'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router' 
 import Swal from 'sweetalert2'
 import { useUserStore } from '@/stores/userStore'
 
 const cartStore = useCartStore()
-const { mobile } = useDisplay()
 const drawer = ref(false)
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
+
+const unreadCount = computed(() => userStore.unreadCount)
 
 const menuItems = ref([
   { title: '書籍專區', to: '/dev/user/books', icon: 'mdi-book-open-page-variant' },
-  { title: '讀者書評', to: '/dev/user/reviews', icon: 'mdi-comment-quote-outline' },
+  { title: '會員中心', to: '/dev/user/user-menu', icon: 'mdi-account-circle' },
   { title: '歷史訂單', to: '/dev/user/orders', icon: 'mdi-history' },
   { title: '我的優惠券', to: '/dev/user/coupons', icon: 'mdi-ticket-percent' },
-  { title: '關於我們', to: '', icon: 'mdi-information' },
+  { title: '讀者書評', to: '/dev/user/reviews', icon: 'mdi-comment-quote-outline' },
+  { title: '關於我們', to: '/dev/user/about-us', icon: 'mdi-information' },
   { title: '後台系統', to: '/home', icon: 'mdi-information' },
 ])
 
@@ -36,6 +38,16 @@ const socialLinks = [
   { icon: 'mdi-instagram', link: 'https://www.instagram.com/penbrary.616/' },
 ]
 
+watch(
+  () => userStore.isLoggedIn,
+  (isLoggedIn) => {
+    if (isLoggedIn) {
+      cartStore.fetchCartCount(); 
+      cartStore.setCartCount(0);
+    }
+  }
+)
+
 const handleLogout = () => {
   Swal.fire({
     title: '確定要登出嗎？',
@@ -48,33 +60,61 @@ const handleLogout = () => {
   }).then((result) => {
     if (result.isConfirmed) {
       userStore.logout()
-
       Swal.fire({
         icon: 'success',
         title: '登出成功',
-        text: '期待再次見到您！',
         confirmButtonColor: '#2e5c43',
         timer: 1500,
-        timerProgressBar: true,
         showConfirmButton: false,
-      }).then(() => {
-        router.push('/dev/user/home')
       })
     }
   })
 }
 
+let notifySocket = null
+
+const connectNotifySocket = () => {
+  if (!userStore.userId || !userStore.isLoggedIn) return
+  
+  notifySocket = new WebSocket(`ws://localhost:8080/chat/${userStore.userId}`)
+  
+  notifySocket.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data)
+      
+      if (data && data.content){
+          if (route.path !== '/dev/user/user-chat') {
+            userStore.incrementUnreadCount() 
+          }
+        }
+    } catch (e) {
+    }
+  }
+}
+
 onMounted(() => {
   if (userStore.isLoggedIn) {
-    cartStore.fetchCartCount()
+    userStore.fetchUnreadCount();
+    
+    cartStore.fetchCartCount(); 
+    
+    connectNotifySocket();
+    
+    setInterval(() => {
+       if (route.path !== '/dev/user/user-chat') {
+         userStore.fetchUnreadCount();
+       }
+    }, 10000);
   }
+});
+
+onUnmounted(() => {
+  if (notifySocket) notifySocket.close()
 })
 </script>
 
 <template>
-  <!-- 使用 forestTheme 以符合 AdminLayout 配色風格，或可保留自定義 colors 但風格統一 -->
   <v-app theme="forestTheme">
-    <!-- 頂部導航列 (App Bar) -->
     <v-app-bar color="primary" elevation="2" class="px-md-4">
       <div class="d-flex align-center" style="min-width: 200px">
         <v-app-bar-nav-icon
@@ -124,43 +164,67 @@ onMounted(() => {
           </v-badge>
         </v-btn>
 
-        <div v-if="userStore.isLoggedIn">
-          <v-menu min-width="200px" rounded>
-            <template v-slot:activator="{ props }">
-              <v-avatar color="surface" size="36" class="cursor-pointer border-sm elevation-1" v-bind="props">
-                <v-img 
-                  v-if="userStore.img" 
-                  :src="userStore.img" 
-                  cover
-                ></v-img>
-                
-                <span v-else class="text-primary font-weight-bold">
-                  {{ userStore.name.charAt(0) }}
-                </span>
-              </v-avatar>
-            </template>
+          <div v-if="userStore.isLoggedIn">
+            <v-menu min-width="200px" rounded>
+              <template v-slot:activator="{ props }">
+                <v-badge
+                  :content="unreadCount"
+                  :model-value="unreadCount > 0"
+                  color="error"
+                  dot
+                  overlap
+                  offset-x="3"
+                  offset-y="3"
+                >
+                  <v-avatar 
+  color="surface" 
+  size="36" 
+  class="cursor-pointer border-sm elevation-1" 
+  v-bind="props"
+>
+  <v-img 
+    v-if="userStore.img && userStore.img.trim() !== ''" 
+    :src="userStore.img.startsWith('data:') || userStore.img.startsWith('http') 
+          ? userStore.img 
+          : `http://localhost:8080${userStore.img}`" 
+    cover
+  >
+    <template v-slot:placeholder>
+      <div class="d-flex align-center justify-center fill-height bg-primary text-white">
+        {{ userStore.name?.charAt(0).toUpperCase() }}
+      </div>
+    </template>
+  </v-img>
 
-            <v-list>
-              <v-list-item
-                prepend-icon="mdi-account-circle"
-                title="會員中心"
-                to="/dev/user/user-menu"
-              ></v-list-item>
-              <v-list-item
-                prepend-icon="mdi-history"
-                title="歷史訂單"
-                :to="{ name: 'myOrders' }"
-              ></v-list-item>
-              <v-divider></v-divider>
-              <v-list-item
-                prepend-icon="mdi-logout"
-                title="登出"
-                @click="handleLogout"
-                class="text-error"
-              ></v-list-item>
-            </v-list>
-          </v-menu>
-        </div>
+  <span v-else class="text-primary font-weight-bold">
+    {{ userStore.name?.charAt(0).toUpperCase() }}
+  </span>
+</v-avatar>
+                </v-badge>
+              </template>
+
+              <v-list>
+                <v-list-item
+                  prepend-icon="mdi-account-circle"
+                  title="會員中心"
+                  to="/dev/user/user-menu"
+                >
+                  <template v-slot:append v-if="unreadCount > 0">
+                    <v-badge color="error" :content="unreadCount" inline></v-badge>
+                  </template>
+                </v-list-item>
+
+                <v-divider></v-divider>
+
+                <v-list-item
+                  prepend-icon="mdi-logout"
+                  title="登出"
+                  @click="handleLogout"
+                  class="text-error"
+                ></v-list-item>
+              </v-list>
+            </v-menu>
+          </div>
 
         <v-btn 
           v-else 

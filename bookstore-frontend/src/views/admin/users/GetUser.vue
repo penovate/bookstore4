@@ -9,14 +9,25 @@
       max-width="800"
       class="pa-8 forest-card-border elevation-2 mx-auto rounded-xl"
     >
+      <div class="d-flex flex-column align-center mt-4">
+        <v-avatar size="120" class="elevation-3 border-sm bg-grey-lighten-4">
+          <v-img 
+            v-if="user && user.img"
+            :src="user.img.startsWith('/uploads/') 
+                  ? `http://localhost:8080${user.img}` 
+                  : user.img" 
+            cover
+          >
+            <template v-slot:placeholder>
+              <div class="d-flex align-center justify-center fill-height bg-primary text-h3 text-white">
+                {{ user.userName?.charAt(0).toUpperCase() }}
+              </div>
+            </template>
+          </v-img>
+          <v-icon v-else icon="mdi-account" size="80" color="grey-lighten-1"></v-icon>
+        </v-avatar>
+      </div>
       <v-card-item class="text-center mb-4">
-        <v-icon
-          icon="mdi-account-details-outline"
-          size="large"
-          color="primary"
-          class="mb-2"
-        ></v-icon>
-        <v-card-title class="text-h5 font-weight-bold text-primary"> 基本資料檢視 </v-card-title>
       </v-card-item>
 
       <v-divider class="mb-8"></v-divider>
@@ -113,7 +124,7 @@ const canEdit = (u) => {
 const formatGender = (code) => (code === 'M' ? '男' : code === 'F' ? '女' : '未設定')
 const formatDate = (val) => (val ? new Date(val).toISOString().split('T')[0] : '未設定')
 const formatUserType = (type) =>
-  ({ 0: '超級管理員', 1: '一般管理員', 2: '一般會員' })[type] || '未知'
+  ({ 0: '系統管理員', 1: '營運專員', 2: '正式會員' })[type] || '未知'
 
 const fetchUserDetail = async () => {
   try {

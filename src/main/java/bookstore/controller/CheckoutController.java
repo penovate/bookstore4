@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import bookstore.dto.CheckoutRequest;
 import bookstore.service.ECPayService;
+import bookstore.service.EmailService;
 import bookstore.service.OrderService;
+import bookstore.bean.UserBean;
 import jakarta.servlet.http.HttpServletRequest;
 import bookstore.bean.OrderItem;
 import bookstore.bean.Orders;
@@ -31,6 +33,9 @@ public class CheckoutController {
 
     @Autowired
     private ECPayService ecPayService;
+
+    @Autowired
+    private EmailService emailService;
 
     // 建立訂單並根據付款方式產生綠界參數
     @PostMapping("/checkout")
@@ -72,6 +77,21 @@ public class CheckoutController {
             }
             System.out.println("DEBUG: Generated ECPay ItemName: " + itemNameBuilder.toString());
 
+            // 發送訂單通知信 (移至此處以確保 items 已被查詢並放入 order)
+            try {
+                System.out.println("DEBUG: Preparing to send email. Items count from DB: "
+                        + (items != null ? items.size() : "null"));
+                // order.setItems(items); // 不再依賴 setItems，直接傳參數
+                UserBean user = order.getUserBean();
+                if (user != null && user.getEmail() != null) {
+                    emailService.sendOrderNotification(user.getEmail(), order, items);
+                } else {
+                    System.out.println("DEBUG: User email not found for order notification.");
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to send order notification email: " + e.getMessage());
+            }
+
             // 處理信用卡付款流程
             if ("信用卡".equals(order.getPaymentMethod())) {
                 System.out.println("DEBUG: Entering ECPay block");
@@ -81,11 +101,11 @@ public class CheckoutController {
                 // 產生 MerchantTradeNo (長度需在 20 字元內)
                 // 格式: Book + OrderID + T + TimeStamp(8碼) ex: Book105T12345678
                 // 這樣確保長度不超過 20 且能解析 OrderID
-                String merchantTradeNo = "B" + order.getOrderId() + "T" + (System.currentTimeMillis() % 100000000);
+                String merchantTradeNo = "Book" + order.getOrderId() + "T" + (System.currentTimeMillis() % 100000000);
 
                 // 設定回傳網址 (本地測試需透過 ngrok 改為公開網址)
                 String returnURL = "https://unpreferable-unmeteorologic-ruthann.ngrok-free.dev/orders/ecpay/return";
-                String clientBackURL = "http://localhost:5173/dev/user/orders";
+                String clientBackURL = "http://localhost:5173/dev/user/orders/success";
 
                 Map<String, String> ecpayParams = ecPayService.genAioCheckOutALL(
                         merchantTradeNo,
@@ -126,12 +146,12 @@ public class CheckoutController {
             try {
                 // 解析 OrderId
                 // 格式: B + OrderID + T + TimeStamp
-                int tIndex = merchantTradeNo.indexOf('T', 1); // 從第1個字元後開始找 T (避開開頭的B)
+                int tIndex = merchantTradeNo.indexOf('T', 4); // 從第4個字元後開始找 T (避開開頭的Book)
                 if (tIndex == -1) {
                     System.out.println("DEBUG: Cannot find 'T' separator");
                     return "0|Order Parsing Error";
                 }
-                Integer orderId = Integer.parseInt(merchantTradeNo.substring(1, tIndex)); // 從 index 1 開始 (避開 'B')
+                Integer orderId = Integer.parseInt(merchantTradeNo.substring(4, tIndex)); // 從 index 4 開始 (避開 'Book')
                 System.out.println("DEBUG: Parsed OrderId: " + orderId);
 
                 orderService.updatePaymentStatus(orderId, "已付款");

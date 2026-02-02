@@ -40,32 +40,53 @@
 
           <!-- 書籍名稱 -->
           <template v-slot:item.bookName="{ item }">
-            <div class="py-2">
-              <div class="font-weight-bold text-h6 text-primary mb-1">
-                {{ item.booksBean ? item.booksBean.bookName : '未知書籍' }}
-              </div>
-              <div class="text-caption text-grey">
-                {{ item.booksBean ? item.booksBean.author : '' }}
-              </div>
-              <!-- 顯示無庫存或下架警告 -->
-              <v-chip
-                v-if="item.cartStatus === 'OFF_SHELF'"
-                color="error"
-                size="default"
-                class="mt-1 font-weight-bold"
-                variant="flat"
+            <div class="d-flex align-center py-2">
+              <div
+                class="mr-4 rounded overflow-hidden border"
+                style="width: 70px; height: 100px; flex-shrink: 0"
               >
-                本書籍暫不供應販售，請移除
-              </v-chip>
-              <v-chip
-                v-else-if="item.quantity === 0"
-                color="error"
-                size="default"
-                class="mt-1 font-weight-bold"
-                variant="flat"
-              >
-                本書暫無庫存，請移除
-              </v-chip>
+                <v-img
+                  :src="
+                    item.booksBean && item.booksBean.bookImageBean
+                      ? `http://localhost:8080/upload-images/${item.booksBean.bookImageBean.imageUrl}`
+                      : '/no-image.png'
+                  "
+                  cover
+                  height="100%"
+                ></v-img>
+              </div>
+              <div>
+                <div class="font-weight-bold text-h6 text-primary mb-1">
+                  <span
+                    class="book-link cursor-pointer"
+                    @click="goToBookDetail(item.booksBean ? item.booksBean.bookId : null)"
+                  >
+                    {{ item.booksBean ? item.booksBean.bookName : '未知書籍' }}
+                  </span>
+                </div>
+                <div class="text-caption text-grey">
+                  {{ item.booksBean ? item.booksBean.author : '' }}
+                </div>
+                <!-- 顯示無庫存或下架警告 -->
+                <v-chip
+                  v-if="item.cartStatus === 'OFF_SHELF'"
+                  color="error"
+                  size="default"
+                  class="mt-1 font-weight-bold"
+                  variant="flat"
+                >
+                  本書籍暫不供應販售，請移除
+                </v-chip>
+                <v-chip
+                  v-else-if="item.quantity === 0"
+                  color="error"
+                  size="default"
+                  class="mt-1 font-weight-bold"
+                  variant="flat"
+                >
+                  本書暫無庫存，請移除
+                </v-chip>
+              </div>
             </div>
           </template>
 
@@ -142,7 +163,7 @@
           <v-row align="center" justify="end">
             <v-col cols="12" md="auto" class="text-right">
               <div class="text-subtitle-1 text-grey-darken-1 mb-1">總金額</div>
-              <div class="text-h4 font-weight-bold text-error">
+              <div class="text-h4 font-weight-bold text-error" style="color: #2e5a44">
                 ${{ totalAmount }} <span class="text-h6 text-grey">元</span>
               </div>
             </v-col>
@@ -189,11 +210,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import orderService from '@/api/orderService.js'
+import { useCartStore } from '@/stores/cartStore'
 
 const router = useRouter()
 const cartItems = ref([])
 const totalAmount = ref(0)
 const alertMessage = ref('')
+const cartStore = useCartStore()
 
 const hasInvalidItems = computed(() => {
   return cartItems.value.some((item) => item.cartStatus === 'OFF_SHELF' || item.quantity === 0)
@@ -319,6 +342,7 @@ const removeItem = (item) => {
             showConfirmButton: false,
             timer: 1500,
           })
+          await cartStore.fetchCartCount()
           fetchCart()
         } else {
           Swal.fire('錯誤', '移除失敗', 'error')
@@ -328,6 +352,12 @@ const removeItem = (item) => {
       }
     }
   })
+}
+
+const goToBookDetail = (bookId) => {
+  if (bookId) {
+    router.push({ name: 'user-book-detail', params: { id: bookId } })
+  }
 }
 
 const goToCheckout = () => {
@@ -391,5 +421,14 @@ onMounted(() => {
 
 .cart-table :deep(.disabled-row .v-chip) {
   color: white !important; /* 恢復 Chip 文字顏色（如果有被影響） */
+}
+
+.book-link {
+  transition: color 0.2s;
+}
+
+.book-link:hover {
+  color: #2e5a44 !important; /* 主題綠色 */
+  text-decoration: underline;
 }
 </style>

@@ -101,6 +101,12 @@ const router = createRouter({
           component: () => import('../views/admin/users/UserLogList.vue'),
           meta: { title: '管理員操作日誌' },
         },
+        {
+          path: 'users/admin-chat',
+          name: 'admin-chat',
+          component: () => import('../views/admin/users/AdminChatView.vue'),
+          meta: {title : '管理員客服中心'},
+        },
         // 2.5 優惠券管理
         {
           path: 'coupons',
@@ -110,16 +116,16 @@ const router = createRouter({
         },
         // 3. 訂單管理
         {
-          path: 'orders',
-          name: 'orderMenu',
-          component: () => import('../views/admin/orders/OrderMenu.vue'),
-          meta: { title: '後台訂單與優惠券管理系統' },
-        },
-        {
           path: 'orders/list',
           name: 'orderList',
           component: () => import('../views/admin/orders/OrderList.vue'),
           meta: { title: '訂單管理列表' },
+        },
+        {
+          path: 'orders/analysis',
+          name: 'orderAnalysis',
+          component: () => import('../views/admin/orders/OrderAnalysis.vue'),
+          meta: { requiresAuth: true, role: 'ADMIN' },
         },
         {
           path: 'orders/insert',
@@ -152,34 +158,23 @@ const router = createRouter({
           meta: { title: '讀書會管理' },
         },
         {
-          path: 'orders/update/:id',
-          name: 'orderUpdate',
-          component: () => import('../views/admin/orders/OrderUpdate.vue'),
-          meta: { title: '修改訂單資料' },
-        },
-        {
           path: 'orders/items/add/:id',
           name: 'orderAddItem',
           component: () => import('../views/admin/orders/OrderAddItem.vue'),
           meta: { title: '新增訂單明細' },
         },
-        {
-          path: 'orders/items/update/:itemId',
-          name: 'orderItemUpdate',
-          component: () => import('../views/admin/orders/OrderItemUpdate.vue'),
-          meta: { title: '修改訂單明細' },
-        },
         // 4.評價管理
         {
           path: 'reviews',
           name: 'admin-reviews',
-          component: () => import('../views/admin/reviews/ReviewManagement.vue')
+          component: () => import('../views/admin/reviews/ReviewManagement.vue'),
+          meta: { title: '書籍評價'},
         },
         {
           path: 'reviews/book/:bookId',
           name: 'admin-book-reviews',
           component: () => import('../views/admin/reviews/ReviewList.vue'),
-          meta: { title: '評價管理' },
+          meta: { title: '評價資料' },
         },
         {
           path: 'reviews/:id',
@@ -203,7 +198,8 @@ const router = createRouter({
         {
           path: 'reviews/reports',
           name: 'admin-review-reports',
-          component: () => import('../views/admin/reports/ReportList.vue')
+          component: () => import('../views/admin/reports/ReportList.vue'),
+          meta: { title: '檢舉列表' },
         },
       ],
     },
@@ -212,6 +208,12 @@ const router = createRouter({
       path: '/dev/user',
       component: () => import('../views/Layout/UserLayout.vue'),
       children: [
+        {
+          path: 'about-us',
+          name: 'about-us',
+          component: () => import('../views/public/AboutUs.vue'),
+          meta: {title : '關於我們'},
+        },
         {
           path: 'login',
           name: 'user-login',
@@ -261,6 +263,24 @@ const router = createRouter({
           meta: { title: '會員資料修改' },
         },
         {
+          path: 'user-chat',
+          name: 'user-chat',
+          component: () => import('../views/public/user/UserChat.vue'),
+          meta: {title: '客服專區'},
+        },
+        {
+          path: 'history',
+          name: 'view-history',
+          component: () => import('../views/public/user/BrowsingHistory.vue'),
+          meta: { title: '書籍瀏覽紀錄'},
+        },
+        {
+          path: 'wishlist',
+          name: 'wishlist',
+          component: () => import('../views/public/user/WishList.vue'),
+          meta: { title: '書籍收藏清單'},
+        },
+        {
           path: 'books',
           name: 'user-books',
           component: () => import('../views/public/books/UserBookList.vue'),
@@ -270,6 +290,7 @@ const router = createRouter({
           path: 'books/:id',
           name: 'user-book-detail',
           component: () => import('../views/public/books/UserBookDetail.vue'),
+          // meta: { title: '書籍專區' },
         },
         {
           path: 'store',
@@ -295,6 +316,12 @@ const router = createRouter({
           meta: { title: '結帳確認' },
         },
         {
+          path: 'orders/success',
+          name: 'orderSuccess',
+          component: () => import('../views/public/orders/OrderSuccess.vue'),
+          meta: { title: '訂單完成' },
+        },
+        {
           path: 'orders',
           name: 'myOrders',
           component: () => import('../views/public/orders/MyOrders.vue'),
@@ -309,7 +336,8 @@ const router = createRouter({
         {
           path: 'reviews', 
           name: 'user-reviews',
-          component: () => import('../views/public/reviews/BookReviewsHome.vue'), 
+          component: () => import('../views/public/reviews/BookReviewsHome.vue'),
+          meta: { title: '讀者書評' }, 
         },
       ],
     },

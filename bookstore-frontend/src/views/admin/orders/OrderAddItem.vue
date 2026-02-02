@@ -1,56 +1,160 @@
 <template>
-  <div class="center-body">
-    <div class="form-container">
-      <h2>新增訂單明細</h2>
+  <div class="page-wrapper px-6 py-8">
+    <div class="header-section mb-6 text-left">
+      <h2 class="forest-main-title">新增訂單明細</h2>
+      <p class="text-subtitle-1 text-grey-darken-1 mt-2">訂單編號: #{{ orderId }}</p>
+    </div>
 
-      <div class="form-group">
-          <label>訂單編號: {{ orderId }}</label>
+    <v-card class="forest-card pa-6 rounded-xl">
+      <div class="d-flex justify-space-between align-center mb-6">
+        <h3 class="text-h5 font-weight-bold text-primary">
+          <v-icon icon="mdi-book-plus" class="mr-2"></v-icon>
+          商品資訊
+        </h3>
+        <v-btn
+          color="secondary"
+          variant="tonal"
+          prepend-icon="mdi-arrow-left"
+          @click="router.back()"
+        >
+          取消返回
+        </v-btn>
       </div>
 
-      <form @submit.prevent="handleSubmit">
-        <h3>商品資訊</h3>
+      <v-form @submit.prevent="handleSubmit">
         <div class="items-container">
-            <div v-for="(item, index) in items" :key="index" class="item-row">
-                <div class="item-header">
-                    <h4>商品 {{ index + 1 }}</h4>
-                    <button type="button" class="remove-btn" @click="removeItem(index)" v-if="items.length > 1">移除</button>
+          <transition-group name="list" tag="div">
+            <div v-for="(item, index) in items" :key="index" class="mb-6 pb-6 border-b">
+              <div class="d-flex justify-space-between align-center mb-4">
+                <div class="d-flex align-center">
+                   <v-avatar color="primary" size="28" class="mr-3">
+                      <span class="text-white text-caption font-weight-bold">{{ index + 1 }}</span>
+                   </v-avatar>
+                   <span class="text-h6 text-grey-darken-2 font-weight-bold">商品項目</span>
                 </div>
+                <v-btn
+                  v-if="items.length > 1"
+                  color="error"
+                  variant="text"
+                  size="small"
+                  prepend-icon="mdi-delete"
+                  @click="removeItem(index)"
+                >
+                  移除
+                </v-btn>
+              </div>
+
+              <v-row>
+                <v-col cols="12" md="3">
+                  <v-text-field
+                    v-model="item.bookId"
+                    label="書籍 ID"
+                    placeholder="輸入 ID 自動帶入"
+                    variant="outlined"
+                    density="comfortable"
+                    color="primary"
+                    class="forest-input"
+                    @change="fetchBookInfo(item)"
+                    prepend-inner-icon="mdi-identifier"
+                    hide-details="auto"
+                  ></v-text-field>
+                </v-col>
                 
-                <div class="form-group">
-                    <label>書籍ID:</label>
-                    <input type="text" v-model="item.bookId" @change="fetchBookInfo(item)" placeholder="輸入書籍 ID" required>
-                </div>
+                <v-col cols="12" md="5">
+                  <v-text-field
+                    v-model="item.bookName"
+                    label="書籍名稱"
+                    variant="outlined"
+                    density="comfortable"
+                    color="primary"
+                    class="forest-input readonly-field"
+                    readonly
+                    bg-color="grey-lighten-4"
+                    prepend-inner-icon="mdi-book-open-page-variant"
+                    hide-details="auto"
+                  ></v-text-field>
+                </v-col>
 
-                <div class="form-group">
-                    <label>書籍名稱:</label>
-                    <input type="text" v-model="item.bookName" readonly class="readonly-input">
-                </div>
+                <v-col cols="12" md="2">
+                  <v-text-field
+                    v-model="item.price"
+                    label="單價"
+                    prefix="$"
+                    variant="outlined"
+                    density="comfortable"
+                    color="primary"
+                    class="forest-input readonly-field"
+                    readonly
+                    bg-color="grey-lighten-4"
+                    hide-details="auto"
+                  ></v-text-field>
+                </v-col>
 
-                <div class="form-group">
-                    <label>單價:</label>
-                    <input type="number" v-model="item.price" readonly class="readonly-input">
-                </div>
-
-                <div class="form-group">
-                    <label>數量:</label>
-                    <input type="number" v-model="item.quantity" min="1" required>
-                </div>
+                <v-col cols="12" md="2">
+                  <v-text-field
+                    v-model.number="item.quantity"
+                    label="數量"
+                    type="number"
+                    min="1"
+                    variant="outlined"
+                    density="comfortable"
+                    color="primary"
+                    class="forest-input"
+                    prepend-inner-icon="mdi-counter"
+                    hide-details="auto"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
             </div>
+          </transition-group>
         </div>
 
-        <button type="button" class="add-btn" @click="addItem">+ 增加一筆商品</button>
-        
-        <div class="button-group">
-            <button type="submit" class="submit-btn">確認新增</button>
-            <button type="button" class="cancel-btn" @click="router.back()">取消</button>
+        <div class="d-flex align-center mt-4 mb-8">
+           <v-btn
+             color="primary"
+             variant="tonal"
+             prepend-icon="mdi-plus"
+             class="mr-4 dashed-btn"
+             @click="addItem"
+             block
+           >
+             增加一筆商品
+           </v-btn>
         </div>
-      </form>
-    </div>
+
+        <v-divider class="mb-6"></v-divider>
+
+        <div class="d-flex justify-end gap-3">
+          <v-btn
+            size="large"
+            color="grey-lighten-1"
+            variant="outlined"
+            class="mr-4"
+            @click="router.back()"
+            width="120"
+          >
+            取消
+          </v-btn>
+          
+          <v-btn
+            type="submit"
+            size="large"
+            color="primary"
+            variant="elevated"
+            prepend-icon="mdi-content-save-plus"
+            width="150"
+            class="font-weight-bold"
+          >
+            確認新增
+          </v-btn>
+        </div>
+      </v-form>
+    </v-card>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Swal from 'sweetalert2'
 import orderService from '@/api/orderService.js'
@@ -82,7 +186,7 @@ const fetchBookInfo = async (item) => {
                 Swal.fire('警告', '本書目前未上架，無法新增', 'warning')
                 item.bookName = ''
                 item.price = ''
-                item.bookId = '' // 清空 ID 避免誤送
+                item.bookId = ''
                 return
             }
             item.bookName = book.bookName
@@ -99,15 +203,20 @@ const fetchBookInfo = async (item) => {
         Swal.fire('錯誤', '查無此書籍', 'error')
         item.bookName = ''
         item.price = ''
-        item.bookId = '' // 清空 ID 避免誤送
+        item.bookId = ''
     }
 }
 
 const handleSubmit = async () => {
-    // 再次檢查是否有無效書籍
     const invalidItems = items.value.filter(item => item.bookId && item.onShelf !== 1 && item.onShelf !== undefined)
     if (invalidItems.length > 0) {
          Swal.fire('錯誤', '包含未上架書籍，請檢查後重試', 'error')
+         return
+    }
+    
+    // 檢查是否有空的基本資料
+    if (items.value.some(i => !i.bookId || !i.bookName)) {
+         Swal.fire('提示', '請填寫完整書籍資訊', 'warning')
          return
     }
 
@@ -131,121 +240,70 @@ const handleSubmit = async () => {
 }
 </script>
 
-<style scoped>
-.center-body {
-  font-family: '微軟正黑體', 'Arial', sans-serif;
-  background-color: #fcf8f0;
-  display: flex;
-  justify-content: center;
-  padding: 40px 0;
+<style scoped lang="scss">
+.page-wrapper {
   min-height: 100vh;
+  background-color: #fcf8f0;
 }
 
-.form-container {
-  width: 600px;
-  max-width: 90%;
-  padding: 30px;
-  border: 1px solid #dcd5c7;
-  border-radius: 6px;
-  background-color: #ffffff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+.forest-main-title {
+  color: #2e5c43; // 此為 forest-primary
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0;
 }
 
-h2 {
-  color: #7b5e47;
-  text-align: center;
-  margin-bottom: 25px;
-  border-bottom: 1px solid #e0d9c9;
-  padding-bottom: 10px;
+.forest-card {
+   background-color: white !important;
+   border: 1px solid #e0e0e0;
+   box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
 }
 
-.form-group {
-  margin-bottom: 15px;
-  text-align: left;
+.forest-input {
+  :deep(.v-field__outline) {
+    color: #bdbdbd !important; // 預設邊框淺灰
+  }
+  
+  :deep(.v-field--focused .v-field__outline) {
+    color: #2e5c43 !important; // 聚焦時森林綠
+    opacity: 1;
+  }
+  
+  // 針對唯讀欄位的樣式調整
+  &.readonly-field {
+      :deep(.v-field__input) {
+          color: #666;
+          cursor: default;
+      }
+  }
 }
 
-label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #5d5d5d;
+.dashed-btn {
+    border: 2px dashed #a5d6a7;
+    background-color: rgba(232, 245, 233, 0.5) !important;
+    
+    &:hover {
+        background-color: rgba(232, 245, 233, 1) !important;
+        border-color: #2e5c43;
+    }
 }
 
-input[type="text"],
-input[type="number"] {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #d0c8b9;
-  border-radius: 4px;
-  background-color: #fefcf9;
-  box-sizing: border-box;
+// 列表過渡動畫
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 
-.readonly-input {
-    background-color: #eee !important;
-    color: #555;
-    cursor: not-allowed;
+.border-b {
+    border-bottom: 1px dashed #e0e0e0;
+    
+    &:last-child {
+        border-bottom: none;
+    }
 }
-
-.item-row {
-    border: 1px solid #dcd5c7;
-    background-color: #fffaf0;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    position: relative;
-}
-
-.item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    border-bottom: 1px dashed #ccc;
-    padding-bottom: 5px;
-}
-
-h4 { margin: 0; color: #4a4a4a; }
-
-.remove-btn {
-    background-color: #d89696;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-.add-btn {
-    width: 100%;
-    padding: 10px;
-    background-color: #9fb89e;
-    color: #4a4a4a;
-    border: none;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-bottom: 20px;
-}
-
-.button-group {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 25px;
-}
-
-button.submit-btn, button.cancel-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  min-width: 100px;
-}
-
-.submit-btn { background-color: #a07d58; color: white; }
-.cancel-btn { background-color: #e8e4dc; color: #4a4a4a; }
 </style>

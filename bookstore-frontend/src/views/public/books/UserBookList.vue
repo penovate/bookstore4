@@ -154,7 +154,7 @@ onMounted(() => {
             >
               <template v-slot:prepend>
                 <v-icon
-                  :icon="selectedGenreId === genre.genreId ? 'mdi-leaf' : 'mdi-leaf-off'"
+                  :icon="selectedGenreId === genre.genreId ? 'mdi-book-open-page-variant' : 'mdi-book'"
                   size="small"
                   :color="selectedGenreId === genre.genreId ? 'primary' : 'grey'"
                 ></v-icon>

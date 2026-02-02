@@ -143,7 +143,7 @@ onMounted(async () => {
 
   
   fetchUnreadUserCount();
-  
+  fetchPendingCount();
   timer = setInterval(fetchUnreadUserCount, 1000); 
 });
 
@@ -194,7 +194,7 @@ onUnmounted(() => {
                 <template v-slot:append>
                   <v-badge
                     v-if="item.title === '評價管理' && pendingReportCount > 0"
-                    color="red"
+                    color="error"
                     :content="pendingReportCount"
                     inline
                   ></v-badge>
@@ -221,7 +221,7 @@ onUnmounted(() => {
               <template v-slot:append>
                   <v-badge
                     v-if="child.showBadge && pendingReportCount > 0"
-                    color="red"
+                    color="error"
                     :content="pendingReportCount"
                     inline
                   ></v-badge>

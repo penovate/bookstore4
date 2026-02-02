@@ -1,54 +1,104 @@
 <script setup>
-  import { ref, onMounted } from 'vue';
-  import { useRouter } from 'vue-router';
-  import bookService from '@/api/bookService';
-  import BookCard from './books/BookCard.vue';
-  import Swal from 'sweetalert2'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import bookService from '@/api/bookService'
+import orderService from '@/api/orderService.js'
+import BookCard from './books/BookCard.vue'
 
-  const router = useRouter();
-  const hotBooks = ref([]); 
-  const featuredBooks = ref([]);
+const router = useRouter()
+const featuredBooks = ref([])
+const categories = ref([])
 
-  const goToBooks = () => {
-    router.push({ name: 'user-books' });
-  };
+// 圖示與顏色庫
+const iconPool = [
+  { icon: 'mdi-book-open-page-variant', color: '#C8E6C9' },
+  { icon: 'mdi-chart-line', color: '#F1F8E9' },
+  { icon: 'mdi-account-group', color: '#DCEDC8' },
+  { icon: 'mdi-palette', color: '#E8F5E9' },
+  { icon: 'mdi-school', color: '#FFF9C4' },
+  { icon: 'mdi-briefcase', color: '#D1C4E9' },
+  { icon: 'mdi-earth', color: '#B3E5FC' },
+  { icon: 'mdi-flask', color: '#FFCCBC' },
+  { icon: 'mdi-music', color: '#F8BBD0' },
+  { icon: 'mdi-camera', color: '#CFD8DC' },
+]
 
-  const fetchAllHomeBooks = async () => {
-    try {
-      const response = await bookService.getAllBooks();
-      let allBooks = response.data.filter(book => book.onShelf === 1);
+const goToBooks = () => {
+  router.push({ name: 'user-books' })
+}
 
-      for (let i = allBooks.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [allBooks[i], allBooks[j]] = [allBooks[j], allBooks[i]];
+const goToCategory = (genreId) => {
+  router.push({ name: 'user-books', query: { genreId: genreId } })
+}
+
+const getFeaturedBooks = async () => {
+  try {
+    const response = await bookService.getAllBooks()
+    let allBooks = response.data
+
+    // 1. 只選擇上架中的書籍
+    allBooks = allBooks.filter((book) => book.onShelf === 1)
+
+    // 2. 隨機打亂陣列 (Fisher-Yates Shuffle)
+    for (let i = allBooks.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[allBooks[i], allBooks[j]] = [allBooks[j], allBooks[i]]
+    }
+
+    // 3. 取前 4 筆
+    featuredBooks.value = allBooks.slice(0, 4)
+  } catch (error) {
+    console.error('Fetching books failed:', error)
+  }
+}
+
+const topSellers = ref([])
+const getTopSellers = async () => {
+  try {
+    const res = await orderService.getHomepageTopSellers()
+    // 對應 BookCard 需要的格式，BookSalesDTO 回傳的欄位: bookId, bookName, author, price, coverImage, totalQuantity
+    // BookCard 可能需要: bookId, bookName, author, price, imagePath (通常後端回傳 coverImage 或 imagePath)
+    // 確保格式一致
+    topSellers.value = res.data.map((item) => ({
+      ...item,
+      imagePath: item.coverImage, // Mapping coverImage to imagePath if needed by BookCard
+    }))
+  } catch (e) {
+    console.error('Fetch top sellers failed', e)
+  }
+}
+
+const getRandomCategories = async () => {
+  try {
+    const response = await bookService.getGenres()
+    let allGenres = response.data
+
+    // 隨機打亂
+    for (let i = allGenres.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[allGenres[i], allGenres[j]] = [allGenres[j], allGenres[i]]
+    }
+
+    // 取前 4 個，並分配圖示與顏色
+    categories.value = allGenres.slice(0, 4).map((genre, index) => {
+      const style = iconPool[index % iconPool.length] // 循環使用樣式
+      return {
+        title: genre.genreName,
+        genreId: genre.genreId,
+        icon: style.icon,
+        color: style.color,
       }
+    })
+  } catch (error) {
+    console.error('Fetching genres failed:', error)
+  }
+}
 
-      hotBooks.value = allBooks.slice(0, 4);     
-      featuredBooks.value = allBooks.slice(4, 8); 
-      
-    } catch (error) {
-      console.error('Fetching books failed:', error);
-    }
-  };
-
-  onMounted(() => {
-    fetchAllHomeBooks();
-
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('logout')) {
-      Swal.fire({
-        icon: 'success',
-        title: '登出成功',
-        text: '期待與您再次相遇！',
-        confirmButtonColor: '#2e5c43',
-        timer: 2000,
-        showConfirmButton: false,
-        timerProgressBar: true, 
-      });
-
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  });
+onMounted(() => {
+  getFeaturedBooks()
+  getRandomCategories()
+  getTopSellers()
+})
 </script>
 <template>
   <div class="home-wrapper">
@@ -63,83 +113,65 @@
       </div>
     </v-parallax>
 
-    <v-container class="mt-12 pb-12">
-      <div class="section-header mb-10">
-        <span class="section-tag">POPULAR</span>
-        <h2 class="text-h4 font-weight-black">熱門書籍</h2>
-        <div class="header-line"></div>
-      </div>
 
+    <v-container class="my-12">
+      <div class="d-flex justify-space-between align-center mb-6">
+        <h2 class="text-h4 font-weight-bold" style="color: #2e5c43">本月熱銷排行</h2>
+        <v-btn variant="text" color="primary" @click="goToBooks"
+          >查看全部 <v-icon icon="mdi-chevron-right"></v-icon
+        ></v-btn>
+      </div>
       <v-row>
-        <v-col v-for="book in hotBooks" :key="book.bookId" cols="12" sm="6" md="3">
-          <BookCard :book="book" />
+        <v-col v-for="(book, index) in topSellers" :key="book.bookId" cols="12" sm="6" md="3">
+          <div class="position-relative h-100">
+            <!-- 排名標籤 -->
+            <v-chip
+              class="position-absolute z-index-10 ma-2"
+              color="red"
+              elevation="2"
+              label
+              style="top: 0; left: 0; z-index: 5"
+            >
+              No.{{ index + 1 }} | 熱銷 {{ book.totalQuantity }} 本
+            </v-chip>
+            <BookCard :book="book" />
+          </div>
         </v-col>
       </v-row>
     </v-container>
 
-    <v-container class="py-12 bg-light-section rounded-xl mb-12">
-      <div class="d-flex justify-space-between align-end mb-8">
-        <div>
-          <span class="text-primary font-weight-bold">PICK OF THE MONTH</span>
-          <h2 class="text-h4 font-weight-black">本月精選</h2>
-        </div>
-        <v-btn variant="text" color="primary" @click="goToBooks" class="font-weight-bold">
-          查看更多 <v-icon icon="mdi-arrow-right" class="ms-1"></v-icon>
-        </v-btn>
+    <v-container class="my-12">
+      <div class="d-flex justify-space-between align-center mb-6">
+        <h2 class="text-h4 font-weight-bold" style="color: #2e5c43">本月精選</h2>
+        <v-btn variant="text" color="primary" @click="goToBooks"
+          >查看更多 <v-icon icon="mdi-chevron-right"></v-icon
+        ></v-btn>
       </div>
 
       <v-row>
         <v-col v-for="book in featuredBooks" :key="book.bookId" cols="12" sm="6" md="3">
-          <v-card class="featured-book-wrapper rounded-xl" elevation="0" color="transparent">
-             <BookCard :book="book" />
-          </v-card>
+          <BookCard :book="book" />
         </v-col>
       </v-row>
     </v-container>
   </div>
 </template>
 
-
 <style scoped>
-.section-header {
-  text-align: center;
-  position: relative;
-}
-
-.section-tag {
-  display: block;
-  letter-spacing: 4px;
-  color: #2e5c43;
-  font-size: 0.8rem;
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-
-.header-line {
-  width: 60px;
-  height: 4px;
-  background: #2e5c43;
-  margin: 12px auto 0;
-  border-radius: 2px;
-}
-
 .hero-overlay {
-  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6));
+  background: rgba(0, 0, 0, 0.4);
 }
 
-.hero-title {
-  text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+.category-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-.bg-light-section {
-  background-color: rgba(46, 92, 67, 0.03);
+.book-card {
+  transition: transform 0.3s;
 }
 
-.featured-book-wrapper {
-  transition: transform 0.3s ease;
-}
-
-.featured-book-wrapper:hover {
+.book-card:hover {
   transform: translateY(-5px);
 }
 </style>

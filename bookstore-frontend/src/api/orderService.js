@@ -115,12 +115,11 @@ export default {
         return apiClient.post('/order/api/cancel', params, getAuthHeaders());
     },
 
-    // 還原訂單
-    restoreOrder(orderId) {
-        const params = new URLSearchParams();
-        params.append('id', orderId);
-        return apiClient.post('/order/api/restore', params, getAuthHeaders());
+    // 申请退货
+    returnOrder(data) {
+        return apiClient.post('/order/api/return', data, getAuthHeaders());
     },
+
 
     // --- 訂單項目管理 ---
 
@@ -144,6 +143,11 @@ export default {
         if (bookId) params.append('booksBean.bookId', bookId);
 
         return apiClient.post('/order/api/updateItem', params, getAuthHeaders());
+    },
+
+    // 更新訂單與明細
+    updateFullOrder(orderData) {
+        return apiClient.post('/order/api/updateFull', orderData, getAuthHeaders());
     },
 
     // 刪除訂單項目
@@ -170,5 +174,54 @@ export default {
     // --- 書城 (前台) ---
     getAllBooks() {
         return apiClient.get('/books/getAllBooks', getAuthHeaders());
+    },
+
+
+    // 銷售分析 (後台) - 書籍排行
+    getSalesAnalysis(startDate, endDate) {
+        return apiClient.get('/order/api/analysis/books', {
+            params: {
+                startDate: startDate,
+                endDate: endDate
+            },
+            ...getAuthHeaders()
+        });
+    },
+
+    // 銷售分析 (後台) - 銷售總額
+    getSalesRevenue(startDate, endDate) {
+        return apiClient.get('/order/api/analysis/revenue', {
+            params: {
+                startDate: startDate,
+                endDate: endDate
+            },
+            ...getAuthHeaders()
+        });
+    },
+
+    // 銷售分析 (後台) - 銷售概況 (含營收、訂單數、書本銷量)
+    getSalesOverview(startDate, endDate) {
+        return apiClient.get('/order/api/analysis/overview', {
+            params: {
+                startDate: startDate,
+                endDate: endDate
+            },
+            ...getAuthHeaders()
+        });
+    },
+
+
+    // 首頁月度熱銷 (前台)
+    getHomepageTopSellers() {
+        return apiClient.get('/order/api/analysis/homepage-books');
+    },
+
+    // 近12個月銷售趨勢 (後台) - 組合圖數據
+    getRecentSalesTrends() {
+        return apiClient.get('/order/api/analysis/recent-trend', {
+            ...getAuthHeaders()
+        });
     }
 };
+
+

@@ -35,10 +35,29 @@ const items = ref([
       { title: '數據報表分析', to: '/dev/admin/reports', icon: 'mdi-chart-bar' },
     ],
   },
-  { title: '優惠券管理', icon: 'mdi-ticket-percent-outline', to: '/dev/admin/coupons' },
-  { title: '訂單管理', icon: 'mdi-clipboard-list-outline', to: '/dev/admin/orders' },
-  { title: '評價管理', icon: 'mdi-star-half-full', to: '/dev/admin/reviews' },
-  { title: '讀書會管理', icon: 'mdi-book-multiple', to: '/dev/admin/bookclubs' },
+  {
+    title: '優惠券管理',
+    icon: 'mdi-ticket-percent-outline',
+    to: '/dev/admin/coupons',
+  },
+  {
+    title: '訂單管理',
+    icon: 'mdi-clipboard-list-outline',
+    children: [
+      { title: '訂單列表', to: '/dev/admin/orders/list', icon: 'mdi-format-list-bulleted' },
+      { title: '訂單分析', to: '/dev/admin/orders/analysis', icon: 'mdi-chart-bar' },
+    ],
+  },
+  {
+    title: '評價管理',
+    icon: 'mdi-star-half-full',
+    to: '/dev/admin/reviews',
+  },
+  {
+    title: '讀書會管理',
+    icon: 'mdi-book-multiple',
+    to: '/dev/admin/bookclubs',
+  },
 ])
 
 watch(

@@ -116,16 +116,16 @@ const router = createRouter({
         },
         // 3. 訂單管理
         {
-          path: 'orders',
-          name: 'orderMenu',
-          component: () => import('../views/admin/orders/OrderMenu.vue'),
-          meta: { title: '後台訂單與優惠券管理系統' },
-        },
-        {
           path: 'orders/list',
           name: 'orderList',
           component: () => import('../views/admin/orders/OrderList.vue'),
           meta: { title: '訂單管理列表' },
+        },
+        {
+          path: 'orders/analysis',
+          name: 'orderAnalysis',
+          component: () => import('../views/admin/orders/OrderAnalysis.vue'),
+          meta: { requiresAuth: true, role: 'ADMIN' },
         },
         {
           path: 'orders/insert',
@@ -158,22 +158,10 @@ const router = createRouter({
           meta: { title: '讀書會管理' },
         },
         {
-          path: 'orders/update/:id',
-          name: 'orderUpdate',
-          component: () => import('../views/admin/orders/OrderUpdate.vue'),
-          meta: { title: '修改訂單資料' },
-        },
-        {
           path: 'orders/items/add/:id',
           name: 'orderAddItem',
           component: () => import('../views/admin/orders/OrderAddItem.vue'),
           meta: { title: '新增訂單明細' },
-        },
-        {
-          path: 'orders/items/update/:itemId',
-          name: 'orderItemUpdate',
-          component: () => import('../views/admin/orders/OrderItemUpdate.vue'),
-          meta: { title: '修改訂單明細' },
         },
         // 4.評價管理
         {
@@ -312,6 +300,11 @@ const router = createRouter({
           name: 'checkout',
           component: () => import('../views/public/orders/Checkout.vue'),
           meta: { title: '結帳確認' },
+        },
+        {
+          path: 'orders/success',
+          name: 'orderSuccess',
+          component: () => import('../views/public/orders/OrderSuccess.vue'),
         },
         {
           path: 'orders',

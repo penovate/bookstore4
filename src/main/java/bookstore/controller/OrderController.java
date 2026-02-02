@@ -1,6 +1,7 @@
 package bookstore.controller;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,16 +18,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import bookstore.bean.BooksBean;
 import bookstore.bean.OrderItem;
+import bookstore.bean.OrderReturnBean;
 import bookstore.bean.Orders;
 import bookstore.bean.UserBean;
 import bookstore.service.OrderService;
 import bookstore.service.bookService;
-import bookstore.dto.CheckoutRequest;
-import bookstore.util.JwtUtil;
-//import bookstore.service.BookService; 
+import bookstore.dto.BookSalesDTO;
+import bookstore.dto.OrderFullUpdateDTO;
+import bookstore.dto.OrderReturnRequest;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 @Controller
 public class OrderController {
@@ -36,9 +38,6 @@ public class OrderController {
 
 	@Autowired
 	private bookService bookService;
-
-	@Autowired
-	private JwtUtil jwtUtil;
 
 	// ==================新增類 Controller==================//
 
@@ -225,27 +224,6 @@ public class OrderController {
 		return "redirect:/order/activeList";
 	}
 
-	// 還原訂單
-	@PostMapping("/order/restore")
-	public String restoreOrder(@RequestParam("id") Integer orderId, RedirectAttributes redirectAttributes) {
-		try {
-			orderService.processRestoreOrder(orderId);
-			return "redirect:/order/cancelledList";
-		} catch (Exception e) {
-			redirectAttributes.addAttribute("error", "還原訂單失敗");
-			return "redirect:/order/cancelledList";
-		}
-	}
-
-	// 徹底刪除訂單-硬刪除(專題目前改用軟刪除 廢棄掉了)
-	/*
-	 * @PostMapping("/order/delete")
-	 * public String deleteOrder(@RequestParam("id") Integer id) {
-	 * orderService.deleteOrder(id);
-	 * return "redirect:/order/activeList";
-	 * }
-	 */
-
 	// 刪除單筆明細
 	@PostMapping("/order/deleteItem")
 	public String deleteItem(@RequestParam("orderItemId") Integer orderItemId,
@@ -283,8 +261,12 @@ public class OrderController {
 		Orders order = orderService.getOrderById(orderId);
 		if (order != null) {
 			List<OrderItem> items = orderService.getOrderItemsByOrderId(orderId);
+			// 取得退貨資訊
+			OrderReturnBean returnInfo = orderService.getReturnRequestByOrderId(orderId);
+
 			response.put("order", order);
 			response.put("items", items);
+			response.put("returnInfo", returnInfo);
 		}
 		return response;
 	}
@@ -385,6 +367,20 @@ public class OrderController {
 		}
 	}
 
+	@PostMapping("/order/api/updateFull")
+	@ResponseBody
+	public Map<String, Object> updateFullOrderApi(@RequestBody OrderFullUpdateDTO dto) {
+		Map<String, Object> response = new java.util.HashMap<>();
+		try {
+			orderService.updateFullOrder(dto);
+			response.put("success", true);
+		} catch (Exception e) {
+			response.put("success", false);
+			response.put("message", e.getMessage());
+		}
+		return response;
+	}
+
 	@PostMapping("/order/api/cancel")
 	@ResponseBody
 	public String cancelOrderApi(@RequestParam("id") Integer orderId) {
@@ -392,14 +388,14 @@ public class OrderController {
 		return "success";
 	}
 
-	@PostMapping("/order/api/restore")
+	@PostMapping("/order/api/return")
 	@ResponseBody
-	public String restoreOrderApi(@RequestParam("id") Integer orderId) {
+	public String returnOrderApi(@RequestBody OrderReturnRequest request) {
 		try {
-			orderService.processRestoreOrder(orderId);
+			orderService.processReturnOrder(request.getOrderId(), request.getReason(), request.getDescription());
 			return "success";
 		} catch (Exception e) {
-			return "error";
+			return "error: " + e.getMessage();
 		}
 	}
 
@@ -458,6 +454,74 @@ public class OrderController {
 			return "success";
 		} catch (Exception e) {
 			return "error: " + e.getMessage();
+		}
+	}
+
+	@GetMapping("/order/api/analysis/books")
+	@ResponseBody
+	public List<BookSalesDTO> getSalesAnalysisApi(
+			@RequestParam(value = "startDate", required = false) String startDateStr,
+			@RequestParam(value = "endDate", required = false) String endDateStr) {
+		java.sql.Timestamp start = parseTimestamp(startDateStr);
+		java.sql.Timestamp end = parseTimestamp(endDateStr);
+		return orderService.getTopSellingBooks(start, end);
+	}
+
+	@GetMapping("/order/api/analysis/revenue")
+	@ResponseBody
+	public BigDecimal getSalesRevenueApi(
+			@RequestParam(value = "startDate", required = false) String startDateStr,
+			@RequestParam(value = "endDate", required = false) String endDateStr) {
+		java.sql.Timestamp start = parseTimestamp(startDateStr);
+		java.sql.Timestamp end = parseTimestamp(endDateStr);
+		return orderService.getSalesRevenue(start, end);
+	}
+
+	@GetMapping("/order/api/analysis/overview")
+	@ResponseBody
+	public bookstore.dto.SalesOverviewDTO getSalesOverviewApi(
+			@RequestParam(value = "startDate", required = false) String startDateStr,
+			@RequestParam(value = "endDate", required = false) String endDateStr) {
+		java.sql.Timestamp start = parseTimestamp(startDateStr);
+		java.sql.Timestamp end = parseTimestamp(endDateStr);
+		return orderService.getSalesOverview(start, end);
+	}
+
+	@GetMapping("/order/api/analysis/homepage-books")
+	@ResponseBody
+	public List<BookSalesDTO> getHomepageTopBooksApi() {
+		// Default to current month
+		java.util.Calendar cal = java.util.Calendar.getInstance();
+		cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+		cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+		cal.set(java.util.Calendar.MINUTE, 0);
+		cal.set(java.util.Calendar.SECOND, 0);
+		java.sql.Timestamp start = new java.sql.Timestamp(cal.getTimeInMillis());
+
+		// End of month (or just 'now' is fine as upper bound)
+		java.sql.Timestamp end = new java.sql.Timestamp(System.currentTimeMillis());
+
+		return orderService.getTopSellingBooksFull(start, end);
+	}
+
+	@GetMapping("/order/api/analysis/recent-trend")
+	@ResponseBody
+	public List<bookstore.dto.MonthlySalesDTO> getRecentSalesRevenueApi() {
+		return orderService.getRecentSalesTrends();
+	}
+
+	private Timestamp parseTimestamp(String dateStr) {
+		if (dateStr == null || dateStr.trim().isEmpty()) {
+			return null;
+		}
+		try {
+			// 假設格式符合標準或長格式（若僅有日期則補上時間）
+			if (dateStr.length() <= 10) {
+				return Timestamp.valueOf(dateStr + " 00:00:00");
+			}
+			return Timestamp.valueOf(dateStr);
+		} catch (Exception e) {
+			return null;
 		}
 	}
 

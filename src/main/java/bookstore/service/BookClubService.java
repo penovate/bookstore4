@@ -483,6 +483,11 @@ public class BookClubService {
 			throw new BusinessException(400, "目前狀態無法結束讀書會");
 		}
 
+		// 時間檢查: 必須過了活動時間才能結束
+		if (club.getEventDate() != null && LocalDateTime.now().isBefore(club.getEventDate())) {
+			throw new BusinessException(400, "活動尚未開始，無法結束讀書會");
+		}
+
 		club.setStatus(ClubConstants.STATUS_ENDED);
 		bookClubsRepository.save(club);
 

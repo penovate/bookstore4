@@ -16,9 +16,9 @@ const unreadCount = computed(() => userStore.unreadCount)
 const menuItems = ref([
   { title: '書籍專區', to: '/dev/user/books', icon: 'mdi-book-open-page-variant' },
   { title: '會員中心', to: '/dev/user/user-menu', icon: 'mdi-account-circle' },
-  { title: '讀者書評', to: '/dev/user/reviews', icon: 'mdi-comment-quote-outline' },
   { title: '歷史訂單', to: '/dev/user/orders', icon: 'mdi-history' },
   { title: '我的優惠券', to: '/dev/user/coupons', icon: 'mdi-ticket-percent' },
+  { title: '讀者書評', to: '/dev/user/reviews', icon: 'mdi-comment-quote-outline' },
   { title: '關於我們', to: '/dev/user/about-us', icon: 'mdi-information' },
   { title: '後台系統', to: '/home', icon: 'mdi-information' },
 ])

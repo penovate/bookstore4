@@ -125,7 +125,7 @@ const router = createRouter({
           path: 'orders/analysis',
           name: 'orderAnalysis',
           component: () => import('../views/admin/orders/OrderAnalysis.vue'),
-          meta: { requiresAuth: true, role: 'ADMIN' },
+          meta: { requiresAuth: true, role: 'ADMIN', title: '訂單數據分析'},
         },
         {
           path: 'orders/insert',
@@ -155,16 +155,19 @@ const router = createRouter({
           path: 'bookclubs/insert',
           name: 'admin-bookclubs-insert',
           component: () => import('../views/admin/bookClubs/insertBookClub.vue'),
+          meta: { title: '新增讀書會'},
         },
         {
           path: 'bookclubs',
           name: 'admin-bookclubs',
           component: () => import('../views/admin/bookClubs/AdminBookClub.vue'),
+          meta: { title: '讀書會管理'},
         },
         {
           path: 'bookclubs/review/:id',
           name: 'admin-bookclubs-review',
           component: () => import('../views/admin/bookClubs/AdminBookClubDetail.vue'),
+          meta: { title: '審核讀書會'},
         },
         {
           path: 'orders/items/add/:id',
@@ -353,16 +356,19 @@ const router = createRouter({
           path: 'bookclubs',
           name: 'user-bookclubs',
           component: () => import('../views/public/club/UserBookClub.vue'),
+          meta: { title: '讀書會專區'},
         },
         {
           path: 'bookclubs/insert',
           name: 'user-bookclubs-insert',
           component: () => import('../views/public/club/UserInsertBookClub.vue'),
+          meta: { title: '發起讀書會'},
         },
         {
           path: 'bookclubs/detail/:id',
           name: 'user-bookclub-detail-page',
           component: () => import('../views/public/club/UserBookClubDetail.vue'),
+          meta: { title: '發起讀書會'},
         },
       ],
     },

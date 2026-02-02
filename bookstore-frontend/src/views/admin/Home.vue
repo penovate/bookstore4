@@ -36,7 +36,6 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import Swal from 'sweetalert2'
 
 const router = useRouter()
@@ -44,10 +43,9 @@ const router = useRouter()
 const menuItems = [
   { title: '會員管理', icon: 'mdi-account-group', path: '/dev/admin/users' },
   { title: '書籍管理', icon: 'mdi-book-open-page-variant', path: '/dev/admin/books' },
+  { title: '優惠券管理', icon: 'mdi-ticket-percent', path: '/dev/admin/coupons' }, // 補上優惠券管理
   { title: '訂單管理', icon: 'mdi-clipboard-list-outline', path: '/dev/admin/orders/list' },
   { title: '評價管理', icon: 'mdi-star-half-full', path: '/dev/admin/reviews' },
-  { title: '進退貨管理', icon: 'mdi-swap-horizontal-bold', path: '/dev/admin/logs' },
-  { title: '數據報表分析', icon: 'mdi-chart-bar', path: '/reports' },
   { title: '讀書會管理', icon: 'mdi-book-multiple', path: '/dev/admin/bookclubs' },
   { title: '線上書店前台', icon: 'mdi-storefront-outline', path: '/dev/user/home' },
 ]
@@ -71,8 +69,8 @@ const handleLogout = () => {
 }
 
 const handleMenuClick = (menu) => {
-  if (menu.title === '網路書店前台') {
-    const url = menu.path.startsWith('http') ? menu.path : '/' + menu.path
+  if (menu.title === '線上書店前台') {
+    const url = menu.path.startsWith('/') ? menu.path : '/' + menu.path
     window.open(url, '_blank')
   } else {
     router.push(menu.path)

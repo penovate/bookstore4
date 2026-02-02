@@ -131,6 +131,7 @@ public class BookClubsController {
 		UserBean host = usersService.findById(adminId);
 		String reason = body.get("reason");
 		BookClubsBean club = bookClubService.getClub(clubId);
+		bookClubService.rejectClub(clubId, reason, adminId);
 		emailService.sendRejectToHost(club.getHost().getEmail(), club.getClubName(), host.getUserName(), reason);
 		return ResponseEntity.ok(club);
 	}

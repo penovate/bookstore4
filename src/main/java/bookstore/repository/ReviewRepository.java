@@ -10,12 +10,20 @@ import bookstore.bean.ReviewBean;
 
 public interface ReviewRepository extends JpaRepository<ReviewBean, Integer> {
 
-	 @Query("""
-	           SELECT r
-	           FROM ReviewBean r
-	           JOIN FETCH r.user
-	           JOIN FETCH r.book
-	           WHERE r.reviewId = :id
-	           """)
-	    Optional<ReviewBean> findByIdWithUserAndBook(@Param("id") Integer id);
+	@Query("""
+			SELECT r
+			FROM ReviewBean r
+			JOIN FETCH r.user
+			JOIN FETCH r.book
+			WHERE r.reviewId = :id
+			""")
+	Optional<ReviewBean> findByIdWithUserAndBook(@Param("id") Integer id);
+
+	// 統計數量 
+	@Query("SELECT COUNT(r) FROM ReviewBean r WHERE r.book.bookId = :bookId AND r.status = 1")
+    Integer countByBook_BookId(@Param("bookId") Integer bookId);
+
+	// 計算平均分 
+	@Query("SELECT AVG(r.rating) FROM ReviewBean r WHERE r.book.bookId = :bookId AND r.status = 1")
+    Double findAvgRatingByBookId(@Param("bookId") Integer bookId);
 }

@@ -51,7 +51,13 @@ const items = ref([
   {
     title: '評價管理',
     icon: 'mdi-star-half-full',
-    to: '/dev/admin/reviews',
+    children: [
+      { title: '書籍評價', to: '/dev/admin/reviews', icon: 'mdi-comment-text-multiple-outline' },
+      { title: '檢舉列表', 
+        to: '/dev/admin/reviews/reports',
+        icon: 'mdi-alert-octagon-outline' // 或 mdi-flag-outline
+      },
+    ],
   },
   {
     title: '讀書會管理',

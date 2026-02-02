@@ -167,6 +167,11 @@ const router = createRouter({
         {
           path: 'reviews',
           name: 'admin-reviews',
+          component: () => import('../views/admin/reviews/ReviewManagement.vue')
+        },
+        {
+          path: 'reviews/book/:bookId',
+          name: 'admin-book-reviews',
           component: () => import('../views/admin/reviews/ReviewList.vue'),
           meta: { title: '評價管理' },
         },
@@ -187,6 +192,12 @@ const router = createRouter({
           name: 'review-update',
           component: () => import('../views/admin/reviews/ReviewUpdate.vue'),
           meta: { title: '修改評價' },
+        },
+        // 5.檢舉管理
+        {
+          path: 'reviews/reports',
+          name: 'admin-review-reports',
+          component: () => import('../views/admin/reports/ReportList.vue')
         },
       ],
     },
@@ -317,6 +328,11 @@ const router = createRouter({
           name: 'userCoupons',
           component: () => import('../views/public/user/UserCoupon.vue'),
           meta: { title: '我的優惠券' },
+        },
+        {
+          path: 'reviews', 
+          name: 'user-reviews',
+          component: () => import('../views/public/reviews/BookReviewsHome.vue'), 
         },
       ],
     },

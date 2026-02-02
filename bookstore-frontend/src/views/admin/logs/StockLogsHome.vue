@@ -22,7 +22,7 @@ const headers = [
     { title: '廠商', key: 'wholesaler', align: 'start', sortable: true },
     { title: '總金額', key: 'totalAmount', align: 'end', sortable: true },
     { title: '明細', key: 'actions', align: 'center', sortable: false },
-    // { title: '修改', key: 'actions_edit', align: 'center', sortable: false },
+    { title: '修改', key: 'actions_edit', align: 'center', sortable: false },
     { title: '退貨', key: 'actions_return', align: 'center', sortable: false },
 ];
 

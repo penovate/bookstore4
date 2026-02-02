@@ -15,6 +15,7 @@ const unreadCount = computed(() => userStore.unreadCount)
 
 const menuItems = ref([
   { title: '書籍專區', to: '/dev/user/books', icon: 'mdi-book-open-page-variant' },
+  { title: '讀書會', to: '/dev/user/bookclubs', icon: 'mdi-account-group' },
   { title: '會員中心', to: '/dev/user/user-menu', icon: 'mdi-account-circle' },
   { title: '歷史訂單', to: '/dev/user/orders', icon: 'mdi-history' },
   { title: '我的優惠券', to: '/dev/user/coupons', icon: 'mdi-ticket-percent' },
@@ -117,16 +118,9 @@ onUnmounted(() => {
   <v-app theme="forestTheme">
     <v-app-bar color="primary" elevation="2" class="px-md-4">
       <div class="d-flex align-center" style="min-width: 200px">
-        <v-app-bar-nav-icon
-          variant="text"
-          @click.stop="drawer = !drawer"
-          class="d-md-none"
-        ></v-app-bar-nav-icon>
+        <v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer" class="d-md-none"></v-app-bar-nav-icon>
 
-        <v-toolbar-title
-          class="font-weight-bold text-h5 cursor-pointer"
-          @click="$router.push('/dev/user/home')"
-        >
+        <v-toolbar-title class="font-weight-bold text-h5 cursor-pointer" @click="$router.push('/dev/user/home')">
           <v-icon icon="mdi-book-open-variant" class="me-2"></v-icon>
           森林書屋
         </v-toolbar-title>
@@ -135,15 +129,9 @@ onUnmounted(() => {
       <v-spacer class="d-none d-md-block"></v-spacer>
 
       <div class="d-none d-md-flex justify-center flex-grow-1">
-        <v-btn
-          v-for="item in filteredMenuItems"
-          :key="item.title"
-          variant="text"
-          class="mx-1 text-subtitle-1 font-weight-medium"
-          :href="item.title === '後台系統' ? item.to : undefined"
-          :target="item.title === '後台系統' ? '_blank' : undefined"
-          :to="item.title === '後台系統' ? undefined : item.to"
-        >
+        <v-btn v-for="item in filteredMenuItems" :key="item.title" variant="text"
+          class="mx-1 text-subtitle-1 font-weight-medium" :href="item.title === '後台系統' ? item.to : undefined"
+          :target="item.title === '後台系統' ? '_blank' : undefined" :to="item.title === '後台系統' ? undefined : item.to">
           {{ item.title }}
         </v-btn>
       </div>
@@ -155,11 +143,7 @@ onUnmounted(() => {
 
         <!-- 導覽列的購物車icon，點擊後跳轉到購物車頁面 -->
         <v-btn icon class="me-2" @click="$router.push({ name: 'cart' })">
-          <v-badge
-            :content="cartStore.cartCount"
-            :model-value="cartStore.cartCount > 0"
-            color="accent"
-          >
+          <v-badge :content="cartStore.cartCount" :model-value="cartStore.cartCount > 0" color="accent">
             <v-icon icon="mdi-cart-outline"></v-icon>
           </v-badge>
         </v-btn>
@@ -214,6 +198,12 @@ onUnmounted(() => {
                   </template>
                 </v-list-item>
 
+                <v-list-item 
+                  prepend-icon="mdi-history" 
+                  title="歷史訂單" 
+                  :to="{ name: 'myOrders' }"
+                ></v-list-item>
+
                 <v-divider></v-divider>
 
                 <v-list-item
@@ -226,14 +216,8 @@ onUnmounted(() => {
             </v-menu>
           </div>
 
-        <v-btn 
-          v-else 
-          color="white" 
-          class="login-btn-cute px-6 font-weight-bold" 
-          rounded="pill" 
-          elevation="2"
-          to="/dev/user/login"
-        >
+        <v-btn v-else color="white" class="login-btn-cute px-6 font-weight-bold" rounded="pill" elevation="2"
+          to="/dev/user/login">
           <v-icon start icon="mdi-hand-wave-outline" class="jump-icon"></v-icon>
           登入
         </v-btn>
@@ -245,25 +229,16 @@ onUnmounted(() => {
       <v-list>
         <v-list-item title="導覽選單" subtitle="BookStore"></v-list-item>
         <v-divider></v-divider>
-        <v-list-item
-          v-for="item in filteredMenuItems"
-          :key="item.title"
-          :prepend-icon="item.icon"
-          :title="item.title"
-          :href="item.title === '後台系統' ? item.to : undefined"
-          :target="item.title === '後台系統' ? '_blank' : undefined"
-          :to="item.title === '後台系統' ? undefined : item.to"
-        ></v-list-item>
+        <v-list-item v-for="item in filteredMenuItems" :key="item.title" :prepend-icon="item.icon" :title="item.title"
+          :href="item.title === '後台系統' ? item.to : undefined" :target="item.title === '後台系統' ? '_blank' : undefined"
+          :to="item.title === '後台系統' ? undefined : item.to"></v-list-item>
       </v-list>
     </v-navigation-drawer>
 
     <!-- Main Content (有 padding-top 避免被 App Bar 遮擋) -->
     <v-main :class="{ 'bg-transparent': $route.name === 'user-login' }">
-      <v-container
-        :class="{ 'py-6': $route.name !== 'user-login' }"
-        :fluid="$route.name === 'user-login'"
-        style="min-height: 80vh"
-      >
+      <v-container :class="{ 'py-6': $route.name !== 'user-login' }" :fluid="$route.name === 'user-login'"
+        style="min-height: 80vh">
         <router-view></router-view>
       </v-container>
     </v-main>
@@ -273,16 +248,8 @@ onUnmounted(() => {
       <div class="d-flex w-100 align-center px-4">
         <strong class="text-h6">與我們保持聯繫，獲取最新好書資訊！</strong>
         <v-spacer></v-spacer>
-        <v-btn
-          v-for="item in socialLinks"
-          :key="item.icon"
-          :icon="item.icon"
-          class="mx-2"
-          variant="text"
-          :href="item.link"
-          :target="item.link ? '_blank' : undefined"
-          rel="noopener noreferrer"
-        ></v-btn>
+        <v-btn v-for="item in socialLinks" :key="item.icon" :icon="item.icon" class="mx-2" variant="text"
+          :href="item.link" :target="item.link ? '_blank' : undefined" rel="noopener noreferrer"></v-btn>
       </div>
       <v-divider class="w-100 my-4 border-opacity-25"></v-divider>
       <div class="text-center w-100 text-body-2">
@@ -313,16 +280,16 @@ onUnmounted(() => {
   background: linear-gradient(45deg, #ffffff 0%, #f9f9f0 100%) !important;
   color: #2e5c43 !important;
   border: 2px solid #2e5c43 !important;
-  
-  margin: 8px !important; 
-  
+
+  margin: 8px !important;
+
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-  
-  overflow: visible !important; 
+
+  overflow: visible !important;
 }
 
 .login-btn-cute:hover {
-  transform: scale(1.05) rotate(-3deg); 
+  transform: scale(1.05) rotate(-3deg);
   box-shadow: 0 6px 15px rgba(46, 92, 67, 0.3) !important;
   background-color: #fdfdfd !important;
 }
@@ -336,7 +303,12 @@ onUnmounted(() => {
 }
 
 @keyframes wave {
-  from { transform: rotate(-10deg); }
-  to { transform: rotate(20deg); }
+  from {
+    transform: rotate(-10deg);
+  }
+
+  to {
+    transform: rotate(20deg);
+  }
 }
 </style>

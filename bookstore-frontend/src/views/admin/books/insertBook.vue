@@ -107,11 +107,12 @@ const clearForm = () => {
         isbn: '',
         stock: null,
         shortDesc: '',
-        onShelf: 0
+        onShelf: 0 
     };
     selectedGenreIds.value = [];
     imageFile.value = null;
     imagePreview.value = null;
+    form.value.resetValidation();
 };
 
 const submit = async () => {

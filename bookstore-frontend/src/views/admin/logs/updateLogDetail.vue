@@ -40,8 +40,6 @@ onMounted(async () => {
                 stockType: data.stockType,
                 logItemBeans: data.logItemBeans.map(item => ({
                     ...item,
-                    // 確保 booksBean 是完整的物件，以便 Autocomplete 顯示
-                    // 若後端回傳只有 ID，可能需要從 books.value 裡找對應的完整物件
                     booksBean: books.value.find(b => b.bookId === item.booksBean?.bookId) || item.booksBean
                 }))
             };
@@ -180,7 +178,7 @@ const submit = async () => {
                         <!-- 修改時通常鎖定單據類型，避免邏輯複雜，或允許修改視需求而定。這裡先允許修改，但需注意後端邏輯。 -->
                         <v-radio-group v-model="logData.stockType" inline hide-details label="單據類型">
                             <v-radio label="進貨單 (庫存增加)" :value="1" color="success"></v-radio>
-                            <v-radio label="退貨單 (庫存減少)" :value="2" color="error"></v-radio>
+                            <!-- <v-radio label="退貨單 (庫存減少)" :value="2" color="error"></v-radio> -->
                         </v-radio-group>
                     </v-col>
                 </v-row>

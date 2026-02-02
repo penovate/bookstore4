@@ -3,20 +3,11 @@
     <v-main class="forest-login-bg">
       <v-container class="fill-height d-flex justify-center align-center" fluid>
         <v-hover v-slot="{ isHovering, props }">
-          <v-card
-            v-bind="props"
-            width="100%"
-            max-width="520"
-            :elevation="isHovering ? 12 : 4"
-            class="pa-8 rounded-xl transition-swing forest-card-border"
-          >
+          <v-card v-bind="props" width="100%" max-width="520" :elevation="isHovering ? 12 : 4"
+            class="pa-8 rounded-xl transition-swing forest-card-border">
             <v-card-item class="text-center">
-              <v-icon
-                icon="mdi mdi-book-open-blank-variant-outline"
-                size="x-large"
-                color="primary"
-                class="mb-4"
-              ></v-icon>
+              <v-icon icon="mdi mdi-book-open-blank-variant-outline" size="x-large" color="primary"
+                class="mb-4"></v-icon>
               <v-card-title class="text-h4 font-weight-bold text-primary mb-1">
                 森林書屋
               </v-card-title>
@@ -26,34 +17,14 @@
             <v-divider class="my-6"></v-divider>
 
             <v-form @submit.prevent="handleLogin">
-              <v-text-field
-                v-model="loginForm.email"
-                label="管理員帳號"
-                prepend-inner-icon="mdi-account-circle-outline"
-                variant="outlined"
-                color="primary"
-                class="mb-3"
-                hide-details="auto"
-              ></v-text-field>
+              <v-text-field v-model="loginForm.email" label="管理員帳號" prepend-inner-icon="mdi-account-circle-outline"
+                variant="outlined" color="primary" class="mb-3" hide-details="auto"></v-text-field>
 
-              <v-text-field
-                v-model="loginForm.password"
-                label="密碼"
-                prepend-inner-icon="mdi-lock-open-outline"
-                type="password"
-                variant="outlined"
-                color="primary"
-                class="mb-6"
-                hide-details="auto"
-              ></v-text-field>
+              <v-text-field v-model="loginForm.password" label="密碼" prepend-inner-icon="mdi-lock-open-outline"
+                type="password" variant="outlined" color="primary" class="mb-6" hide-details="auto"></v-text-field>
 
-              <v-btn
-                type="submit"
-                block
-                height="50"
-                color="primary"
-                class="text-h6 font-weight-bold elevation-2 rounded-lg"
-              >
+              <v-btn type="submit" block height="50" color="primary"
+                class="text-h6 font-weight-bold elevation-2 rounded-lg">
                 登入系統
               </v-btn>
             </v-form>
@@ -66,52 +37,32 @@
 
             <v-row dense class="px-2">
               <v-col cols="3">
-                <v-btn
-                  block
-                  variant="outlined"
-                  color="primary"
-                  class="quick-login-btn rounded-lg"
-                  @click="quickLogin('SUPER_ADMIN')"
-                >
+                <v-btn block variant="outlined" color="primary" class="quick-login-btn rounded-lg"
+                  @click="quickLogin('SUPER_ADMIN')">
                   <v-icon icon="mdi-shield-check" size="small"></v-icon>
                   <span class="btn-label">系統管理員</span>
                 </v-btn>
               </v-col>
 
               <v-col cols="3">
-                <v-btn
-                  block
-                  variant="outlined"
-                  color="secondary"
-                  class="quick-login-btn rounded-lg"
-                  @click="quickLogin('ADMIN')"
-                >
+                <v-btn block variant="outlined" color="secondary" class="quick-login-btn rounded-lg"
+                  @click="quickLogin('ADMIN')">
                   <v-icon icon="mdi-account-cog" size="small"></v-icon>
                   <span class="btn-label">營運專員</span>
                 </v-btn>
               </v-col>
 
               <v-col cols="3">
-                <v-btn
-                  block
-                  variant="outlined"
-                  color="grey-darken-1"
-                  class="quick-login-btn rounded-lg"
-                  @click="quickLogin('USER')"
-                >
+                <v-btn block variant="outlined" color="grey-darken-1" class="quick-login-btn rounded-lg"
+                  @click="quickLogin('USER')">
                   <v-icon icon="mdi-account" size="small"></v-icon>
                   <span class="btn-label">正式會員</span>
                 </v-btn>
               </v-col>
 
               <v-col cols="3">
-                <v-btn
-                  block
-                  variant="outlined"
-                  color="error"
-                  class="quick-login-btn rounded-lg"
-                  @click="quickLogin('BANNED')"
-                >
+                <v-btn block variant="outlined" color="error" class="quick-login-btn rounded-lg"
+                  @click="quickLogin('BANNED')">
                   <v-icon icon="mdi-account-off" size="small"></v-icon>
                   <span class="btn-label">被停權者</span>
                 </v-btn>
@@ -144,9 +95,9 @@ const loginForm = reactive({
 
 const quickLogin = (type) => {
   const accounts = {
-    SUPER_ADMIN: { email: 'pen@bookstore.com', pass: '12345' },
-    ADMIN: { email: 'alice.lee@mail.com', pass: '123456' },
-    USER: { email: 'testuser_m@abc.com', pass: 'testtest' },
+    SUPER_ADMIN: { email: 'alex122694@gmail.com', pass: 'alex74586' },
+    ADMIN: { email: 'cl3vul42006@gmail.com', pass: 'alex74586' },
+    USER: { email: 'leemei122694@gmail.com', pass: 'alex74586' },
     BANNED: { email: 'super@bookstore.com', pass: '123' },
   }
   loginForm.email = accounts[type].email

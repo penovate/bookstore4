@@ -6,7 +6,6 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -21,7 +20,7 @@ public class GlobalExceptionHandler {
 		log.warn("業務異常[代碼:{}]:{}", ex.getCode(), ex.getMessage());
 		Map<String, Object> errorResponse = new HashMap<String, Object>();
 		
-		errorResponse.put("success", false);
+		errorResponse.put("status", false);
 		errorResponse.put("code", ex.getCode());
 		errorResponse.put("message", ex.getMessage());
 		

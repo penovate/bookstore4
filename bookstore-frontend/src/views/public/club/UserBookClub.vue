@@ -183,7 +183,7 @@ const handleClubEnd = (club) => {
                     await loadAllClubs();
                 }
             } catch (error) {
-                Swal.fire('失敗', error.response?.data?.message || '操作失敗', 'error');
+                Swal.fire('失敗', error.response?.data?.message || '活動尚未開始不可結束!', 'error');
             }
         }
     });
@@ -223,6 +223,17 @@ const filteredClubs = computed(() => {
 const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleString();
+};
+
+const isEventEnded = (club) => {
+    // 檢查狀態是否已結束 (5) 或已取消 (6)
+    if (club.status === 5 || club.status === 6) return true;
+
+    // 檢查時間是否已過
+    if (club.eventDate) {
+        return new Date(club.eventDate) < new Date();
+    }
+    return false;
 };
 
 const navigateToInsert = () => {
@@ -326,7 +337,9 @@ onMounted(() => {
                                         </v-btn>
                                     </template>
                                     <template v-else-if="myRegistrationIds.has(item.clubId)">
-                                        <v-btn size="small" color="error" variant="flat" @click="handleCancel(item)">
+                                        <!-- 僅在活動尚未結束且未取消時顯示取消報名 -->
+                                        <v-btn v-if="!isEventEnded(item)" size="small" color="error" variant="flat"
+                                            @click="handleCancel(item)">
                                             取消報名
                                         </v-btn>
                                     </template>
@@ -393,8 +406,9 @@ onMounted(() => {
                                             取消
                                         </v-btn>
                                     </template>
-                                    <!-- 允許狀態 1(報名中)、3(已額滿)、4(已截止) 進行結束 (通常活動時間過後) -->
-                                    <template v-if="item.status === 1 || item.status === 3 || item.status === 4">
+                                    <!-- 允許狀態 1(報名中)、3(已額滿)、4(已截止) 且 活動時間已過 進行結束 -->
+                                    <template
+                                        v-if="(item.status === 1 || item.status === 3 || item.status === 4) && isEventEnded(item)">
                                         <v-btn size="small" variant="text" color="orange" @click="handleClubEnd(item)">
                                             <v-icon start icon="mdi-check-circle-outline"></v-icon>
                                             結束活動
@@ -435,7 +449,8 @@ onMounted(() => {
                                     </div>
                                 </template>
                                 <template v-slot:item.actions="{ item }">
-                                    <v-btn size="small" color="error" variant="text" @click="handleCancel(item)">
+                                    <v-btn v-if="!isEventEnded(item)" size="small" color="error" variant="text"
+                                        @click="handleCancel(item)">
                                         取消報名
                                     </v-btn>
                                 </template>

@@ -105,7 +105,7 @@ const router = createRouter({
           path: 'users/admin-chat',
           name: 'admin-chat',
           component: () => import('../views/admin/users/AdminChatView.vue'),
-          meta: {title : '管理員客服中心'},
+          meta: { title: '管理員客服中心' },
         },
         // 2.5 優惠券管理
         {
@@ -152,10 +152,19 @@ const router = createRouter({
           meta: { title: '數據報表分析' },
         },
         {
+          path: 'bookclubs/insert',
+          name: 'admin-bookclubs-insert',
+          component: () => import('../views/admin/bookClubs/insertBookClub.vue'),
+        },
+        {
           path: 'bookclubs',
           name: 'admin-bookclubs',
-          component: () => import('../views/admin/bookClubs/ClubList.vue'),
-          meta: { title: '讀書會管理' },
+          component: () => import('../views/admin/bookClubs/AdminBookClub.vue'),
+        },
+        {
+          path: 'bookclubs/review/:id',
+          name: 'admin-bookclubs-review',
+          component: () => import('../views/admin/bookClubs/AdminBookClubDetail.vue'),
         },
         {
           path: 'orders/items/add/:id',
@@ -212,7 +221,7 @@ const router = createRouter({
           path: 'about-us',
           name: 'about-us',
           component: () => import('../views/public/AboutUs.vue'),
-          meta: {title : '關於我們'},
+          meta: { title: '關於我們' },
         },
         {
           path: 'login',
@@ -266,19 +275,19 @@ const router = createRouter({
           path: 'user-chat',
           name: 'user-chat',
           component: () => import('../views/public/user/UserChat.vue'),
-          meta: {title: '客服專區'},
+          meta: { title: '客服專區' },
         },
         {
           path: 'history',
           name: 'view-history',
           component: () => import('../views/public/user/BrowsingHistory.vue'),
-          meta: { title: '書籍瀏覽紀錄'},
+          meta: { title: '書籍瀏覽紀錄' },
         },
         {
           path: 'wishlist',
           name: 'wishlist',
           component: () => import('../views/public/user/WishList.vue'),
-          meta: { title: '書籍收藏清單'},
+          meta: { title: '書籍收藏清單' },
         },
         {
           path: 'books',
@@ -339,6 +348,22 @@ const router = createRouter({
           component: () => import('../views/public/reviews/BookReviewsHome.vue'),
           meta: { title: '讀者書評' }, 
         },
+        // 讀書會專區
+        {
+          path: 'bookclubs',
+          name: 'user-bookclubs',
+          component: () => import('../views/public/club/UserBookClub.vue'),
+        },
+        {
+          path: 'bookclubs/insert',
+          name: 'user-bookclubs-insert',
+          component: () => import('../views/public/club/UserInsertBookClub.vue'),
+        },
+        {
+          path: 'bookclubs/detail/:id',
+          name: 'user-bookclub-detail-page',
+          component: () => import('../views/public/club/UserBookClubDetail.vue'),
+        },
       ],
     },
   ],
@@ -348,7 +373,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('userToken')
   const role = localStorage.getItem('userRole')
-  
+
   const pageTitle = to.meta.title
   document.title = pageTitle ? `${pageTitle} | 森林書屋` : '森林書屋'
 
@@ -363,7 +388,7 @@ router.beforeEach((to, from, next) => {
   if (isAdminRoute) {
     if (!token) {
       return next({ name: 'login', query: { redirect: to.fullPath } })
-    } 
+    }
     if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
       return next()
     } else {

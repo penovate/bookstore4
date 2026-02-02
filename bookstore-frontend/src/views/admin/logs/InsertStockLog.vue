@@ -47,6 +47,43 @@ const addItem = () => {
     });
 };
 
+// [新增] 隨機挑選陣列中的 n 個元素
+const getRandomSubarray = (arr, size) => {
+    const shuffled = arr.slice(0);
+    let i = arr.length;
+    let temp, index;
+    while (i--) {
+        index = Math.floor((i + 1) * Math.random());
+        temp = shuffled[index];
+        shuffled[index] = shuffled[i];
+        shuffled[i] = temp;
+    }
+    return shuffled.slice(0, size);
+};
+
+// [新增] 一鍵輸入測試資料
+const oneClickInput = () => {
+    if (books.value.length < 5) {
+        Swal.fire('提示', '書籍資料不足，無法執行一鍵輸入', 'warning');
+        return;
+    }
+
+    // 1. 設定廠商
+    logData.value.wholesaler = '資展批發商';
+
+    // 2. 隨機挑選 5 本書
+    const selectedBooks = getRandomSubarray(books.value, 20);
+
+    // 3. 填入明細
+    logData.value.logItemBeans = selectedBooks.map(book => ({
+        booksBean: book, // 設定完整物件以配合 v-autocomplete
+        changeQty: Math.floor(Math.random() * 20) + 1,
+        costPrice: Math.floor(book.price * 0.6)
+    }));
+    
+    
+};
+
 // 移除明細列
 const removeItem = (index) => {
     if (logData.value.logItemBeans.length > 1) {
@@ -134,7 +171,12 @@ const submit = async () => {
 
 <template>
     <div class="pa-4">
-        <h2 class="text-h4 font-weight-bold text-primary mb-6">新增進貨單</h2>
+        <div class="d-flex align-center mb-6">
+            <h2 class="text-h4 font-weight-bold text-primary">新增進貨單</h2>
+            <v-btn color="secondary" prepend-icon="mdi-flash" class="ml-4" @click="oneClickInput">
+                一鍵輸入
+            </v-btn>
+        </div>
 
         <v-card class="rounded-lg elevation-2 pa-6" :loading="loading">
             <v-form @submit.prevent="submit">

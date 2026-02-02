@@ -205,9 +205,17 @@ onUnmounted(() => {
 
       <template v-slot:append>
         <div class="pa-2">
-          <v-btn block color="accent" variant="tonal" prepend-icon="mdi-storefront-outline" class="mb-2 text-white" href="/dev/user/home" target="_blank">
-            前台網頁
-          </v-btn>
+          <v-btn 
+  block 
+  color="accent" 
+  variant="tonal" 
+  prepend-icon="mdi-storefront-outline" 
+  class="mb-2"
+  href="/dev/user/home"
+  target="_blank"
+>
+  <span class="text-white">前台網頁</span>
+</v-btn>
           <v-btn block color="secondary" @click="handleLogout" prepend-icon="mdi-logout">
             登出
           </v-btn>
@@ -218,7 +226,6 @@ onUnmounted(() => {
     <v-app-bar elevation="0" class="bg-background" density="compact">
       <v-app-bar-nav-icon variant="text" color="primary" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-spacer></v-spacer>
-      <v-btn icon="mdi-bell-outline" color="secondary" variant="text"></v-btn>
     </v-app-bar>
 
     <v-main class="bg-background" style="min-height: 100vh">

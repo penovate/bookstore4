@@ -5,7 +5,7 @@ export const headers = [
   { title: '人數', key: 'participants', sortable: true },
   { title: '地點', key: 'location', sortable: false },
   { title: '詳細資訊', key: 'details', sortable: false },
-  { title: '操作', key: 'actions', sortable: false },
+  { title: '報名', key: 'actions', sortable: false },
 ]
 
 export const statusMap = {

@@ -133,6 +133,64 @@ const handleCancel = (club) => {
     });
 };
 
+// 發起人取消讀書會
+const handleClubCancel = (club) => {
+    Swal.fire({
+        title: '取消讀書會',
+        text: `確定要取消讀書會「${club.clubName}」嗎？取消後將無法復原及修改！`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '確定取消',
+        cancelButtonText: '保留',
+        confirmButtonColor: '#d33'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await bookClubService.cancelClub(club.clubId);
+                Swal.fire('成功', '讀書會已取消', 'success');
+                // Refresh data
+                if (tab.value === 'hosted') {
+                    await loadHostedClubs();
+                } else {
+                    await loadAllClubs();
+                }
+            } catch (error) {
+                Swal.fire('失敗', error.response?.data?.message || '取消失敗', 'error');
+            }
+        }
+    });
+};
+
+// 發起人結束讀書會
+const handleClubEnd = (club) => {
+    Swal.fire({
+        title: '結束讀書會',
+        text: `確定要結束讀書會「${club.clubName}」嗎？結束後將結算積分給參與者！`,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: '確定結束',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#2E5C43'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await bookClubService.endClub(club.clubId);
+                Swal.fire('成功', '讀書會已結束，並已發放積分！', 'success');
+                // Refresh data
+                if (tab.value === 'hosted') {
+                    await loadHostedClubs();
+                } else {
+                    await loadAllClubs();
+                }
+            } catch (error) {
+                Swal.fire('失敗', error.response?.data?.message || '操作失敗', 'error');
+            }
+        }
+    });
+};
+
+
+
 // 發起人檢視明細
 const openDetails = (club) => {
     selectedClubId.value = club.clubId;
@@ -325,6 +383,21 @@ onMounted(() => {
                                         <v-btn size="small" variant="text" color="primary" @click="openDetails(item)">
                                             <v-icon start icon="mdi-clipboard-list"></v-icon>
                                             報名明細
+                                        </v-btn>
+                                    </template>
+                                    <!-- 僅允許狀態 1(報名中)、3(已額滿)、4(已截止) 進行取消 -->
+                                    <template v-if="item.status === 1 || item.status === 3 || item.status === 4">
+                                        <v-btn size="small" variant="text" color="error"
+                                            @click="handleClubCancel(item)">
+                                            <v-icon start icon="mdi-cancel"></v-icon>
+                                            取消
+                                        </v-btn>
+                                    </template>
+                                    <!-- 允許狀態 1(報名中)、3(已額滿)、4(已截止) 進行結束 (通常活動時間過後) -->
+                                    <template v-if="item.status === 1 || item.status === 3 || item.status === 4">
+                                        <v-btn size="small" variant="text" color="orange" @click="handleClubEnd(item)">
+                                            <v-icon start icon="mdi-check-circle-outline"></v-icon>
+                                            結束活動
                                         </v-btn>
                                     </template>
                                 </template>

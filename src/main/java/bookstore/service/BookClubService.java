@@ -48,6 +48,9 @@ public class BookClubService {
 	@Autowired
 	private ClubDetailRepository clubDetailRepository;
 
+	@Autowired
+	private bookstore.repository.ClubRegistrationsRepository clubRegistrationsRepository;
+
 	private static final String ROOT_PATH = "C:/uploads/proof/";
 
 	// 查詢全部讀書會
@@ -211,16 +214,24 @@ public class BookClubService {
 
 		// 身分驗證
 		Optional<UserBean> host = userRepository.findById(userId);
-		if (host.isEmpty()) { // Fixed: host is Optional, check isEmpty()
+		if (host.isEmpty()) {
 			log.warn("查無ID:{}的會員資訊", userId);
 			throw new BusinessException(404, "查無該會員資訊");
 		}
-		log.info("會員ID{}，姓名:{}正在發起讀書會", userId, host.get().getUserName());
 
-		// 身分等級驗證，讀書會發起場數限制
-		/*
-		 * 
-		 */
+		UserBean mainHost = host.get();
+
+		// 積分驗證 (一般會員需 >= 500)
+		int role = mainHost.getUserType() != null ? mainHost.getUserType() : ClubConstants.ROLE_MEMBER;
+
+		if (role == ClubConstants.ROLE_MEMBER) {
+			int points = mainHost.getPoints() != null ? mainHost.getPoints() : 0;
+			if (points < 500) {
+				throw new BusinessException(403, "您的積分不足 500，無法發起讀書會");
+			}
+		}
+
+		log.info("會員ID{}，姓名:{}正在發起讀書會", userId, mainHost.getUserName());
 
 		// 初始狀態決定
 		int targetStatus;
@@ -235,7 +246,6 @@ public class BookClubService {
 			targetStatus = ClubConstants.STATUS_PEDING;
 		}
 
-		UserBean mainHost = host.get();
 		BookClubsBean mainclub = new BookClubsBean();
 		mainclub.setHost(mainHost);
 		mainclub.setStatus(targetStatus);
@@ -453,6 +463,62 @@ public class BookClubService {
 		club.setRejectionReason(reason);
 
 		log.info("管理員ID:{} 駁回了讀書會ID:{}，原因:{}", adminId, clubId, reason);
+		return bookClubsRepository.save(club);
+	}
+
+	// 發起人結束讀書會 (並結算積分)
+	public BookClubsBean endClub(Integer clubId, Integer userId) {
+		BookClubsBean club = getClub(clubId);
+
+		// 權限檢查
+		if (!Objects.equals(club.getHost().getUserId(), userId)) {
+			throw new BusinessException(403, "您無權結束此讀書會");
+		}
+
+		// 狀態檢查 (需為 報名中/已額滿/已截止)
+		int status = club.getStatus();
+		if (status != ClubConstants.STATUS_APPROVED &&
+				status != ClubConstants.STATUS_FULL &&
+				status != ClubConstants.STATUS_DEADLINE) {
+			throw new BusinessException(400, "目前狀態無法結束讀書會");
+		}
+
+		club.setStatus(ClubConstants.STATUS_ENDED);
+		bookClubsRepository.save(club);
+
+		// 積分結算: 針對有效報名者 (status=1) 增加 100 積分
+		List<bookstore.bean.ClubRegistrationsBean> registrations = clubRegistrationsRepository.findAllByClubId(clubId);
+		for (bookstore.bean.ClubRegistrationsBean reg : registrations) {
+			if (reg.getStatus() == 1) { // 1: 報名成功
+				UserBean participant = reg.getUser();
+				int currentPoints = participant.getPoints() != null ? participant.getPoints() : 0;
+				participant.setPoints(currentPoints + 100);
+				userRepository.save(participant);
+				log.info("會員ID:{} 參加讀書會ID:{} 獲得 100 積分", participant.getUserId(), clubId);
+			}
+		}
+
+		log.info("讀書會ID:{} 已結束，並完成積分發放", clubId);
+		return club;
+	}
+
+	// 發起人取消讀書會
+	public BookClubsBean cancelClub(Integer clubId, Integer userId) {
+		BookClubsBean club = getClub(clubId);
+
+		// 權限檢查: 必須是發起人
+		if (!Objects.equals(club.getHost().getUserId(), userId)) {
+			throw new BusinessException(403, "您無權取消此讀書會");
+		}
+
+		int status = club.getStatus();
+		if (status == ClubConstants.STATUS_ENDED || status == ClubConstants.STATUS_CANCELLED
+				|| status == ClubConstants.STATUS_REJECTED) {
+			throw new BusinessException(400, "目前狀態無法取消 (已結束/已取消/已駁回)");
+		}
+
+		club.setStatus(ClubConstants.STATUS_CANCELLED);
+		log.info("發起人ID:{} 取消了讀書會ID:{}", userId, clubId);
 		return bookClubsRepository.save(club);
 	}
 

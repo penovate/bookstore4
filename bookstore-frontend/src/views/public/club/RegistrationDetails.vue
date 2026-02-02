@@ -135,7 +135,7 @@ onMounted(() => {
                             :disabled="item.checkIn" variant="elevated" @click="handleCheckIn(item)">
                             {{ item.checkIn ? '已完成' : '報到' }}
                         </v-btn>
-                        <span v-else class="text-caption text-grey">不可操作</span>
+                        <span v-else class="text-caption text-grey">該會員已取消報名</span>
                     </template>
 
                     <template v-slot:no-data>

@@ -72,6 +72,16 @@ export default {
     return apiClient.delete(`/clubs/delete/${id}`)
   },
 
+  // 取消讀書會 (發起人)
+  cancelClub(id) {
+    return apiClient.put(`/clubs/cancel/${id}`)
+  },
+
+  // 結束讀書會 (發起人)
+  endClub(id) {
+    return apiClient.put(`/clubs/end/${id}`)
+  },
+
   // 新增讀書會
   createClub(clubData, proofFile) {
     const formData = new FormData()

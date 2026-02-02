@@ -167,13 +167,14 @@ const router = createRouter({
         {
           path: 'reviews',
           name: 'admin-reviews',
-          component: () => import('../views/admin/reviews/ReviewManagement.vue')
+          component: () => import('../views/admin/reviews/ReviewManagement.vue'),
+          meta: { title: '書籍評價'},
         },
         {
           path: 'reviews/book/:bookId',
           name: 'admin-book-reviews',
           component: () => import('../views/admin/reviews/ReviewList.vue'),
-          meta: { title: '評價管理' },
+          meta: { title: '評價資料' },
         },
         {
           path: 'reviews/:id',
@@ -197,7 +198,8 @@ const router = createRouter({
         {
           path: 'reviews/reports',
           name: 'admin-review-reports',
-          component: () => import('../views/admin/reports/ReportList.vue')
+          component: () => import('../views/admin/reports/ReportList.vue'),
+          meta: { title: '檢舉列表' },
         },
       ],
     },
@@ -288,6 +290,7 @@ const router = createRouter({
           path: 'books/:id',
           name: 'user-book-detail',
           component: () => import('../views/public/books/UserBookDetail.vue'),
+          // meta: { title: '書籍專區' },
         },
         {
           path: 'store',
@@ -316,6 +319,7 @@ const router = createRouter({
           path: 'orders/success',
           name: 'orderSuccess',
           component: () => import('../views/public/orders/OrderSuccess.vue'),
+          meta: { title: '訂單完成' },
         },
         {
           path: 'orders',
@@ -332,7 +336,8 @@ const router = createRouter({
         {
           path: 'reviews', 
           name: 'user-reviews',
-          component: () => import('../views/public/reviews/BookReviewsHome.vue'), 
+          component: () => import('../views/public/reviews/BookReviewsHome.vue'),
+          meta: { title: '讀者書評' }, 
         },
       ],
     },

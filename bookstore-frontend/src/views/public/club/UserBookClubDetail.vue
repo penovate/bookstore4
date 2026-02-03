@@ -28,7 +28,7 @@ const getStatusInfo = (status) => {
 };
 
 const getDifficultyLabel = (level) => {
-    const map = { 1: '入門', 2: '進階', 3: '專家 (需佐證)' };
+    const map = { 1: '樹苗級', 2: '樹幹級', 3: '巨木級(須提供專業相關證明)' };
     return map[level] || '一般';
 };
 

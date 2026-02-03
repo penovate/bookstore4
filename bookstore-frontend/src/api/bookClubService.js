@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = '/api/clubs'
+const API_URL = '/api'
 const apiClient = axios.create({
   baseURL: API_URL,
   withCredentials: true,
@@ -40,36 +40,46 @@ apiClient.interceptors.response.use(
 export default {
   // 取得所有讀書會
   getAllClubs() {
-    return apiClient.get('/allClubs')
+    return apiClient.get('/clubs/allClubs')
   },
 
   // 取得我發起的讀書會
   getMyHostedClubs() {
-    return apiClient.get('/my-hosted')
+    return apiClient.get('/clubs/my-hosted')
   },
 
   // 取得讀書會分類
   getClubCategories() {
-    return apiClient.get('/categories')
+    return apiClient.get('/clubs/categories')
   },
 
   // 取得單筆讀書會
   getClub(id) {
-    return apiClient.get(`/clubs/${id}`)
+    return apiClient.get(`/clubs/clubs/${id}`)
   },
 
   // 管理員審核
   approveClub(id) {
-    return apiClient.put(`/approve/${id}`)
+    return apiClient.put(`/clubs/approve/${id}`)
   },
 
   rejectClub(id, reason) {
-    return apiClient.put(`/reject/${id}`, { reason })
+    return apiClient.put(`/clubs/reject/${id}`, { reason })
   },
 
   // 刪除讀書會
   deleteClub(id) {
-    return apiClient.delete(`/delete/${id}`)
+    return apiClient.delete(`/clubs/delete/${id}`)
+  },
+
+  // 取消讀書會 (發起人)
+  cancelClub(id) {
+    return apiClient.put(`/clubs/cancel/${id}`)
+  },
+
+  // 結束讀書會 (發起人)
+  endClub(id) {
+    return apiClient.put(`/clubs/end/${id}`)
   },
 
   // 新增讀書會
@@ -84,7 +94,7 @@ export default {
       formData.append('proofFile', proofFile)
     }
 
-    return apiClient.post('/insert', formData, {
+    return apiClient.post('/clubs/insert', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
@@ -103,7 +113,7 @@ export default {
     }
 
     // 使用 PUT 方法
-    return apiClient.put(`/update/${id}`, formData, {
+    return apiClient.put(`/clubs/update/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
@@ -124,7 +134,7 @@ export default {
 
   // 取得我參加的讀書會
   getMyRegistrations() {
-    return apiClient.get('/reg/my-registrations')
+    return apiClient.get(`/reg/my-registrations`)
   },
 
   // 取得某讀書會的報名名單 (發起人檢視)

@@ -53,7 +53,9 @@ public class WebConfig implements WebMvcConfigurer {
 							"/api/books/genres",
 							"/api/book/delete/**")
 					//
-					.excludePathPatterns("/orders/ecpay/**");
+					.excludePathPatterns("/orders/ecpay/**")
+					.excludePathPatterns("/orders/ecpay/**")
+					.excludePathPatterns("/uploads/**");
 			// .addPathPatterns("/api/books**")
 			// .excludePathPatterns("/api/books/getAllBooks",
 			// "api/books/getBook/**",
@@ -67,6 +69,8 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		registry.addResourceHandler("/upload-images/**")
 				.addResourceLocations("file:" + uploadDir);
+		registry.addResourceHandler("/uploads/**")
+        		.addResourceLocations("file:///C:/uploads/");
 	}
 
 }

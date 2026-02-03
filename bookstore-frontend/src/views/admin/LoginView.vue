@@ -9,7 +9,7 @@
               <v-icon icon="mdi mdi-book-open-blank-variant-outline" size="x-large" color="primary"
                 class="mb-4"></v-icon>
               <v-card-title class="text-h4 font-weight-bold text-primary mb-1">
-                BookStore
+                森林書屋
               </v-card-title>
               <v-card-subtitle class="text-subtitle-1">後台管理系統</v-card-subtitle>
             </v-card-item>
@@ -40,7 +40,7 @@
                 <v-btn block variant="outlined" color="primary" class="quick-login-btn rounded-lg"
                   @click="quickLogin('SUPER_ADMIN')">
                   <v-icon icon="mdi-shield-check" size="small"></v-icon>
-                  <span class="btn-label">超管</span>
+                  <span class="btn-label">系統管理員</span>
                 </v-btn>
               </v-col>
 
@@ -48,7 +48,7 @@
                 <v-btn block variant="outlined" color="secondary" class="quick-login-btn rounded-lg"
                   @click="quickLogin('ADMIN')">
                   <v-icon icon="mdi-account-cog" size="small"></v-icon>
-                  <span class="btn-label">管理員</span>
+                  <span class="btn-label">營運專員</span>
                 </v-btn>
               </v-col>
 
@@ -56,7 +56,7 @@
                 <v-btn block variant="outlined" color="grey-darken-1" class="quick-login-btn rounded-lg"
                   @click="quickLogin('USER')">
                   <v-icon icon="mdi-account" size="small"></v-icon>
-                  <span class="btn-label">會員</span>
+                  <span class="btn-label">正式會員</span>
                 </v-btn>
               </v-col>
 
@@ -64,13 +64,13 @@
                 <v-btn block variant="outlined" color="error" class="quick-login-btn rounded-lg"
                   @click="quickLogin('BANNED')">
                   <v-icon icon="mdi-account-off" size="small"></v-icon>
-                  <span class="btn-label">停權</span>
+                  <span class="btn-label">被停權者</span>
                 </v-btn>
               </v-col>
             </v-row>
 
             <div class="text-center text-caption text-grey-lighten-1 mt-8">
-              © 2026 網路書店系統管理後台
+              © 2026 森林書屋管理後台
             </div>
           </v-card>
         </v-hover>
@@ -95,9 +95,9 @@ const loginForm = reactive({
 
 const quickLogin = (type) => {
   const accounts = {
-    SUPER_ADMIN: { email: 'alex122694@gmail.com', pass: '74586' },
-    ADMIN: { email: 'vip.reader@test.com', pass: 'vip777' },
-    USER: { email: 'vip.reader@test.com', pass: 'vip777' },
+    SUPER_ADMIN: { email: 'alex122694@gmail.com', pass: 'alex74586' },
+    ADMIN: { email: 'cl3vul42006@gmail.com', pass: 'alex74586' },
+    USER: { email: 'leemei122694@gmail.com', pass: 'alex74586' },
     BANNED: { email: 'super@bookstore.com', pass: '123' },
   }
   loginForm.email = accounts[type].email
@@ -124,12 +124,9 @@ const handleLogin = async () => {
         return
       }
 
-      userStore.login(response.data)
+      localStorage.clear()
 
-      localStorage.setItem('userToken', response.data.token)
-      localStorage.setItem('userRole', response.data.role)
-      localStorage.setItem('userName', response.data.userName || '')
-      localStorage.setItem('userId', response.data.userId)
+      await userStore.login(response.data)
 
       Swal.fire({
         icon: 'success',
@@ -139,7 +136,7 @@ const handleLogin = async () => {
         timer: 1500,
         timerProgressBar: true,
       }).then(() => {
-        router.push('/home')
+        window.location.href = '/home'
       })
     } else {
       Swal.fire({

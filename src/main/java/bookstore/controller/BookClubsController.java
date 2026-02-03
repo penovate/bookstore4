@@ -21,8 +21,11 @@ import bookstore.aop.BusinessException;
 import bookstore.bean.BookClubsBean;
 import bookstore.bean.ClubCategoriesBean;
 import bookstore.bean.ClubConstants;
+import bookstore.bean.UserBean;
 import bookstore.dto.BookClubRequestDTO;
 import bookstore.service.BookClubService;
+import bookstore.service.EmailService;
+import bookstore.service.UsersService;
 import bookstore.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -31,10 +34,18 @@ import jakarta.servlet.http.HttpServletRequest;
 @DynamicInsert
 public class BookClubsController {
 
+	private final EmailService emailService;
+
 	@Autowired
 	private BookClubService bookClubService;
 	@Autowired
 	private JwtUtil jwtUtil;
+	@Autowired
+	private UsersService usersService;
+
+	BookClubsController(EmailService emailService) {
+		this.emailService = emailService;
+	}
 
 	@GetMapping("/allClubs")
 	public ResponseEntity<List<BookClubsBean>> getAllClubs() {
@@ -78,6 +89,8 @@ public class BookClubsController {
 		}
 
 		BookClubsBean created = bookClubService.createBookClub(dto, userId);
+		UserBean user = usersService.findById(userId);
+		emailService.sendPendingMailToHost(user.getEmail(), created.getClubName(), user.getUserName());
 		return ResponseEntity.ok(created);
 	}
 
@@ -102,9 +115,11 @@ public class BookClubsController {
 	@PutMapping("/approve/{clubId}")
 	public ResponseEntity<?> approveClub(@PathVariable Integer clubId, HttpServletRequest request) {
 		Integer adminId = (Integer) request.getAttribute("userId");
+		UserBean user = usersService.findById(adminId);
 		// 權限檢查可在此做，或依賴 Security Filter (假設 /api/admin/** 或內部邏輯控制)
 		// 這裡假設能進到後台 API 的都已經過初步驗證，Service 也可再由 Token Role 驗證
 		BookClubsBean club = bookClubService.approveClub(clubId, adminId);
+		emailService.sendAccetToHost(club.getHost().getEmail(), club.getClubName(), user.getUserName());
 		return ResponseEntity.ok(club);
 	}
 
@@ -113,8 +128,30 @@ public class BookClubsController {
 			@org.springframework.web.bind.annotation.RequestBody java.util.Map<String, String> body,
 			HttpServletRequest request) {
 		Integer adminId = (Integer) request.getAttribute("userId");
+		UserBean host = usersService.findById(adminId);
 		String reason = body.get("reason");
-		BookClubsBean club = bookClubService.rejectClub(clubId, reason, adminId);
+		BookClubsBean club = bookClubService.getClub(clubId);
+		emailService.sendRejectToHost(club.getHost().getEmail(), club.getClubName(), host.getUserName(), reason);
+		return ResponseEntity.ok(club);
+	}
+
+	@PutMapping("/cancel/{clubId}")
+	public ResponseEntity<?> cancelClub(@PathVariable Integer clubId, HttpServletRequest request) {
+		Integer userId = (Integer) request.getAttribute("userId");
+		if (userId == null) {
+			return ResponseEntity.status(401).build();
+		}
+		BookClubsBean club = bookClubService.cancelClub(clubId, userId);
+		return ResponseEntity.ok(club);
+	}
+
+	@PutMapping("/end/{clubId}")
+	public ResponseEntity<?> endClub(@PathVariable Integer clubId, HttpServletRequest request) {
+		Integer userId = (Integer) request.getAttribute("userId");
+		if (userId == null) {
+			return ResponseEntity.status(401).build();
+		}
+		BookClubsBean club = bookClubService.endClub(clubId, userId);
 		return ResponseEntity.ok(club);
 	}
 

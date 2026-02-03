@@ -28,7 +28,11 @@ const getStatusInfo = (status) => {
 };
 
 const getDifficultyLabel = (level) => {
+<<<<<<< HEAD
     const map = { 1: '樹苗級', 2: '樹幹級', 3: '巨木級(須提供專業相關證明)' };
+=======
+    const map = { 1: '樹苗級', 2: '樹幹級', 3: '巨木級' };
+>>>>>>> 7adbf3480b5db2ca72535c3176de7c20c97fa995
     return map[level] || '一般';
 };
 
@@ -133,7 +137,8 @@ onMounted(async () => {
                                             size="large"></v-icon>
                                         <div>
                                             <div class="text-caption text-grey">活動時間</div>
-                                            <div class="text-subtitle-1 font-weight-medium">{{ formatDate(club.eventDate) }}
+                                            <div class="text-subtitle-1 font-weight-medium">{{
+                                                formatDate(club.eventDate) }}
                                             </div>
                                         </div>
                                     </div>
@@ -144,7 +149,8 @@ onMounted(async () => {
                                             size="large"></v-icon>
                                         <div>
                                             <div class="text-caption text-grey">報名截止</div>
-                                            <div class="text-subtitle-1 font-weight-medium">{{ formatDate(club.deadline) }}
+                                            <div class="text-subtitle-1 font-weight-medium">{{ formatDate(club.deadline)
+                                                }}
                                             </div>
                                         </div>
                                     </div>
@@ -155,7 +161,8 @@ onMounted(async () => {
                                             size="large"></v-icon>
                                         <div>
                                             <div class="text-caption text-grey">活動地點</div>
-                                            <div class="text-subtitle-1 font-weight-medium">{{ club.location || '線上/未定' }}
+                                            <div class="text-subtitle-1 font-weight-medium">{{ club.location || '線上/未定'
+                                                }}
                                             </div>
                                         </div>
                                     </div>
@@ -204,7 +211,9 @@ onMounted(async () => {
                                     </v-alert>
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-alert icon="mdi-stairs" :color="getDifficultyColor(club.clubDetail?.diffultLevel)" variant="tonal" class="h-100">
+                                    <v-alert icon="mdi-stairs"
+                                        :color="getDifficultyColor(club.clubDetail?.diffultLevel)" variant="tonal"
+                                        class="h-100">
                                         <div class="text-subtitle-2 font-weight-bold mb-1">難度等級</div>
                                         <div class="text-body-2">
                                             {{ getDifficultyLabel(club.clubDetail?.diffultLevel) }}
@@ -225,6 +234,7 @@ onMounted(async () => {
 .text-pre-wrap {
     white-space: pre-wrap;
 }
+
 .gap-2 {
     gap: 8px;
 }

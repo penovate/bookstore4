@@ -14,6 +14,8 @@ const book = ref({})
 const loading = ref(false)
 const cartStore = useCartStore()
 const quantity = ref(1)
+const isFavorited = ref(false)
+const userId = localStorage.getItem('userId')
 
 const bookId = route.params.id
 
@@ -114,18 +116,76 @@ const buyNow = async () => {
   }
 }
 
+const checkFavoriteStatus = async () => {
+  if (!userId || !bookId) return
+  try {
+    const response = await axios.get(`http://localhost:8080/api/wishlist/check`, {
+      params: { userId: parseInt(userId), bookId: parseInt(bookId) }
+    })
+    isFavorited.value = response.data
+  } catch (error) {
+    console.error('檢查收藏狀態失敗:', error)
+  }
+}
+
 // 收藏
-const addToCollection = () => {
-  Swal.fire('success', '已加入收藏清單', 'success')
+const addToCollection = async () => {
+  if (!userId) {
+    Swal.fire('請先登入', '登入後即可收藏書籍', 'warning').then(() => {
+      router.push('/login')
+    })
+    return
+  }
+
+  try {
+    const response = await axios.post('http://localhost:8080/api/wishlist/toggle', {
+      userId: parseInt(userId),
+      bookId: parseInt(bookId)
+    })
+
+    if (response.data.success) {
+      isFavorited.value = response.data.isFavorited 
+      
+      Swal.fire({
+        icon: 'success',
+        title: response.data.message, 
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 1500,
+      })
+    }
+  } catch (error) {
+    console.error('收藏操作失敗:', error)
+    Swal.fire('錯誤', '操作失敗，請稍後再試', 'error')
+  }
 }
 
 const goBack = () => {
   router.go(-1)
 }
 
+const recordView = async () => {
+  const userId = localStorage.getItem('userId')
+  
+  if (userId && bookId) {
+    try {
+      await axios.post('http://localhost:8080/api/history/record', {
+        userId: parseInt(userId),
+        bookId: parseInt(bookId)
+      })
+      console.log('瀏覽紀錄已更新')
+    } catch (error) {
+      console.error('更新瀏覽紀錄失敗:', error)
+    }
+  }
+}
+
 onMounted(() => {
   if (bookId) {
     loadBookMsg()
+    recordView()
+    checkFavoriteStatus()
   }
 })
 </script>
@@ -196,12 +256,12 @@ onMounted(() => {
             <div class="d-flex gap-3 mt-4">
               <v-btn
                 variant="outlined"
-                color="primary"
+                :color="isFavorited ? 'error' : 'primary'" 
                 size="large"
-                prepend-icon="mdi-heart-outline"
+                :prepend-icon="isFavorited ? 'mdi-heart' : 'mdi-heart-outline'"
                 @click="addToCollection"
               >
-                收藏
+                {{ isFavorited ? '已收藏' : '收藏' }}
               </v-btn>
               <v-btn
                 variant="tonal"

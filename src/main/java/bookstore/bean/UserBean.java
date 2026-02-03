@@ -69,7 +69,7 @@ public class UserBean implements java.io.Serializable {
 	@Column(name = "address")
 	private String address;
 	
-	@Column(name = "img")
+	@Column(name = "img", length = 255) 
 	private String img;
 	
 	@Column(name = "points")
@@ -102,11 +102,23 @@ public class UserBean implements java.io.Serializable {
 	@OneToMany(mappedBy = "userBean", fetch = FetchType.LAZY)
 	@JsonIgnore
 	@Builder.Default
+	@ToString.Exclude
 	private List<Orders> orders = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "adminUser", cascade = CascadeType.ALL)
 	@JsonIgnore
+	@ToString.Exclude
 	private List<UserLogBean> logs;
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonIgnore
+	@ToString.Exclude
+	private List<BrowsingHistoryBean> browsingHistories;
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonIgnore
+	@ToString.Exclude
+	private List<WishlistBean> wishlists = new ArrayList<>();
 
 //	@OneToMany(mappedBy = "userId", cascade = CascadeType.ALL)
 //	private List<Cart> carts = new ArrayList<>();

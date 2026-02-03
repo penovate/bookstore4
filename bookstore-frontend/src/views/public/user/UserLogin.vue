@@ -72,7 +72,7 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
@@ -109,8 +109,8 @@ const getLabel = (type) => {
 
 const quickLogin = (type) => {
   const accounts = {
-    SUPER_ADMIN: { email: 'alex122694@gmail.com', pass: '74586' },
-    ADMIN: { email: 'alice.lee@mail.com', pass: '123456' },
+    SUPER_ADMIN: { email: 'alex122694@gmail.com', pass: 'alex74586' },
+    ADMIN: { email: 'cl3vul42006@gmail.com', pass: 'alex74586' },
     USER: { email: 'leemei122694@gmail.com', pass: 'alex74586' },
     BANNED: { email: 'super@bookstore.com', pass: '123' },
   }
@@ -217,6 +217,12 @@ const handleLogin = async () => {
     Swal.fire({ icon: 'error', title: '連線失敗', text: '伺服器目前無法連線，請稍後再試' })
   }
 }
+
+onMounted(() => {
+  if (userStore.isLoggedIn) {
+    router.replace('/dev/user/home')
+  }
+})
 </script>
 
 <style scoped>

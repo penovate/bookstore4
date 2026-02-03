@@ -3,27 +3,16 @@
     <v-main class="forest-home-bg">
       <v-container class="fill-height d-flex flex-column justify-center align-center" fluid>
         <div class="text-center mb-10">
-          <h1 class="forest-main-title mb-2">網路書店後台系統</h1>
+          <h1 class="forest-main-title mb-2">森林書屋後台系統</h1>
           <p class="forest-subtitle">核心管理選單</p>
         </div>
 
         <v-row class="menu-grid" justify="center">
-          <v-col
-            v-for="menu in menuItems"
-            :key="menu.title"
-            cols="12"
-            sm="6"
-            md="3"
-            lg="3"
-            class="pa-3"
-          >
+          <v-col v-for="menu in menuItems" :key="menu.title" cols="12" sm="6" md="3" lg="3" class="pa-3">
             <v-hover v-slot="{ isHovering, props }">
-              <v-card
-                v-bind="props"
-                :elevation="isHovering ? 12 : 2"
+              <v-card v-bind="props" :elevation="isHovering ? 12 : 2"
                 class="menu-tile d-flex flex-column align-center justify-center transition-swing rounded-xl"
-                @click="handleMenuClick(menu)"
-              >
+                @click="handleMenuClick(menu)">
                 <v-icon :icon="menu.icon" size="42" color="primary" class="mb-3"></v-icon>
                 <div class="menu-text font-weight-bold">
                   {{ menu.title }}
@@ -34,18 +23,12 @@
           </v-col>
         </v-row>
 
-        <v-btn
-          variant="tonal"
-          color="primary"
-          prepend-icon="mdi-logout"
-          size="large"
-          class="mt-12 px-10 rounded-lg font-weight-bold"
-          @click="handleLogout"
-        >
+        <v-btn variant="tonal" color="primary" prepend-icon="mdi-logout" size="large"
+          class="mt-12 px-10 rounded-lg font-weight-bold" @click="handleLogout">
           登出系統
         </v-btn>
 
-        <div class="text-caption text-grey-darken-1 mt-6">© 2026 BookStore Management System</div>
+        <div class="text-caption text-grey-darken-1 mt-6">© 2026 Forest BookStore Management System</div>
       </v-container>
     </v-main>
   </v-app>
@@ -66,7 +49,7 @@ const menuItems = [
   { title: '進退貨管理', icon: 'mdi-swap-horizontal-bold', path: '/dev/admin/logs' },
   { title: '數據報表分析', icon: 'mdi-chart-bar', path: '/reports' },
   { title: '讀書會管理', icon: 'mdi-book-multiple', path: '/dev/admin/bookclubs' },
-  { title: '網路書店前台', icon: 'mdi-storefront-outline', path: 'dev/user/home' },
+  { title: '線上書店前台', icon: 'mdi-storefront-outline', path: '/dev/user/home' },
 ]
 
 const handleLogout = () => {
@@ -149,6 +132,7 @@ const handleMenuClick = (menu) => {
     .tile-indicator {
       transform: translateY(0);
     }
+
     .v-icon {
       transform: scale(1.1);
     }

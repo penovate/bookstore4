@@ -1,9 +1,17 @@
 package bookstore.service;
 
+import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import bookstore.bean.UserBean;
+import bookstore.config.ChatWebSocketHandler;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -11,60 +19,202 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class EmailService {
-    
-    private final JavaMailSender mailSender;
-    
-    public void sendVerifyCode(String to, String code, String subject) {
-        try {
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-            InternetAddress fromAddress = new InternetAddress("onlinebookstoreforjava@gmail.com", "森林書屋 Forest Bookstore", "UTF-8");
-            
-            helper.setFrom(fromAddress);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            String actionText = subject.contains("重設") ? "重設您的帳戶密碼" : "註冊森林書屋會員";
-            
-            String content = "<h3>親愛的讀者您好：</h3>" +
-                    "<p>您正在進行 " + actionText + "，您的驗證碼為：</p>" +
-                    "<h1 style='color: #2E5C43; letter-spacing: 5px;'>" + code + "</h1>" +
-                    "<p>請於 5 分鐘內完成驗證。為了您的帳戶安全，請勿將此代碼告知他人。</p>" +
-                    "<p>若非本人操作，請忽略此信。</p>" +
-                    "<hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;'>" +
-                    "<small style='color: #888;'>此為系統自動發送，請勿直接回覆。</small>";
-            
-            helper.setText(content, true); 
+	private final ChatWebSocketHandler chatWebSocketHandler;
 
-            mailSender.send(mimeMessage);
-        } catch (Exception e) {
-            System.err.println("郵件發送失敗原因: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("發送郵件失敗: " + e.getMessage());
-        }
-    } 
-    
-    public void sendResetSuccessNotification(String to) {
-        try {
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+	private final JavaMailSender mailSender;
 
-            InternetAddress fromAddress = new InternetAddress("onlinebookstoreforjava@gmail.com", "森林書屋 Forest Bookstore", "UTF-8");
-            
-            helper.setFrom(fromAddress);
-            helper.setTo(to);
-            helper.setSubject("森林書屋 - 帳戶密碼變更通知");
-            
-            String content = "<h3>親愛的讀者您好：</h3>" +
-                             "<p>您的森林書屋帳戶密碼已於剛才 **成功完成重設**。</p>" +
-                             "<p>如果您本人並未執行此操作，請立即聯繫我們的客服人員，或嘗試再次重設密碼以保護您的帳戶安全。</p>" +
-                             "<hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;'>" +
-                             "<small style='color: #888;'>此為系統自動發送，請勿直接回覆。</small>";
-            
-            helper.setText(content, true); 
-            mailSender.send(mimeMessage);
-        } catch (Exception e) {
-            System.err.println("安全性通知郵件發送失敗: " + e.getMessage());
-        }
-    }
+	//活動舉辦前一天發送通知給所有餐與者
+	public void sendToAllRegister(List<String> to,String clubName) {
+		try {
+			MimeMessage mimeMessage = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage,true,"UTF-8");
+			InternetAddress fromAddress = new InternetAddress("onlinebookstoreforjava@gmail.com",
+					"森林書屋 Forest Bookstore", "UTF-8");
+			
+			String content = "";
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+	// 報名成功通知
+	@Async
+	public void sendRegistrationToMember(String to, String clubName, String location, UserBean userBean, LocalDateTime localDateTime,
+			String memberName) {
+		try {
+			String formattedDate = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+			MimeMessage mimeMessage = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+			InternetAddress fromAddress = new InternetAddress("onlinebookstoreforjava@gmail.com",
+					"森林書屋 Forest Bookstore", "UTF-8");
+			String content = "<h3>親愛的 " + memberName + " 您好：</h3>" + "<p>恭喜您！您已成功報名讀書會：<strong>「" + clubName
+					+ "」</strong>。</p>"
+					+ "<div style='background-color: #f0f7ff; padding: 15px; border-left: 5px solid #409EFF; margin: 20px 0;'>"
+					+ "<p style='margin: 0; font-weight: bold; color: #409EFF;'>【報名資訊確認】</p>"
+					+ "<ul style='margin-top: 10px; list-style: none; padding-left: 0;'>"
+					+"<li>📅 <strong>活動日期：</strong>" + formattedDate + "</li>" 
+					+"<li>📍 <strong>活動地點：</strong>" + location+ "</li>" 
+					+"<li>👤 <strong>主辦人：</strong>" + userBean.getUserName() + "</li>" 
+					+"<li>✉️ <strong>主辦人信箱:</strong>"+userBean.getEmail()+"</li>"
+					+"<li>📞 <strong>主辦人電話:</strong>"+userBean.getPhoneNum()+"</li>"+ 
+					"</ul>" + "</div>"
+					+ "<p>您可以前往「我參加的讀書會」查看更詳細的讀書會內容或主辦人公告。期待您的參與！</p>" + "<br>"
+					+ "<br>" + "<hr style='border: 0; border-top: 1px solid #eee;'>"
+					+ "<small style='color: #888;'>此為系統自動發送，請勿直接回覆。若您不克參加，請記得提前取消報名以利名額釋出。</small>";
+
+			helper.setFrom(fromAddress);
+			helper.setTo(to);
+			helper.setSubject("森林書屋 - 讀書報名成功通知");
+			helper.setText(content,true);
+			mailSender.send(mimeMessage);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	// 核准通知
+	@Async
+	public void sendAccetToHost(String to, String clubName, String memberName) {
+		try {
+			MimeMessage mimeMessage = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+			InternetAddress fromAddress = new InternetAddress("onlinebookstoreforjava@gmail.com",
+					"森林書屋 Forest Bookstore", "UTF-8");
+			String content = "<h3>親愛的會員 " + memberName + " 您好：</h3>" + "<p>恭喜您！您發起的讀書會：<strong>「" + clubName
+					+ "」</strong> 已通過審核，現在可以正式開始運作了！</p>"
+					+ "<div style='background-color: #f0f9eb; padding: 15px; border-left: 5px solid #67C23A; margin: 20px 0;'>"
+					+ "<p style='margin: 0; font-weight: bold; color: #67C23A;'>【審核狀態：核准通過】</p>"
+					+ "<p style='margin-top: 10px;'>您的熱情與分享將為社群帶來更多價值，祝您的讀書會圓滿成功！</p>" + "</div>" + "<h4>接下來您可以：</h4>"
+					+ "<ul>" + "<li>前往平台查看您的讀書會頁面。</li>" + "<li>開始招募成員並發布第一次聚會通知。</li>" + "<li>分享讀書會連結，邀請更多同好加入。</li>"
+					+ "</ul>" + "<br>" + "<hr style='border: 0; border-top: 1px solid #eee;'>"
+					+ "<small style='color: #888;'>此為系統自動發送，請勿直接回覆。如有任何操作問題，歡迎隨時聯繫客服中心。</small>";
+			helper.setFrom(fromAddress);
+			helper.setTo(to);
+			helper.setSubject("森林書屋 - 讀書會申請核准通知");
+			helper.setText(content, true);
+			mailSender.send(mimeMessage);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	// 駁回通知
+	@Async
+	public void sendRejectToHost(String to, String clubName, String memberName, String RejectReason) {
+		try {
+			MimeMessage mimeMessage = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+			InternetAddress fromAddress = new InternetAddress("onlinebookstoreforjava@gmail.com",
+					"森林書屋 Forest Bookstore", "UTF-8");
+
+			String content = "<h3>親愛的會員 " + memberName + " 您好：</h3>" + "<p>感謝您對社群的貢獻與對讀書會活動的熱情參與。</p>"
+					+ "<p>關於您發起的讀書會：<strong>「" + clubName + "」</strong>，經過相關單位審核後，目前遺憾地通知您<strong>未能通過審查</strong>。</p>"
+					+ "<div style='background-color: #f9f9f9; padding: 15px; border-left: 5px solid #EA0000; margin: 20px 0;'>"
+					+ "<p style='margin: 0; font-weight: bold;'>駁回原因如下：</p>"
+					+ "<p style='color: #EA0000; margin-top: 10px;'>" + RejectReason + "</p>" + "</div>"
+					+ "<p>若您願意根據上述原因調整計畫內容，歡迎修改後重新提交申請。期待能看到更完善的讀書會提案！</p>" + "<br>"
+					+ "<hr style='border: 0; border-top: 1px solid #eee;'>"
+					+ "<small style='color: #888;'>此為系統自動發送，請勿直接回覆。如有任何疑問，請聯繫平台客服中心。</small>";
+			helper.setFrom(fromAddress);
+			helper.setTo(to);
+			helper.setSubject("森林書屋 - 讀書會申請駁回通知");
+			helper.setText(content, true);
+			mailSender.send(mimeMessage);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	// 申請成功通知
+	@Async
+	public void sendPendingMailToHost(String to, String clubName, String memberName) {
+		try {
+			MimeMessage mimeMessage = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+			InternetAddress fromAddress = new InternetAddress("onlinebookstoreforjava@gmail.com",
+					"森林書屋 Forest Bookstore", "UTF-8");
+			String content = "<h3>親愛的會員 " + memberName + " 您好：</h3>" + "<p>我們已收到您發起的讀書會：<strong>「" + clubName
+					+ "」</strong> 的申請。</p>"
+					+ "<div style='background-color: #f4f4f5; padding: 15px; border-left: 5px solid #909399; margin: 20px 0;'>"
+					+ "<p style='margin: 0; font-weight: bold;'>當前狀態：<span style='color: #E6A23C;'>待審核</span></p>"
+					+ "<p style='margin-top: 10px; font-size: 0.9em; color: #606266;'>"
+					+ "管理員將於 3-5 個工作天內完成審核，審核結果將會透過此郵件通知您。" + "</p>" + "</div>"
+					+ "<p>在等待審核期間，您可以先準備讀書會所需的教材或初步的討論大綱。</p>" + "<br>"
+					+ "<p style='font-size: 0.85em; color: #999;'>若非本人操作，請忽略此信，您的帳號安全不會受到影響。</p>"
+					+ "<hr style='border: 0; border-top: 1px solid #eee;'>"
+					+ "<small style='color: #888;'>此為系統自動發送，請勿直接回覆。</small>";
+
+			helper.setFrom(fromAddress);
+			helper.setTo(to);
+			helper.setSubject("森林書屋 - 讀書會申請通知");
+			helper.setText(content, true);
+
+			mailSender.send(mimeMessage);
+		} catch (Exception e) {
+			e.printStackTrace();
+
+		}
+
+	}
+
+	public void sendVerifyCode(String to, String code, String subject) {
+		try {
+			MimeMessage mimeMessage = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+			InternetAddress fromAddress = new InternetAddress("onlinebookstoreforjava@gmail.com",
+					"森林書屋 Forest Bookstore", "UTF-8");
+
+			helper.setFrom(fromAddress);
+			helper.setTo(to);
+			helper.setSubject(subject);
+			String actionText = subject.contains("重設") ? "重設您的帳戶密碼" : "註冊森林書屋會員";
+
+			String content = "<h3>親愛的讀者您好：</h3>" + "<p>您正在進行 " + actionText + "，您的驗證碼為：</p>"
+					+ "<h1 style='color: #2E5C43; letter-spacing: 5px;'>" + code + "</h1>"
+					+ "<p>請於 5 分鐘內完成驗證。為了您的帳戶安全，請勿將此代碼告知他人。</p>" + "<p>若非本人操作，請忽略此信。</p>"
+					+ "<hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;'>"
+					+ "<small style='color: #888;'>此為系統自動發送，請勿直接回覆。</small>";
+
+			helper.setText(content, true);
+
+			mailSender.send(mimeMessage);
+		} catch (Exception e) {
+			System.err.println("郵件發送失敗原因: " + e.getMessage());
+			e.printStackTrace();
+			throw new RuntimeException("發送郵件失敗: " + e.getMessage());
+		}
+	}
+
+	public void sendResetSuccessNotification(String to) {
+		try {
+			MimeMessage mimeMessage = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+			InternetAddress fromAddress = new InternetAddress("onlinebookstoreforjava@gmail.com",
+					"森林書屋 Forest Bookstore", "UTF-8");
+
+			helper.setFrom(fromAddress);
+			helper.setTo(to);
+			helper.setSubject("森林書屋 - 帳戶密碼變更通知");
+
+			String content = "<h3>親愛的讀者您好：</h3>" + "<p>您的森林書屋帳戶密碼已於剛才 **成功完成重設**。</p>"
+					+ "<p>如果您本人並未執行此操作，請立即聯繫我們的客服人員，或嘗試再次重設密碼以保護您的帳戶安全。</p>"
+					+ "<hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;'>"
+					+ "<small style='color: #888;'>此為系統自動發送，請勿直接回覆。</small>";
+
+			helper.setText(content, true);
+			mailSender.send(mimeMessage);
+		} catch (Exception e) {
+			System.err.println("安全性通知郵件發送失敗: " + e.getMessage());
+		}
+	}
 }

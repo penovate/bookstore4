@@ -27,13 +27,21 @@ import lombok.RequiredArgsConstructor;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
-@RequiredArgsConstructor
+
 public class UserController {
 
 	private final UsersService userService;
 	private final JwtUtil jwtUtil;
 	private final UserLogService userLogService;
 	private final PasswordEncoder passwordEncoder;
+
+	public UserController(UsersService userService, JwtUtil jwtUtil, UserLogService userLogService,
+			PasswordEncoder passwordEncoder) {
+		this.userService = userService;
+		this.jwtUtil = jwtUtil;
+		this.userLogService = userLogService;
+		this.passwordEncoder = passwordEncoder;
+	}
 
 	@PostMapping("/api/login")
 	@ResponseBody

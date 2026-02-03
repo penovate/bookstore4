@@ -32,8 +32,11 @@ const headers = [
 const loadRegistrations = async () => {
     if (!props.clubId) return;
     loading.value = true;
+    loading.value = true;
     try {
+        console.log('[RegistrationDetails] Requesting for ClubId:', props.clubId);
         const response = await bookClubService.getClubRegistrations(props.clubId);
+        console.log('[RegistrationDetails] API Response:', response.data);
         registrations.value = response.data || [];
     } catch (error) {
         console.error('無法載入報名明細', error);
@@ -86,6 +89,12 @@ watch(() => props.modelValue, (newVal) => {
         loadRegistrations();
     }
 });
+
+onMounted(() => {
+    if (props.modelValue && props.clubId) {
+        loadRegistrations();
+    }
+});
 </script>
 
 <template>
@@ -126,7 +135,7 @@ watch(() => props.modelValue, (newVal) => {
                             :disabled="item.checkIn" variant="elevated" @click="handleCheckIn(item)">
                             {{ item.checkIn ? '已完成' : '報到' }}
                         </v-btn>
-                        <span v-else class="text-caption text-grey">不可操作</span>
+                        <span v-else class="text-caption text-grey">該會員已取消報名</span>
                     </template>
 
                     <template v-slot:no-data>

@@ -1,18 +1,23 @@
 package bookstore.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.web.bind.annotation.*;
 
 import bookstore.aop.BusinessException;
+import bookstore.bean.BookClubsBean;
 import bookstore.bean.ClubRegistrationsBean;
+import bookstore.bean.UserBean;
+import bookstore.service.BookClubService;
 import bookstore.service.ClubRegistrationService;
+import bookstore.service.EmailService;
+import bookstore.service.UsersService;
 import bookstore.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -20,11 +25,23 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api/reg")
 public class ClubRegistrationController {
 
+	private final EmailService emailService;
+
 	@Autowired
 	private ClubRegistrationService regService;
 
 	@Autowired
 	private JwtUtil jwtUtil;
+
+	@Autowired
+	private UsersService usersService;
+
+	@Autowired
+	private BookClubService bookClubService;
+
+	ClubRegistrationController(EmailService emailService) {
+		this.emailService = emailService;
+	}
 
 	// 取得所有 (管理員用?)
 	@GetMapping("/reglist")
@@ -50,7 +67,19 @@ public class ClubRegistrationController {
 		if (clubId == null) {
 			throw new BusinessException(400, "讀書會ID不可為空白");
 		}
+		System.out.println("收到查詢報名請求, ClubId: " + clubId);
 		List<ClubRegistrationsBean> regList = regService.getRegistrationsByClubId(clubId);
+		System.out.println("查詢結果筆數: " + (regList != null ? regList.size() : "null"));
+
+		if (regList != null) {
+			for (ClubRegistrationsBean reg : regList) {
+				// 強制初始化 User 以確保序列化正常 (若 JOIN FETCH 失效)
+				if (reg.getUser() != null) {
+					reg.getUser().getUserName();
+				}
+			}
+		}
+
 		return ResponseEntity.ok(regList);
 	}
 
@@ -65,7 +94,13 @@ public class ClubRegistrationController {
 	public ResponseEntity<ClubRegistrationsBean> register(@PathVariable("clubId") Integer clubId,
 			HttpServletRequest request) {
 		Integer userId = getUserIdFromToken(request);
+		UserBean member = usersService.findById(userId);
+		UserBean host = usersService.findById(clubId);
+		BookClubsBean club = bookClubService.getClub(clubId);
 		ClubRegistrationsBean registration = regService.register(clubId, userId);
+		emailService.sendRegistrationToMember(member.getEmail(), registration.getBookClub().getClubName(),
+				registration.getBookClub().getLocation(), registration.getBookClub().getHost(),
+				registration.getBookClub().getEventDate(), member.getUserName());
 		return ResponseEntity.ok(registration);
 	}
 
@@ -78,8 +113,7 @@ public class ClubRegistrationController {
 	}
 
 	@PutMapping("/cancel/{clubId}")
-	public ResponseEntity<?> cancel(@PathVariable("clubId") Integer clubId,
-			HttpServletRequest request) {
+	public ResponseEntity<?> cancel(@PathVariable("clubId") Integer clubId, HttpServletRequest request) {
 		Integer userId = getUserIdFromToken(request);
 		regService.updateCancel(clubId, userId);
 		return ResponseEntity.ok("已取消報名");

@@ -28,7 +28,8 @@ const statusFilter = ref(null);
 
 // Helper: Check if user is the host
 const isHost = (club) => {
-    return userStore.userId && club.host && club.host.userId === userStore.userId;
+    // 使用 == 寬鬆檢查以防 ID 型別差異 (String vs Number)
+    return userStore.userId && club.host && club.host.userId == userStore.userId;
 };
 
 // 載入我參加的讀書會 (用於判斷狀態)
@@ -132,6 +133,64 @@ const handleCancel = (club) => {
     });
 };
 
+// 發起人取消讀書會
+const handleClubCancel = (club) => {
+    Swal.fire({
+        title: '取消讀書會',
+        text: `確定要取消讀書會「${club.clubName}」嗎？取消後將無法復原及修改！`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '確定取消',
+        cancelButtonText: '保留',
+        confirmButtonColor: '#d33'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await bookClubService.cancelClub(club.clubId);
+                Swal.fire('成功', '讀書會已取消', 'success');
+                // Refresh data
+                if (tab.value === 'hosted') {
+                    await loadHostedClubs();
+                } else {
+                    await loadAllClubs();
+                }
+            } catch (error) {
+                Swal.fire('失敗', error.response?.data?.message || '取消失敗', 'error');
+            }
+        }
+    });
+};
+
+// 發起人結束讀書會
+const handleClubEnd = (club) => {
+    Swal.fire({
+        title: '結束讀書會',
+        text: `確定要結束讀書會「${club.clubName}」嗎？結束後將結算積分給參與者！`,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: '確定結束',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#2E5C43'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await bookClubService.endClub(club.clubId);
+                Swal.fire('成功', '讀書會已結束，並已發放積分！', 'success');
+                // Refresh data
+                if (tab.value === 'hosted') {
+                    await loadHostedClubs();
+                } else {
+                    await loadAllClubs();
+                }
+            } catch (error) {
+                Swal.fire('失敗', error.response?.data?.message || '活動尚未開始不可結束!', 'error');
+            }
+        }
+    });
+};
+
+
+
 // 發起人檢視明細
 const openDetails = (club) => {
     selectedClubId.value = club.clubId;
@@ -166,6 +225,17 @@ const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleString();
 };
 
+const isEventEnded = (club) => {
+    // 檢查狀態是否已結束 (5) 或已取消 (6)
+    if (club.status === 5 || club.status === 6) return true;
+
+    // 檢查時間是否已過
+    if (club.eventDate) {
+        return new Date(club.eventDate) < new Date();
+    }
+    return false;
+};
+
 const navigateToInsert = () => {
     router.push('/dev/user/bookclubs/insert');
 };
@@ -178,6 +248,15 @@ watch(tab, (newVal) => {
         if (hostedClubs.value.length === 0) loadHostedClubs();
     } else if (newVal === 'participated') {
         loadMyRegistrations();
+    }
+});
+
+// 監聽 User ID 變化 (防止重新整理時 Pinia 還沒載入)
+watch(() => userStore.userId, (newVal) => {
+    if (newVal) {
+        if (tab.value === 'all') loadAllClubs();
+        else if (tab.value === 'hosted') loadHostedClubs();
+        else if (tab.value === 'participated') loadMyRegistrations();
     }
 });
 
@@ -241,7 +320,6 @@ onMounted(() => {
                                         <v-btn icon="mdi-eye" size="large" variant="text" color="primary"
                                             @click="viewClubInfo(item)"></v-btn>
                                         <div class="ai-comment-placeholder mt-1">
-                                            (AI 評語)
                                         </div>
                                     </div>
                                 </template>
@@ -253,10 +331,16 @@ onMounted(() => {
                                 -->
                                     <template v-if="isHost(item)">
                                         <v-chip color="info" size="small" variant="outlined" class="mr-2">我是發起人</v-chip>
+                                        <v-btn size="small" variant="text" color="primary" @click="openDetails(item)">
+                                            <v-icon start icon="mdi-clipboard-list"></v-icon>
+                                            報名明細
+                                        </v-btn>
                                     </template>
                                     <template v-else-if="myRegistrationIds.has(item.clubId)">
-                                        <v-btn size="small" color="error" variant="flat" @click="handleCancel(item)">
-                                            已報名 (取消)
+                                        <!-- 僅在活動尚未結束且未取消時顯示取消報名 -->
+                                        <v-btn v-if="!isEventEnded(item)" size="small" color="error" variant="flat"
+                                            @click="handleCancel(item)">
+                                            取消報名
                                         </v-btn>
                                     </template>
                                     <template v-else>
@@ -307,10 +391,27 @@ onMounted(() => {
                                             編輯
                                         </v-btn>
                                     </template>
-                                    <template v-if="item.status === 1 || item.status === 3 || item.status === 4 || item.status === 5">
+                                    <template
+                                        v-if="item.status === 1 || item.status === 3 || item.status === 4 || item.status === 5">
                                         <v-btn size="small" variant="text" color="primary" @click="openDetails(item)">
                                             <v-icon start icon="mdi-clipboard-list"></v-icon>
                                             報名明細
+                                        </v-btn>
+                                    </template>
+                                    <!-- 僅允許狀態 1(報名中)、3(已額滿)、4(已截止) 進行取消 -->
+                                    <template v-if="item.status === 1 || item.status === 3 || item.status === 4">
+                                        <v-btn size="small" variant="text" color="error"
+                                            @click="handleClubCancel(item)">
+                                            <v-icon start icon="mdi-cancel"></v-icon>
+                                            取消
+                                        </v-btn>
+                                    </template>
+                                    <!-- 允許狀態 1(報名中)、3(已額滿)、4(已截止) 且 活動時間已過 進行結束 -->
+                                    <template
+                                        v-if="(item.status === 1 || item.status === 3 || item.status === 4) && isEventEnded(item)">
+                                        <v-btn size="small" variant="text" color="orange" @click="handleClubEnd(item)">
+                                            <v-icon start icon="mdi-check-circle-outline"></v-icon>
+                                            結束活動
                                         </v-btn>
                                     </template>
                                 </template>
@@ -348,7 +449,8 @@ onMounted(() => {
                                     </div>
                                 </template>
                                 <template v-slot:item.actions="{ item }">
-                                    <v-btn size="small" color="error" variant="text" @click="handleCancel(item)">
+                                    <v-btn v-if="!isEventEnded(item)" size="small" color="error" variant="text"
+                                        @click="handleCancel(item)">
                                         取消報名
                                     </v-btn>
                                 </template>

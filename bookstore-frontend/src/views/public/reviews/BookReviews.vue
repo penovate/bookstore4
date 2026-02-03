@@ -408,37 +408,28 @@ const canDelete = (review) => {
 const canToggleStatus = (review) => {
   if (currentUserRole.value === null) return false
 
-  const myRole = currentUserRole.value
-  const targetRole = review.userType
-
-  // 如果這則留言是我自己的，我不應該隱藏它，而是用編輯或刪除
-  // 但如果你希望自己也能隱藏自己，可以拿掉這行，不過通常自己是走刪除路線
-  if (currentUserId.value && review.userId === currentUserId.value) {
-    return false
-  }
-
-  if (myRole === 0) {
-    if (targetRole === 1 || targetRole === 2) return true
-  }
-
+  const myRole = Number(currentUserRole.value)
+  const myUserId = Number(currentUserId.value) 
+  const targetRole = Number(review.userType)
+  const targetUserId = Number(review.userId)
+  
+  if (myRole === 0) return true
   if (myRole === 1) {
     if (targetRole === 2) return true
+    if (targetUserId === myUserId) return true
+    return false
   }
-
   return false
 }
 
 const fetchReviews = async () => {
   try {
-    const response = await reviewService.getAllReviews()
-    const allReviews = response.data
+    const response = await reviewService.getAllReviews();
+    const allReviews = response.data;
 
     reviews.value = allReviews.filter((r) => {
       const isCurrentBook = r.bookId == props.bookId
-      const isVisible =
-        r.status === 1 ||
-        (currentUserId.value && r.userId === currentUserId.value) ||
-        canToggleStatus(r)
+      const isVisible = r.status === 1 ||canToggleStatus(r)
       return isCurrentBook && isVisible
     })
 

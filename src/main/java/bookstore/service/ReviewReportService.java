@@ -64,6 +64,8 @@ public class ReviewReportService {
             String bookTitle = "未知書籍";
             String fullContent = "評論已刪除";
             String reviewContent = "評論已刪除";
+            Integer reportedUserId = null;
+            Integer reportedUserRole = null;
 
             if (report.getReview() != null) {
                 ReviewBean review = report.getReview();
@@ -82,6 +84,8 @@ public class ReviewReportService {
                 // 被檢舉人
                 if (review.getUser() != null) {
                     reportedName = review.getUser().getUserName();
+                    reportedUserId = review.getUser().getUserId();
+                    reportedUserRole = review.getUser().getUserType();
                 }
             }
 
@@ -98,12 +102,14 @@ public class ReviewReportService {
             ReportList dto = new ReportList(
                     report.getReviewReportId(),
                     reporterName,
+                    reportedUserId,
                     reportedName,
                     bookTitle,
                     reviewContent,
                     fullContent,
                     report.getReason(),
                     statusInt,
+                    reportedUserRole,
                     report.getCreatedAt());
 
             dtoList.add(dto);

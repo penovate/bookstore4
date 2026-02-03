@@ -5,14 +5,15 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 import { useUserStore } from '@/stores/userStore'
 import reviewService from '@/api/reviewService'
+import { useReportStore } from '@/stores/reportStore'
 
 
 
 const router = useRouter()
-const pendingReportCount = ref(0)
 const route = useRoute()
 const drawer = ref(true)
 const userStore = useUserStore()
+const reportStore = useReportStore()
 const unreadUserCount = ref(0)
 let timer = null 
 
@@ -116,21 +117,9 @@ const handleLogout = () => {
   })
 }
 
-const fetchPendingCount = async () => {
-  try {
-    const res = await reviewService.getPendingReportCount()
-    if (res.data && res.data.count !== undefined) {
-      pendingReportCount.value = res.data.count
-    }
-  } catch (error) {
-    console.error('取得檢舉數量失敗', error)
-  }
-}
-
-
 onMounted(async () => {
   
-  fetchPendingCount()
+  reportStore.fetchPendingCount()
 
   if (userStore.isLoggedIn) {
     try {
@@ -143,8 +132,8 @@ onMounted(async () => {
 
   
   fetchUnreadUserCount();
-  fetchPendingCount();
-  timer = setInterval(fetchUnreadUserCount, 1000); 
+  reportStore.fetchPendingCount();
+  timer = setInterval(() => { fetchUnreadUserCount(); reportStore.fetchPendingCount() }, 1000);
 });
 
 onUnmounted(() => {
@@ -193,9 +182,9 @@ onUnmounted(() => {
               <v-list-item v-bind="props" :prepend-icon="item.icon" :title="item.title">
                 <template v-slot:append>
                   <v-badge
-                    v-if="item.title === '評價管理' && pendingReportCount > 0"
+                    v-if="item.title === '評價管理' && reportStore.pendingCount > 0"
                     color="error"
-                    :content="pendingReportCount"
+                    :content="reportStore.pendingCount"
                     inline
                   ></v-badge>
                   
@@ -220,9 +209,9 @@ onUnmounted(() => {
             >
               <template v-slot:append>
                   <v-badge
-                    v-if="child.showBadge && pendingReportCount > 0"
+                    v-if="child.showBadge && reportStore.pendingCount > 0"
                     color="error"
-                    :content="pendingReportCount"
+                    :content="reportStore.pendingCount"
                     inline
                   ></v-badge>
                   

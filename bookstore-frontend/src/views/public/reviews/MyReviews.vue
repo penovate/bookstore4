@@ -195,7 +195,15 @@ const fetchReviews = async () => {
         if (userRes.data && userRes.data.userId) {
             const userId = userRes.data.userId
             const res = await reviewService.getUserReviews(userId)
-            reviews.value = res.data || []
+
+            let role = localStorage.getItem('userRole')
+            const isNormalUser = (role === 'USER' || role === '2')
+            let userReviews = res.data || []
+            if (isNormalUser) {
+                userReviews = userReviews.filter(r => r.status === 1);
+            };
+            reviews.value = userReviews;
+
             reviews.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         } 
     } catch (error) {

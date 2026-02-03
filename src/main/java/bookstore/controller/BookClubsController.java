@@ -84,9 +84,6 @@ public class BookClubsController {
 
 		// 處理檔案上傳
 		if (proof != null && !proof.isEmpty()) {
-			if (!proof.getContentType().startsWith("image/")) {
-				throw new BusinessException(400, "佐證資料僅限上傳圖片格式");
-			}
 			String path = bookClubService.uploadFile(proof, "proof");
 			dto.setProofPath(path);
 		}
@@ -174,9 +171,6 @@ public class BookClubsController {
 
 		// 處理檔案上傳 (若有新檔案則更新)
 		if (proofFile != null && !proofFile.isEmpty()) {
-			if (!proofFile.getContentType().startsWith("image/")) {
-				throw new BusinessException(400, "佐證資料僅限上傳圖片格式");
-			}
 			String path = bookClubService.uploadFile(proofFile, "proof");
 			dto.setProofPath(path);
 		}

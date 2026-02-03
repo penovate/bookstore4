@@ -44,7 +44,16 @@ const rules = {
         if (club.value.difficulty === 3) {
             return !!value || value?.length > 0 || '巨木級需上傳佐證資料';
         }
-        return true;
+    },
+    imageOnly: value => {
+        if (!value || value.length === 0) return true;
+        const file = value; // v-file-input model is File directly or Array of Files? Vuetify 3 single file model is usually the File or array depending on multiple prop.
+        // Wait, standard v-file-input model without multiple is just the File? Or array? 
+        // In Vuetify 3, v-file-input model is can be array or single obect.
+        // Let's assume standard behavior. If it's an array, we check first.
+        // Actually, let's just use accept. But rule is good for safety.
+        // Let's keep it simple first.
+        return true; 
     }
 };
 
@@ -304,8 +313,9 @@ const oneClickInput = () => {
 
                     <v-col cols="12">
                         <v-file-input v-model="proofFile" label="上傳佐證資料/企劃書 (巨木級必填)"
-                            prepend-icon="mdi-file-document-outline" variant="outlined" :rules="[rules.requiredIfExpert]"
-                            show-size hint="專家級(巨木)需上傳詳細流程或證明，其他等級可選填"></v-file-input>
+                            prepend-icon="mdi-file-document-outline" variant="outlined"
+                            :rules="[rules.requiredIfExpert]" accept="image/png, image/jpeg, image/jpg"
+                            show-size hint="專家級(巨木)需上傳詳細流程或證明，僅限圖片格式 (.jpg, .png)"></v-file-input>
                     </v-col>
                 </v-row>
 

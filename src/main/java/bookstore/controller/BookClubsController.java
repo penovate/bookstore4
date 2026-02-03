@@ -84,6 +84,9 @@ public class BookClubsController {
 
 		// 處理檔案上傳
 		if (proof != null && !proof.isEmpty()) {
+			if (!proof.getContentType().startsWith("image/")) {
+				throw new BusinessException(400, "佐證資料僅限上傳圖片格式");
+			}
 			String path = bookClubService.uploadFile(proof, "proof");
 			dto.setProofPath(path);
 		}
@@ -131,6 +134,7 @@ public class BookClubsController {
 		UserBean host = usersService.findById(adminId);
 		String reason = body.get("reason");
 		BookClubsBean club = bookClubService.getClub(clubId);
+		bookClubService.rejectClub(clubId, reason, adminId);
 		emailService.sendRejectToHost(club.getHost().getEmail(), club.getClubName(), host.getUserName(), reason);
 		return ResponseEntity.ok(club);
 	}
@@ -170,6 +174,9 @@ public class BookClubsController {
 
 		// 處理檔案上傳 (若有新檔案則更新)
 		if (proofFile != null && !proofFile.isEmpty()) {
+			if (!proofFile.getContentType().startsWith("image/")) {
+				throw new BusinessException(400, "佐證資料僅限上傳圖片格式");
+			}
 			String path = bookClubService.uploadFile(proofFile, "proof");
 			dto.setProofPath(path);
 		}

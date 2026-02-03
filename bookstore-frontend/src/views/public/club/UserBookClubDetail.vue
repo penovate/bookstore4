@@ -9,13 +9,15 @@ const route = useRoute();
 const router = useRouter();
 const loading = ref(true);
 const club = ref({});
+const showProofDialog = ref(false);
 
-const API_BASE_URL = 'http://localhost:8080/bookstore'; // Adjust if needed or import from config
+const API_BASE_URL = 'http://localhost:8080'; // Adjust if needed or import from config
 
 const getImageUrl = (path) => {
     if (!path) return '/default-book-cover.png'; // Placeholder
     if (path.startsWith('http')) return path;
-    return `${API_BASE_URL}${path}`;
+    if (path.startsWith('/')) return `${API_BASE_URL}${path}`;
+    return `${API_BASE_URL}/upload-images/${path}`;
 };
 
 const formatDate = (dateStr) => {
@@ -28,11 +30,8 @@ const getStatusInfo = (status) => {
 };
 
 const getDifficultyLabel = (level) => {
-<<<<<<< HEAD
     const map = { 1: '樹苗級', 2: '樹幹級', 3: '巨木級(須提供專業相關證明)' };
-=======
-    const map = { 1: '樹苗級', 2: '樹幹級', 3: '巨木級' };
->>>>>>> 7adbf3480b5db2ca72535c3176de7c20c97fa995
+
     return map[level] || '一般';
 };
 
@@ -97,7 +96,7 @@ onMounted(async () => {
                 <!-- Left Column: Book Info & Visuals -->
                 <v-col cols="12" md="4">
                     <v-card class="rounded-lg elevation-2 h-100">
-                        <v-img :src="getImageUrl(club.book?.bookImage)" cover height="400" class="bg-grey-lighten-2">
+                        <v-img :src="getImageUrl(club.book?.bookImageBean?.imageUrl)" contain height="400" class="bg-grey-lighten-2">
                             <template v-slot:placeholder>
                                 <div class="d-flex align-center justify-center fill-height">
                                     <v-icon icon="mdi-book-open-page-variant" size="64" color="grey"></v-icon>
@@ -114,13 +113,22 @@ onMounted(async () => {
                             <v-list-item class="px-0">
                                 <template v-slot:prepend>
                                     <v-avatar color="primary" size="40">
-                                        <span class="text-white">{{ club.host?.userName?.charAt(0) || 'U' }}</span>
+                                        <v-img v-if="club.host?.img" :src="getImageUrl(club.host?.img)" cover></v-img>
+                                        <span v-else class="text-white">{{ club.host?.userName?.charAt(0) || 'U' }}</span>
                                     </v-avatar>
                                 </template>
                                 <v-list-item-title class="font-weight-bold">{{ club.host?.userName || '未知用戶' }}
                                 </v-list-item-title>
                                 <v-list-item-subtitle>{{ club.host?.email }}</v-list-item-subtitle>
                             </v-list-item>
+
+                            <v-divider class="my-3" v-if="club.clubDetail?.proofPath"></v-divider>
+                            <div v-if="club.clubDetail?.proofPath" class="mt-2">
+                                <v-btn block color="info" variant="tonal" prepend-icon="mdi-file-document"
+                                    @click="showProofDialog = true">
+                                    查看佐證資料
+                                </v-btn>
+                            </div>
                         </v-card-text>
                     </v-card>
                 </v-col>
@@ -227,6 +235,20 @@ onMounted(async () => {
                 </v-col>
             </v-row>
         </template>
+        
+        <!-- Proof Dialog -->
+        <v-dialog v-model="showProofDialog" max-width="800px">
+            <v-card>
+                <v-card-title class="d-flex justify-space-between align-center">
+                    <span>佐證資料</span>
+                    <v-btn icon="mdi-close" variant="text" @click="showProofDialog = false"></v-btn>
+                </v-card-title>
+                <v-card-text class="pa-4 bg-grey-lighten-3 d-flex justify-center">
+                    <img :src="getImageUrl(club.clubDetail?.proofPath)" style="max-width: 100%; max-height: 80vh;" />
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+
     </v-container>
 </template>
 

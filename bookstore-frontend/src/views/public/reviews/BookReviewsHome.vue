@@ -171,7 +171,7 @@
                     <div class="d-flex align-center justify-space-between mt-2">
                       <div class="d-flex align-center">
                         <span class="text-caption text-grey mr-1"
-                          >({{ book.reviewCount }} 評論)</span
+                          >({{ book.reviewCount }} 評價)</span
                         >
                       </div>
                       <div class="text-h6 font-weight-bold price-text">
@@ -231,7 +231,7 @@
                     <span class="text-body-2 font-weight-bold mr-1">{{
                       book.avgRating > 0 ? book.avgRating.toFixed(1) : '尚無評分'
                     }}</span>
-                    <span class="text-caption text-grey">({{ book.reviewCount }} 則評論)</span>
+                    <span class="text-caption text-grey">({{ book.reviewCount }} 則評價)</span>
                   </div>
 
                   <div class="text-caption text-grey mt-2 text-truncate" style="max-width: 500px">
@@ -300,7 +300,7 @@ const sortBy = ref('rating_desc') // 排序依據: rating_desc, count_desc, newe
 // 排序選項
 const sortOptions = [
   { title: '最高評分', value: 'rating_desc' },
-  { title: '最多評論', value: 'count_desc' },
+  { title: '最多評價', value: 'count_desc' },
   { title: '最新上架', value: 'newest' },
 ]
 
@@ -380,11 +380,11 @@ const filteredBooks = computed(() => {
   result.sort((a, b) => {
     switch (sortBy.value) {
       case 'rating_desc':
-        // 先比分數，分數相同比評論數
+        // 先比分數，分數相同比評價數
         if (b.avgRating !== a.avgRating) return b.avgRating - a.avgRating
         return b.reviewCount - a.reviewCount
       case 'count_desc':
-        // 先比評論數，相同比分數
+        // 先比評價數，相同比分數
         if (b.reviewCount !== a.reviewCount) return b.reviewCount - a.reviewCount
         return b.avgRating - a.avgRating
       case 'newest':

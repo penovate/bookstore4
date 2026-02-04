@@ -353,12 +353,6 @@ const parseJwt = (token) => {
   }
 }
 
-const getRoleName = (type) => {
-  if (type === 0) return '超級管理員'
-  if (type === 1) return '一般管理員'
-  return '一般會員'
-}
-
 const currentUserId = computed(() => {
   let id = userStore.userId || localStorage.getItem('userId')
   if (!id) {

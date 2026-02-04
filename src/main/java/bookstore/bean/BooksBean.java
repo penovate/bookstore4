@@ -79,7 +79,7 @@ public class BooksBean {
 
 	@jakarta.persistence.Version
 	@Column(name = "version")
-	private Integer version;
+	private Integer version = 0;
 
 	// @NotBlank(message = "出版社不可為空白")
 	@Column(name = "press")

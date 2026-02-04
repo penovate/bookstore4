@@ -16,4 +16,8 @@ public interface BookRepository extends JpaRepository<BooksBean, Integer> {
 	// 新增加--
 	List<BooksBean> findByOnShelf(Integer onShelf);
 
+	@org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+	@org.springframework.data.jpa.repository.Query("SELECT b FROM BooksBean b WHERE b.bookId = :id")
+	Optional<BooksBean> findByIdWithLock(@org.springframework.data.repository.query.Param("id") Integer id);
+
 }

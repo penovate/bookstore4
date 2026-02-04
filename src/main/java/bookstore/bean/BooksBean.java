@@ -77,6 +77,10 @@ public class BooksBean {
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt; // 建立時間
 
+	@jakarta.persistence.Version
+	@Column(name = "version")
+	private Integer version;
+
 	// @NotBlank(message = "出版社不可為空白")
 	@Column(name = "press")
 	private String press; // 出版社

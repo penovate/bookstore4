@@ -110,7 +110,7 @@ public class BookClubFlowSimulationTest {
         BookClubsBean result = bookClubService.createBookClub(validDto, 1);
 
         assertNotNull(result);
-        assertEquals(ClubConstants.STATUS_PEDING, result.getStatus(), "狀態應為 PENDING (審核中)");
+        assertEquals(ClubConstants.STATUS_PENDING, result.getStatus(), "狀態應為 PENDING (審核中)");
         System.out.println("-> 成功送審，ID: " + result.getClubId());
     }
 
@@ -145,7 +145,7 @@ public class BookClubFlowSimulationTest {
         BookClubsBean updated = bookClubService.updateBookclub(101, validDto, 1, ClubConstants.ROLE_MEMBER);
 
         assertEquals("New Club Name", updated.getClubName());
-        assertEquals(ClubConstants.STATUS_PEDING, updated.getStatus(), "狀態應轉為 PENDING");
+        assertEquals(ClubConstants.STATUS_PENDING, updated.getStatus(), "狀態應轉為 PENDING");
         System.out.println("-> 草稿編輯並送審成功");
     }
 
@@ -159,7 +159,7 @@ public class BookClubFlowSimulationTest {
         BookClubsBean existingClub = new BookClubsBean();
         existingClub.setClubId(103);
         existingClub.setHost(mockUser);
-        existingClub.setStatus(ClubConstants.STATUS_PEDING);
+        existingClub.setStatus(ClubConstants.STATUS_PENDING);
 
         when(bookClubsRepository.findById(103)).thenReturn(Optional.of(existingClub));
 
@@ -202,7 +202,7 @@ public class BookClubFlowSimulationTest {
 
         BookClubsBean updated = bookClubService.updateBookclub(104, validDto, 1, ClubConstants.ROLE_MEMBER);
 
-        assertEquals(ClubConstants.STATUS_PEDING, updated.getStatus(), "狀態應轉回 PENDING");
+        assertEquals(ClubConstants.STATUS_PENDING, updated.getStatus(), "狀態應轉回 PENDING");
         assertNull(updated.getRejectionReason(), "駁回原因應清空");
         System.out.println("-> 駁回後修正並重送成功");
     }

@@ -114,15 +114,18 @@ public class ClubRegistrationService {
 		newReg.setCheckIn(false);
 		newReg.setRegisteredAt(java.time.LocalDateTime.now());
 
-		updateClubParticipants(club, 1);
-
-		return clubRegistrationsRepository.save(newReg);
+		try {
+			updateClubParticipants(club, 1);
+			return clubRegistrationsRepository.save(newReg);
+		} catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+			throw new BusinessException(409, "報名人數更動頻繁，請稍後重試");
+		}
 	}
 
 	private void updateClubParticipants(BookClubsBean club, int delta) {
 		int current = club.getCurrentParticipants() == null ? 0 : club.getCurrentParticipants();
 		club.setCurrentParticipants(current + delta);
-		bookClubsRepository.save(club);
+		bookClubsRepository.saveAndFlush(club);
 	}
 
 	// 棄用: 用 register 代替

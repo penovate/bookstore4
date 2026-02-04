@@ -243,7 +243,7 @@ public class BookClubService {
 			}
 		} else {
 			validateFullClubDetail(dto);
-			targetStatus = ClubConstants.STATUS_PEDING;
+			targetStatus = ClubConstants.STATUS_PENDING;
 		}
 
 		BookClubsBean mainclub = new BookClubsBean();
@@ -311,7 +311,7 @@ public class BookClubService {
 				needTest = true; // 駁回後可修改
 			} else if (status == ClubConstants.STATUS_DRAFT) {
 				// 草稿可修改，不做額外限制
-			} else if (status == ClubConstants.STATUS_PEDING) {
+			} else if (status == ClubConstants.STATUS_PENDING) {
 				// 審核中通常不允許修改，或者視需求而定。依報告建議，審核中應鎖定。
 				throw new BusinessException(400, "審核中狀態無法進行修改");
 			} else {
@@ -389,7 +389,7 @@ public class BookClubService {
 			// 若從 草稿 或 駁回 狀態送出 -> 轉為 審核中
 			if (currentStatus == ClubConstants.STATUS_DRAFT || currentStatus == ClubConstants.STATUS_REJECTED) {
 				validateFullClubDetail(dto); // 送審前強制檢查
-				club.setStatus(ClubConstants.STATUS_PEDING);
+				club.setStatus(ClubConstants.STATUS_PENDING);
 				club.setRejectionReason(null); // 清空之前的駁回原因
 				log.info("讀書會 ID: {} 狀態由 {} 轉為 審核中", club.getClubId(), currentStatus);
 			}

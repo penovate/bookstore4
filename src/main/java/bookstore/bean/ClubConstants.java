@@ -4,7 +4,7 @@ package bookstore.bean;
 public class ClubConstants {
 
 	//讀書會狀態
-	public  static final int STATUS_PEDING = 0;	  //審核中
+	public  static final int STATUS_PENDING = 0;	  //審核中
 	public static final int STATUS_APPROVED = 1;  //報名中
 	public static final int STATUS_REJECTED = 2;  //已駁回
 	public static final int STATUS_FULL = 3; 	  //已額滿

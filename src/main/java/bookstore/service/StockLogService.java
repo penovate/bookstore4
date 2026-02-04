@@ -43,7 +43,7 @@ public class StockLogService {
 	public List<StockLogBean> getAllStockLogs() {
 		List<StockLogBean> stockLogList = stockLogRepository.findAll();
 		if (stockLogList.isEmpty()) {
-			log.warn("查無任何貨單"); 
+			log.warn("查無任何貨單");
 			return stockLogList;
 		}
 		log.info("查詢貨單成功，取得 {} 筆資料", stockLogList.size());
@@ -63,16 +63,16 @@ public class StockLogService {
 		}
 		throw new BusinessException(404, "查無ID" + logId + "相關資料");
 	}
-	
+
 	@Transactional
 	public void deleteStockLog(Integer logId) {
 		Optional<StockLogBean> opt = stockLogRepository.findById(logId);
-		if(opt.isEmpty()) {
-		log.warn("查無ID:{}貨單資料",logId);
-			throw new BusinessException(404, "查無ID:"+logId+"貨單資料");
+		if (opt.isEmpty()) {
+			log.warn("查無ID:{}貨單資料", logId);
+			throw new BusinessException(404, "查無ID:" + logId + "貨單資料");
 		}
 		stockLogRepository.deleteById(logId);
-		
+
 	}
 
 	@Transactional
@@ -98,7 +98,8 @@ public class StockLogService {
 				// 處理庫存
 				if (item.getBooksBean() != null && item.getBooksBean().getBookId() != null) {
 					Integer bookId = item.getBooksBean().getBookId();
-					Optional<BooksBean> bookOpt = bookRepository.findById(bookId);
+					// 使用悲觀鎖避免併發問題
+					Optional<BooksBean> bookOpt = bookRepository.findByIdWithLock(bookId);
 
 					if (bookOpt.isPresent()) {
 						BooksBean book = bookOpt.get();
@@ -122,7 +123,7 @@ public class StockLogService {
 						book.setStock(newStock);
 						bookRepository.save(book);
 					} else {
-						log.warn("查無ID:{}相關書籍資料",bookId);
+						log.warn("查無ID:{}相關書籍資料", bookId);
 						throw new BusinessException(404, "查無書籍ID: " + bookId);
 					}
 				}
@@ -155,7 +156,7 @@ public class StockLogService {
 		// 1. 查詢原單據
 		Optional<StockLogBean> opt = stockLogRepository.findById(logId);
 		if (!opt.isPresent()) {
-			log.warn("查無ID:{}貨單相關資料",logId);
+			log.warn("查無ID:{}貨單相關資料", logId);
 			throw new BusinessException(404, "查無此貨單 ID:" + logId);
 		}
 
@@ -172,8 +173,8 @@ public class StockLogService {
 			for (LogItemBean item : items) {
 				if (item.getBooksBean() != null) {
 					BooksBean book = item.getBooksBean();
-					// 重新查詢書籍以確保庫存最新
-					Optional<BooksBean> bookOpt = bookRepository.findById(book.getBookId());
+					// 重新查詢書籍以確保庫存最新 (使用悲觀鎖)
+					Optional<BooksBean> bookOpt = bookRepository.findByIdWithLock(book.getBookId());
 					if (bookOpt.isPresent()) {
 						book = bookOpt.get();
 						Integer currentStock = book.getStock();
@@ -181,7 +182,7 @@ public class StockLogService {
 
 						// 檢查庫存是否足夠扣除
 						if (currentStock < qtyToRevert) {
-					log.warn("書籍:{} 目前庫存不足以執行退貨");
+							log.warn("書籍:{} 目前庫存不足以執行退貨");
 							throw new BusinessException(400, "書籍 [" + book.getBookName() + "] 目前庫存(" + currentStock
 									+ ")不足以執行退貨(" + qtyToRevert + ")");
 						}

@@ -83,15 +83,6 @@ public class bookService {
 		return bookRepo.findByIsbn(isbnStr).isPresent();
 	}
 
-	// select by genre
-	/*
-	 * @Transactional public List<BooksBean> selectByGenre(Integer genreId) {
-	 * List<BooksBean> bookList = bookRepo.findGenreBean_GenreId(genreId); if
-	 * (bookList != null && !bookList.isEmpty()) {
-	 * log.info("查詢成功 - 書籍數量:{}筆 - 類型ID:{}", bookList.size(), genreId); return
-	 * bookList; } else { log.warn("查詢失敗 - 無該類型相關書籍資料"); throw new
-	 * BusinessException(404, "無該類型相關書籍資料"); } }
-	 */
 
 	// select by onShelf
 	@Transactional

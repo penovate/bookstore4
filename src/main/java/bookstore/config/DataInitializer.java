@@ -31,6 +31,7 @@ import bookstore.repository.GenreRepository;
 import bookstore.repository.OrderItemRepository;
 import bookstore.repository.OrdersRepository;
 import bookstore.repository.ReviewRepository;
+import bookstore.repository.UserLogRepository;
 import bookstore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,10 +52,11 @@ public class DataInitializer {
 	private final ClubDetailRepository clubDetailRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final BrowsingHistoryRepository browsingHistoryRepository;
+	private final UserLogRepository userLogRepository;
 
 	private final Random random = new Random();
 
-//	@Bean
+	@Bean
 	public CommandLineRunner initData() {
 		return args -> {
 			log.info("=== 系統啟動：開始資料初始化流程 ===");
@@ -100,6 +102,7 @@ public class DataInitializer {
 	// 刪除現有資料
 	@Transactional
 	public void clearTransientData() {
+		
 		orderItemRepository.deleteAllInBatch();
 		reviewRepository.deleteAllInBatch();
 		clubRegistrationsRepository.deleteAllInBatch();
@@ -111,6 +114,7 @@ public class DataInitializer {
 
 		userRepository.flush();
 
+		userLogRepository.deleteAllInBatch();
 		userRepository.deleteAllInBatch();
 
 		log.info("已清除：訂單、評價、讀書會、會員資料");
@@ -312,7 +316,7 @@ public class DataInitializer {
 			club.setBook(books.get(random.nextInt(books.size())));
 			club.setStatus(1);
 			club.setMaxParticipants(30);
-			club.setCurrentParticipants(random.nextInt(10));
+			club.setCurrentParticipants(0);
 			club.setEventDate(LocalDateTime.now().plusDays(random.nextInt(14) + 7));
 			club.setDeadline(LocalDateTime.now().plusDays(5));
 			club.setLocation("線上會議 / 台北市大安區");

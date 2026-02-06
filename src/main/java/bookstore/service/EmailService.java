@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import bookstore.bean.UserBean;
-import bookstore.config.ChatWebSocketHandler;
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -20,30 +20,69 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EmailService {
 
-	private final ChatWebSocketHandler chatWebSocketHandler;
-
 	private final JavaMailSender mailSender;
 
-	//活動舉辦前一天發送通知給所有餐與者
-	public void sendToAllRegister(List<String> to,String clubName) {
+	// 活動舉辦前一天發送通知給所有餐與者
+	public void sendToAllRegister(List<String> to, String clubName) {
 		try {
 			MimeMessage mimeMessage = mailSender.createMimeMessage();
-			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage,true,"UTF-8");
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 			InternetAddress fromAddress = new InternetAddress("onlinebookstoreforjava@gmail.com",
 					"森林書屋 Forest Bookstore", "UTF-8");
-			
+
 			String content = "";
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	
+
+	// 活動取消通知
+	public void sendClubCancelToRegister(String to, String clubName, String hostName, LocalDateTime localDateTime,
+			String memberName, String location, String hostEmail,String phone) {
+		try {
+			MimeMessage mimeMessage = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+			InternetAddress fromAddress = new InternetAddress("onlinebookstoreforjava@gmail.com",
+					"森林書屋 Forest Bookstore", "UTF-8");
+			String formattedDate = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+			String content = "<h3>親愛的 " + memberName + " 您好：</h3>" + "<p>非常遺憾地通知您，您原定參加的讀書會：<strong>「" + clubName
+					+ "」</strong> <span style='color: #F56C6C;'>已取消</span>。</p>"
+
+					// 區塊背景改為淡紅色 (#fff0f0)，左側邊框改為紅色 (#F56C6C) 以示區別
+					+ "<div style='background-color: #fff0f0; padding: 15px; border-left: 5px solid #F56C6C; margin: 20px 0;'>"
+					+ "<p style='margin: 0; font-weight: bold; color: #F56C6C;'>【取消場次資訊】</p>"
+					+ "<ul style='margin-top: 10px; list-style: none; padding-left: 0;'>"
+					+ "<li>📅 <strong>原定日期：</strong>" + formattedDate + "</li>" 
+					+ "<li>📍 <strong>原定地點：</strong>"+ location + "</li>" 
+					+ "</ul>" 
+					+ "</div>"
+					+ "<p>造成您的不便，我們深感抱歉。若您對此次取消有任何疑問，可透過以下資訊聯繫主辦人：</p>"
+					+ "<ul style='list-style: none; padding-left: 0; color: #666;'>"
+					+ "<li>👤 <strong>主辦人：</strong>"+ hostName + "</li>" 
+					+ "<li>✉️ <strong>Email：</strong>" + hostEmail + "</li>" 
+					+ "<li>📞 <strong>電話：</strong>" + phone + "</li>" 
+					+ "</ul>"
+					+ "<br>" 
+					+ "<p>期待您未來能繼續支持其他的讀書會活動！</p>" 
+					+ "<br>"
+					+ "<hr style='border: 0; border-top: 1px solid #eee;'>"
+					+ "<small style='color: #888;'>此為系統自動發送，請勿直接回覆。</small>";
+			
+			helper.setFrom(fromAddress);
+			helper.setTo(to);
+			helper.setSubject("森林書屋 - 讀書會取消通知");
+			helper.setText(content,true);
+			mailSender.send(mimeMessage);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	// 報名成功通知
 	@Async
-	public void sendRegistrationToMember(String to, String clubName, String location, UserBean userBean, LocalDateTime localDateTime,
-			String memberName) {
+	public void sendRegistrationToMember(String to, String clubName, String location, UserBean userBean,
+			LocalDateTime localDateTime, String memberName) {
 		try {
 			String formattedDate = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
 			MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -55,20 +94,18 @@ public class EmailService {
 					+ "<div style='background-color: #f0f7ff; padding: 15px; border-left: 5px solid #409EFF; margin: 20px 0;'>"
 					+ "<p style='margin: 0; font-weight: bold; color: #409EFF;'>【報名資訊確認】</p>"
 					+ "<ul style='margin-top: 10px; list-style: none; padding-left: 0;'>"
-					+"<li>📅 <strong>活動日期：</strong>" + formattedDate + "</li>" 
-					+"<li>📍 <strong>活動地點：</strong>" + location+ "</li>" 
-					+"<li>👤 <strong>主辦人：</strong>" + userBean.getUserName() + "</li>" 
-					+"<li>✉️ <strong>主辦人信箱:</strong>"+userBean.getEmail()+"</li>"
-					+"<li>📞 <strong>主辦人電話:</strong>"+userBean.getPhoneNum()+"</li>"+ 
-					"</ul>" + "</div>"
-					+ "<p>您可以前往「我參加的讀書會」查看更詳細的讀書會內容或主辦人公告。期待您的參與！</p>" + "<br>"
-					+ "<br>" + "<hr style='border: 0; border-top: 1px solid #eee;'>"
+					+ "<li>📅 <strong>活動日期：</strong>" + formattedDate + "</li>" + "<li>📍 <strong>活動地點：</strong>"
+					+ location + "</li>" + "<li>👤 <strong>主辦人：</strong>" + userBean.getUserName() + "</li>"
+					+ "<li>✉️ <strong>主辦人信箱:</strong>" + userBean.getEmail() + "</li>"
+					+ "<li>📞 <strong>主辦人電話:</strong>" + userBean.getPhoneNum() + "</li>" + "</ul>" + "</div>"
+					+ "<p>您可以前往「我參加的讀書會」查看更詳細的讀書會內容或主辦人公告。期待您的參與！</p>" + "<br>" + "<br>"
+					+ "<hr style='border: 0; border-top: 1px solid #eee;'>"
 					+ "<small style='color: #888;'>此為系統自動發送，請勿直接回覆。若您不克參加，請記得提前取消報名以利名額釋出。</small>";
 
 			helper.setFrom(fromAddress);
 			helper.setTo(to);
 			helper.setSubject("森林書屋 - 讀書報名成功通知");
-			helper.setText(content,true);
+			helper.setText(content, true);
 			mailSender.send(mimeMessage);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

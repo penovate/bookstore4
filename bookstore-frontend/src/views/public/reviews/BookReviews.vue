@@ -173,7 +173,7 @@
                   </v-btn>
 
                   <v-btn
-                    v-if="!isOwner(review) && !canToggleStatus(review)"
+                    v-if="!isOwner(review)"
                     variant="text"
                     size="small"
                     color="grey-lighten-1"

@@ -38,6 +38,7 @@ public class EmailService {
 	}
 
 	// 活動取消通知
+	@Async
 	public void sendClubCancelToRegister(String to, String clubName, String hostName, LocalDateTime localDateTime,
 			String memberName, String location, String hostEmail,String phone) {
 		try {

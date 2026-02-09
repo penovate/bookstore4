@@ -24,15 +24,18 @@ import bookstore.bean.UserBean;
 import bookstore.repository.BookClubsRepository;
 import bookstore.repository.BookRepository;
 import bookstore.repository.BrowsingHistoryRepository;
+import bookstore.repository.CartRepository;
 import bookstore.repository.ClubCategoriesRepository;
 import bookstore.repository.ClubDetailRepository;
 import bookstore.repository.ClubRegistrationsRepository;
+import bookstore.repository.CouponRepository;
 import bookstore.repository.GenreRepository;
 import bookstore.repository.OrderItemRepository;
 import bookstore.repository.OrdersRepository;
 import bookstore.repository.ReviewRepository;
 import bookstore.repository.UserLogRepository;
 import bookstore.repository.UserRepository;
+import bookstore.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,10 +56,13 @@ public class DataInitializer {
 	private final PasswordEncoder passwordEncoder;
 	private final BrowsingHistoryRepository browsingHistoryRepository;
 	private final UserLogRepository userLogRepository;
+	private final CartRepository cartRepository;
+	private final CouponRepository couponRepository;
+	private final WishlistRepository wishlistRepository;
 
 	private final Random random = new Random();
 
-//	@Bean
+	@Bean
 	public CommandLineRunner initData() {
 		return args -> {
 			log.info("=== 系統啟動：開始資料初始化流程 ===");
@@ -102,12 +108,15 @@ public class DataInitializer {
 	// 刪除現有資料
 	@Transactional
 	public void clearTransientData() {
-		
+		cartRepository.deleteAllInBatch();
+		wishlistRepository.deleteAllInBatch();
+		couponRepository.deleteAllInBatch();
 		orderItemRepository.deleteAllInBatch();
 		reviewRepository.deleteAllInBatch();
 		clubRegistrationsRepository.deleteAllInBatch();
 		clubDetailRepository.deleteAllInBatch();
 		browsingHistoryRepository.deleteAllInBatch();
+		
 
 		bookClubsRepository.deleteAllInBatch();
 		ordersRepository.deleteAllInBatch();
@@ -227,6 +236,7 @@ public class DataInitializer {
 			order.setPhone("0912345678");
 			order.setAddress("台北市信義區測試路" + i + "段");
 			order.setDeliveryMethod("宅配到府");
+			order.setShippedAt(new java.sql.Timestamp(System.currentTimeMillis()));
 			order.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
 
 			order = ordersRepository.save(order);

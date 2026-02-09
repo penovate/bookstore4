@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import bookService from '@/api/bookService.js';
 import Swal from 'sweetalert2';
+import BackPageButton from '@/components/BackPageButton.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -63,7 +64,10 @@ onMounted(async () => {
 
 <template>
     <div class="pa-4">
-        <h2 class="text-h4 font-weight-bold text-primary mb-6">書籍詳細資料</h2>
+        <div class="d-flex align-center mb-6">
+            <BackPageButton />
+            <h2 class="text-h4 font-weight-bold text-primary">書籍詳細資料</h2>
+        </div>
 
         <v-card class="rounded-lg elevation-2 pa-6" :loading="loading">
             <v-row>
@@ -122,9 +126,7 @@ onMounted(async () => {
 
                     </v-row>
 
-                    <div class="d-flex justify-end mt-4">
-                        <v-btn color="grey-darken-1" variant="outlined" @click="router.back()">返回列表</v-btn>
-                    </div>
+
                 </v-col>
             </v-row>
         </v-card>

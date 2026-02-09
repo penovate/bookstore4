@@ -56,7 +56,7 @@ public class DataInitializer {
 
 	private final Random random = new Random();
 
-	@Bean
+//	@Bean
 	public CommandLineRunner initData() {
 		return args -> {
 			log.info("=== 系統啟動：開始資料初始化流程 ===");

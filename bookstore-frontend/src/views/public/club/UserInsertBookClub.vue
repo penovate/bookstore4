@@ -4,6 +4,8 @@ import { useRouter, useRoute } from 'vue-router';
 import bookClubService from '@/api/bookClubService.js';
 import bookService from '@/api/bookService.js';
 import Swal from 'sweetalert2';
+import SmartInputButtons from '@/components/SmartInputButtons.vue';
+import BackPageButton from '@/components/BackPageButton.vue';
 
 const router = useRouter();
 const categories = ref([]);
@@ -67,7 +69,7 @@ onMounted(async () => {
             loading.value = true;
             const clubRes = await bookClubService.getClub(route.query.id);
             const data = clubRes.data;
-            
+
             // Populate form
             club.value = {
                 clubName: data.clubName,
@@ -78,27 +80,27 @@ onMounted(async () => {
                 location: data.location,
                 maxParticipants: data.maxParticipants,
                 externalBookInfo: data.externalBookInfo,
-                
+
                 // Map from clubDetail if available
                 purpose: data.clubDetail?.purpose || '',
                 agenda: data.clubDetail?.agenda || '',
                 difficulty: data.clubDetail?.diffultLevel || 1, // Default to 1 (Entry)
             };
-            
+
             // Map proof file path (for display/logic, though file input handles files)
             // Just knowing we have one might be enough, or pre-fill if possible (usually not for file inputs)
             // Ideally, we show "Current file: ..."
             // But for now, just mapping data is key.
             if (data.clubDetail?.proofPath) {
-                 // Store it somewhere if needed, but file-input requires File object.
-                 // We can't pre-fill file input. Maybe verify logic knows we have one?
-                 // For now, focus on text fields.
+                // Store it somewhere if needed, but file-input requires File object.
+                // We can't pre-fill file input. Maybe verify logic knows we have one?
+                // For now, focus on text fields.
             }
-            
+
             // Handle date format if needed (remove seconds)
-            if(club.value.eventDate && club.value.eventDate.length > 16) club.value.eventDate = club.value.eventDate.substring(0, 16);
-            if(club.value.deadline && club.value.deadline.length > 16) club.value.deadline = club.value.deadline.substring(0, 16);
-            
+            if (club.value.eventDate && club.value.eventDate.length > 16) club.value.eventDate = club.value.eventDate.substring(0, 16);
+            if (club.value.deadline && club.value.deadline.length > 16) club.value.deadline = club.value.deadline.substring(0, 16);
+
             loading.value = false;
         }
 
@@ -146,14 +148,14 @@ const submit = async (actionType) => {
 
     try {
         if (isEditMode.value) {
-             await bookClubService.updateClub(route.query.id, clubData, proofFile.value);
+            await bookClubService.updateClub(route.query.id, clubData, proofFile.value);
         } else {
-             await bookClubService.createClub(clubData, proofFile.value);
+            await bookClubService.createClub(clubData, proofFile.value);
         }
 
         const msgTitle = actionType === 'DRAFT' ? '草稿已儲存' : (isEditMode.value ? '更新成功！' : '申請成功！');
-        const msgText = actionType === 'DRAFT' 
-            ? '您可以隨時至「我的讀書會」繼續編輯。' 
+        const msgText = actionType === 'DRAFT'
+            ? '您可以隨時至「我的讀書會」繼續編輯。'
             : '您的讀書會申請已送出，管理員審核通過後即可開始報名。';
 
         await Swal.fire({
@@ -177,24 +179,13 @@ const submit = async (actionType) => {
     }
 };
 
-const oneClickInput = () => {
-    // 隨機選書
-    const randomBook = books.value.length > 0
-        ? books.value[Math.floor(Math.random() * books.value.length)]
-        : null;
-
-    if (!randomBook) {
-        Swal.fire('提示', '目前無可選書籍', 'info');
-        return;
-    }
-
+const getCalculatedDates = () => {
     const today = new Date();
     const eventDate = new Date(today);
     eventDate.setDate(today.getDate() + 30); // 30天後活動
     const deadline = new Date(today);
     deadline.setDate(today.getDate() + 25); // 25天後截止
 
-    // 格式化日期字串 (YYYY-MM-DDTHH:mm)
     const formatDateTime = (date, timeStr = '14:00') => {
         const yyyy = date.getFullYear();
         const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -202,32 +193,104 @@ const oneClickInput = () => {
         return `${yyyy}-${mm}-${dd}T${timeStr}`;
     };
 
-    club.value = {
-        clubName: `【書友共讀】${randomBook.bookName} - 深度導讀會`,
-        categoryId: categories.value.length > 0 ? categories.value[0].categoryId : null, // 預設第一個分類
-        bookId: randomBook.bookId,
+    return {
         eventDate: formatDateTime(eventDate, '14:00'),
-        deadline: formatDateTime(deadline, '23:59'),
-        location: '台北市大安區復興南路一段390號 (多功能會議室 A)',
-        maxParticipants: 12,
-        externalBookInfo: '',
-        purpose: '透過共讀此書，深入探討作者的核心觀點，並結合參與者的實務經驗進行交流。期望能讓大家在輕鬆的氛圍中獲得啟發，並將知識應用於工作或生活中。',
-        agenda: '13:50 - 14:00 報到與交流\n14:00 - 14:30 導讀人重點分享\n14:30 - 15:30 分組討論與議題探討\n15:30 - 16:00 綜合座談與Q&A',
-        difficulty: 2, // 預設進階
+        deadline: formatDateTime(deadline, '23:59')
     };
+};
 
-    // 同意條款
+const getRandomBook = () => {
+    if (books.value.length === 0) return null;
+    return books.value[Math.floor(Math.random() * books.value.length)];
+};
+
+const fillFirstReview = () => {
+    const randomBook = getRandomBook();
+    if (!randomBook) {
+        Swal.fire('提示', '目前無可選書籍', 'info');
+        return;
+    }
+
+    const dates = getCalculatedDates();
+
+    club.value = {
+        clubName: `輕鬆讀：${randomBook.bookName}`,
+        categoryId: categories.value.length > 0 ? categories.value[0].categoryId : null,
+        bookId: randomBook.bookId,
+        eventDate: dates.eventDate,
+        deadline: dates.deadline,
+        location: '台北市信義區信義路五段7號 (101大樓 35F 會議室)',
+        maxParticipants: 5,
+        externalBookInfo: '',
+        purpose: '大家一起輕鬆聊聊這本書，沒有壓力。',
+        agenda: '1. 自我介紹\n2. 書籍分享\n3. 自由交流',
+        difficulty: 1, // 入門
+    };
     termsAgreed.value = true;
+};
+
+const fillSecondReview = () => {
+    const randomBook = getRandomBook();
+    if (!randomBook) {
+        Swal.fire('提示', '目前無可選書籍', 'info');
+        return;
+    }
+
+    const dates = getCalculatedDates();
+
+    club.value = {
+        clubName: `【深度解析】${randomBook.bookName} - 專業導讀會`,
+        categoryId: categories.value.length > 0 ? categories.value[0].categoryId : null,
+        bookId: randomBook.bookId,
+        eventDate: dates.eventDate,
+        deadline: dates.deadline,
+        location: '台北市信義區信義路五段7號 (101大樓 35F 會議室)',
+        maxParticipants: 20,
+        externalBookInfo: '',
+        purpose: '本讀書會旨在匯聚行業菁英，透過深度閱讀與批判性思考，剖析書籍核心論點。我們將結合實際案例，探討書中理論在當代商業環境中的應用與挑戰，期能為參與者帶來實質的職涯啟發與專業成長。',
+        agenda: `13:30 - 14:00 | 報到與聯誼 (Networking)
+14:00 - 14:10 | 開場致詞與流程說明
+14:10 - 15:00 | 深度導讀：核心章節解析 (由資深講師主講)
+15:00 - 15:15 | 中場休息 (Tea Break)
+15:15 - 16:15 | 分組專題研討 (Case Study Workshop)
+16:15 - 16:45 | 各組成果發表與講評
+16:45 - 17:00 | 結語與大合照`,
+        difficulty: 3, // 專家
+    };
+    termsAgreed.value = true;
+};
+
+const clearForm = () => {
+    club.value = {
+        clubName: '',
+        categoryId: null,
+        bookId: null,
+        eventDate: '',
+        deadline: '',
+        location: '',
+        maxParticipants: null,
+        externalBookInfo: '',
+        purpose: '',
+        agenda: '',
+        difficulty: 1,
+    };
+    termsAgreed.value = false;
+    proofFile.value = null; // Note: binding might not clear file input visually if not handling key or similar, but clears model
 };
 </script>
 
 <template>
     <v-container class="py-10" style="max-width: 900px;">
-        <v-btn variant="text" prepend-icon="mdi-arrow-left" class="mb-4" @click="router.back()">返回列表</v-btn>
         <div class="d-flex align-center mb-6">
+            <BackPageButton />
             <h2 class="text-h4 font-weight-bold text-primary">{{ isEditMode ? '編輯讀書會' : '發起讀書會' }}</h2>
-            <v-btn icon="mdi-magic-staff" variant="text" color="primary" class="ml-4" @click="oneClickInput"
-                title="一鍵輸入範例資料"></v-btn>
+        </div>
+
+        <div class="mb-6">
+            <SmartInputButtons :presets="[
+                { title: '初審 (一鍵輸入)', handler: fillFirstReview, icon: 'mdi-flash-outline', color: 'info' },
+                { title: '二審 (專業詳細)', handler: fillSecondReview, icon: 'mdi-flash', color: 'success' }
+            ]" :showClear="true" :clearHandler="clearForm" />
         </div>
 
         <v-card class="rounded-lg elevation-2 pa-6">
@@ -262,13 +325,13 @@ const oneClickInput = () => {
                         <v-text-field v-model="club.externalBookInfo" label="外部書籍資訊 (若非站內書籍請在此說明)" variant="outlined"
                             color="primary"></v-text-field>
                     </v-col>
-                    
-                     <v-col cols="12">
+
+                    <v-col cols="12">
                         <v-textarea v-model="club.purpose" label="活動宗旨" rows="3" :rules="[rules.required]"
                             variant="outlined" color="primary" hint="請簡述舉辦此讀書會的目的與期望"></v-textarea>
                     </v-col>
-                    
-                       <v-col cols="12">
+
+                    <v-col cols="12">
                         <v-textarea v-model="club.agenda" label="活動議程" rows="3" :rules="[rules.required]"
                             variant="outlined" color="primary" hint="列出活動的時間安排與流程"></v-textarea>
                     </v-col>
@@ -304,8 +367,8 @@ const oneClickInput = () => {
 
                     <v-col cols="12">
                         <v-file-input v-model="proofFile" label="上傳佐證資料/企劃書 (巨木級必填)"
-                            prepend-icon="mdi-file-document-outline" variant="outlined" :rules="[rules.requiredIfExpert]"
-                            show-size hint="專家級(巨木)需上傳詳細流程或證明，其他等級可選填"></v-file-input>
+                            prepend-icon="mdi-file-document-outline" variant="outlined"
+                            :rules="[rules.requiredIfExpert]" show-size hint="專家級(巨木)需上傳詳細流程或證明，其他等級可選填"></v-file-input>
                     </v-col>
                 </v-row>
 
@@ -323,15 +386,17 @@ const oneClickInput = () => {
                         </template>
                     </v-checkbox>
                 </div>
-                
+
                 <v-row>
                     <v-col cols="6">
-                         <v-btn color="grey-lighten-1" size="large" block variant="outlined" :loading="loading" @click="submit('DRAFT')">
+                        <v-btn color="grey-lighten-1" size="large" block variant="outlined" :loading="loading"
+                            @click="submit('DRAFT')">
                             儲存草稿
                         </v-btn>
                     </v-col>
                     <v-col cols="6">
-                        <v-btn color="primary" size="large" block :loading="loading" :disabled="!termsAgreed" @click="submit('SUBMIT')">
+                        <v-btn color="primary" size="large" block :loading="loading" :disabled="!termsAgreed"
+                            @click="submit('SUBMIT')">
                             送出審核
                         </v-btn>
                     </v-col>
@@ -342,7 +407,7 @@ const oneClickInput = () => {
         <!-- 條款 Dialog -->
         <v-dialog v-model="termsDialog" max-width="600px" scrollable>
             <!-- ... terms content same as before ... -->
-             <v-card>
+            <v-card>
                 <v-card-title class="text-h5 font-weight-bold pa-4 bg-primary text-white">
                     讀書會活動規範
                 </v-card-title>

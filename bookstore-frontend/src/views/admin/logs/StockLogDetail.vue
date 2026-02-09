@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import stockLogService from '@/api/stockLogService.js';
 import bookService from '@/api/bookService.js';
 import Swal from 'sweetalert2';
+import BackPageButton from '@/components/BackPageButton.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -90,7 +91,7 @@ onMounted(() => {
     <div class="pa-4 container-max-width">
         <!-- 頂部導航 -->
         <div class="d-flex align-center mb-6">
-            <v-btn icon="mdi-arrow-left" variant="text" class="mr-4" @click="router.back()"></v-btn>
+            <BackPageButton />
             <h2 class="text-h4 font-weight-bold text-primary">單據明細 #{{ logId }}</h2>
         </div>
 

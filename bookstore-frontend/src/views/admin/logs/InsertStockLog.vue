@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import stockLogService from '@/api/stockLogService.js';
 import bookService from '@/api/bookService.js';
 import Swal from 'sweetalert2';
+import SmartInputButtons from '@/components/SmartInputButtons.vue';
 
 const router = useRouter();
 const loading = ref(false);
@@ -71,8 +72,24 @@ const oneClickInput = () => {
     // 1. 設定廠商
     logData.value.wholesaler = '資展批發商';
 
-    // 2. 隨機挑選 5 本書
-    const selectedBooks = getRandomSubarray(books.value, 20);
+    // 2. 挑選書籍 (必須包含 "巴菲特寫給股東的信")
+    const targetBookName = "巴菲特寫給股東的信";
+    const targetBook = books.value.find(b => b.bookName.includes(targetBookName));
+
+    let selectedBooks = [];
+
+    if (targetBook) {
+        // 如果有這本書，先加入
+        selectedBooks.push(targetBook);
+        // 再隨機挑選 4 本 (排除已選的)
+        const otherBooks = books.value.filter(b => b.bookId !== targetBook.bookId);
+        const randomOthers = getRandomSubarray(otherBooks, 4); // Total 5
+        selectedBooks = selectedBooks.concat(randomOthers);
+    } else {
+        // 如果沒有，就隨機 5 本 (並提示?)
+        // Swal.fire('提示', `找不到 "${targetBookName}"，已隨機挑選。`, 'info');
+        selectedBooks = getRandomSubarray(books.value, 5);
+    }
 
     // 3. 填入明細
     logData.value.logItemBeans = selectedBooks.map(book => ({
@@ -80,8 +97,6 @@ const oneClickInput = () => {
         changeQty: Math.floor(Math.random() * 20) + 1,
         costPrice: Math.floor(book.price * 0.6)
     }));
-    
-    
 };
 
 // 移除明細列
@@ -97,6 +112,18 @@ const removeItem = (index) => {
 // 因為這是進貨成本，通常手動輸入，但可以帶入原價當參考
 const onBookSelect = (item) => {
     // 這裡不做強制覆蓋，讓使用者自己輸入成本
+};
+
+const clearForm = () => {
+    logData.value = {
+        wholesaler: '',
+        stockType: 1,
+        logItemBeans: [{
+            booksBean: null,
+            changeQty: 1,
+            costPrice: 0
+        }]
+    };
 };
 
 // 計算總金額 (前端預覽用)
@@ -173,9 +200,6 @@ const submit = async () => {
     <div class="pa-4">
         <div class="d-flex align-center mb-6">
             <h2 class="text-h4 font-weight-bold text-primary">新增進貨單</h2>
-            <v-btn color="secondary" prepend-icon="mdi-flash" class="ml-4" @click="oneClickInput">
-                一鍵輸入
-            </v-btn>
         </div>
 
         <v-card class="rounded-lg elevation-2 pa-6" :loading="loading">
@@ -247,11 +271,16 @@ const submit = async () => {
                     <span class="text-h4 font-weight-bold text-primary">${{ totalAmount.toLocaleString() }}</span>
                 </div>
 
-                <div class="d-flex justify-end mt-6">
-                    <v-btn variant="text" class="mr-2" @click="router.back()">取消</v-btn>
-                    <v-btn type="submit" color="primary" :loading="loading" elevation="2" size="large" width="150">
-                        確認送出
-                    </v-btn>
+                <div class="d-flex justify-space-between mt-6">
+                    <SmartInputButtons :presets="[
+                        { title: '一鍵輸入', handler: oneClickInput, icon: 'mdi-flash', color: 'success' }
+                    ]" :showClear="true" :clearHandler="clearForm" />
+                    <div>
+                        <v-btn variant="text" class="mr-2" @click="router.back()">取消</v-btn>
+                        <v-btn type="submit" color="primary" :loading="loading" elevation="2" size="large" width="150">
+                            確認送出
+                        </v-btn>
+                    </div>
                 </div>
             </v-form>
         </v-card>

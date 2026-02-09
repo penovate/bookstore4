@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import stockLogService from '@/api/stockLogService.js';
 import Swal from 'sweetalert2';
+import ActionPageButton from '@/components/ActionPageButton.vue';
 
 const router = useRouter();
 const logs = ref([]);
@@ -119,10 +120,9 @@ onMounted(() => {
         <!-- 頂部操作區：標題 + 按鈕  -->
         <div class="d-flex flex-column align-start mb-6">
             <h2 class="text-h4 font-weight-bold text-primary mb-4">進貨管理</h2>
-            <v-btn color="primary" prepend-icon="mdi-plus" size="large" @click="router.push('/dev/admin/logs/insert')"
-                elevation="2">
+            <ActionPageButton @click="router.push('/dev/admin/logs/insert')">
                 新增進貨單
-            </v-btn>
+            </ActionPageButton>
         </div>
 
         <!-- 篩選區塊 -->

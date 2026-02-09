@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/userStore';
 import Swal from 'sweetalert2';
 // Import Registration Details Component
 import RegistrationDetails from './RegistrationDetails.vue';
+import ActionPageButton from '@/components/ActionPageButton.vue';
 
 // Import Extracted Config
 import { headers, statusMap, statusOptions } from './UserBookClubConfig.js';
@@ -270,11 +271,11 @@ onMounted(() => {
 
 <template>
     <v-container class="py-10" style="max-width: 1200px;">
-        <div class="d-flex justify-space-between align-center mb-6">
-            <h2 class="text-h4 font-weight-bold text-primary">讀書會專區</h2>
-            <v-btn color="primary" prepend-icon="mdi-plus" elevation="2" @click="navigateToInsert">
+        <div class="d-flex flex-column align-start mb-6">
+            <h2 class="text-h4 font-weight-bold text-primary mb-4">讀書會專區</h2>
+            <ActionPageButton @click="navigateToInsert">
                 發起讀書會
-            </v-btn>
+            </ActionPageButton>
         </div>
 
         <v-card class="rounded-lg elevation-2">

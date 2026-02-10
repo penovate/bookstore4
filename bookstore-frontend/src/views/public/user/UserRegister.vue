@@ -207,12 +207,10 @@ const fillDemoData = () => {
   formData.userPwd = '123123'
   formData.confirmPwd = '123123'
 
+  formData.birth = '2001-01-24'
+
   const randomSuffix = Math.floor(10000000 + Math.random() * 90000000)
   formData.phoneNum = `09${randomSuffix}`
-
-  const date = new Date()
-  date.setFullYear(date.getFullYear() - 25)
-  formData.birth = date.toISOString().split('T')[0]
 
   const roads = ['中正路', '復興路', '成功路', '大興西路', '延平路']
   const randomRoad = roads[Math.floor(Math.random() * roads.length)]

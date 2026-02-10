@@ -117,6 +117,8 @@ const addAndGoToCart = async () => {
       <v-icon v-else icon="mdi-book-open-page-variant" size="64" color="grey-lighten-1"></v-icon>
     </div>
 
+    <slot name="extra-info"></slot>
+
     <v-card-item>
       <!-- 書名 -->
       <v-card-title class="text-h6 font-weight-bold text-truncate mb-1">

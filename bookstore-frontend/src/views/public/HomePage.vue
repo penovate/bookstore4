@@ -123,18 +123,14 @@ onMounted(() => {
       </div>
       <v-row>
         <v-col v-for="(book, index) in topSellers" :key="book.bookId" cols="12" sm="6" md="3">
-          <div class="position-relative h-100">
-            <!-- 排名標籤 -->
-            <v-chip
-              class="position-absolute z-index-10 ma-2"
-              color="red"
-              elevation="2"
-              label
-              style="top: 0; left: 0; z-index: 5"
-            >
-              No.{{ index + 1 }} | 熱銷 {{ book.totalQuantity }} 本
-            </v-chip>
-            <BookCard :book="book" />
+          <div class="h-100">
+            <BookCard :book="book">
+              <template #extra-info>
+                <div class="text-center text-red-darken-4 font-weight-bold my-2 text-body-1 bg-red-lighten-5 py-1">
+                   No.{{ index + 1 }} &nbsp;|&nbsp; 熱銷 {{ book.totalQuantity }} 本
+                </div>
+              </template>
+            </BookCard>
           </div>
         </v-col>
       </v-row>

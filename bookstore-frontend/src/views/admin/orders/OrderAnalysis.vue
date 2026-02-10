@@ -131,7 +131,16 @@
       <v-col v-for="(book, index) in topBooks.slice(0, 3)" :key="book.bookName" cols="12" md="4">
         <v-card class="top-card" :class="'rank-' + (index + 1)">
           <v-card-text class="d-flex align-center">
-            <div class="rank-badge mr-4">{{ index + 1 }}</div>
+            <div class="mr-4">
+              <v-img
+                v-if="getImageUrl(book)"
+                :src="getImageUrl(book)"
+                width="80"
+                class="rounded elevation-2"
+                cover
+                aspect-ratio="0.7"
+              ></v-img>
+            </div>
             <div>
               <div class="text-caption text-green-darken-4 font-weight-bold">暢銷排名 No.{{ index + 1 }}</div>
               <h3 class="text-h6 font-weight-bold text-truncate" style="max-width: 300px">
@@ -162,6 +171,7 @@ import { ref, onMounted, computed, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Chart from 'chart.js/auto'
 import orderService from '@/api/orderService.js'
+import bookService from '@/api/bookService.js'
 
 const router = useRouter()
 // 書籍銷售相關
@@ -198,6 +208,41 @@ const topBooks = computed(() => {
 
 const formatNumber = (num) => {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+const getImageUrl = (book) => {
+  if (!book) {
+    console.log('getImageUrl: book is null/undefined');
+    return null;
+  }
+  console.log('getImageUrl called with:', JSON.parse(JSON.stringify(book))); // Deep copy for clear log
+
+  const baseUrl = 'http://localhost:8080/upload-images/'
+  
+  // 1. 優先檢查完整 Entity 結構 (BooksBean -> BookImageBean -> imageUrl) - 參照 BookCard
+  if (book.bookImageBean && book.bookImageBean.imageUrl) {
+    console.log("Found image in bookImageBean:", book.bookImageBean.imageUrl);
+    return `${baseUrl}${book.bookImageBean.imageUrl}`
+  }
+  
+  // 1.5 檢查巢狀 booksBean (以防萬一結構未攤平)
+  if (book.booksBean && book.booksBean.bookImageBean && book.booksBean.bookImageBean.imageUrl) {
+    console.log("Found image in nested booksBean:", book.booksBean.bookImageBean.imageUrl);
+    return `${baseUrl}${book.booksBean.bookImageBean.imageUrl}`
+  }
+
+  // 2. 檢查 DTO (coverImage 或 imagePath) - 參照 BookCard
+  if (book.coverImage) {
+     console.log("Found image in coverImage:", book.coverImage);
+     return `${baseUrl}${book.coverImage}`
+  }
+  if (book.imagePath) {
+     console.log("Found image in imagePath:", book.imagePath);
+     return `${baseUrl}${book.imagePath}`
+  }
+  
+  console.log("No image found for book:", book.bookId || book.bookName);
+  return null
 }
 
 const getYearFromDate = (dateStr) => {
@@ -445,6 +490,43 @@ const fetchBookData = async () => {
   try {
     const response = await orderService.getSalesAnalysis(startDate.value, endDate.value)
     salesData.value = response.data
+    
+    // 排序並取前 3 名以補充圖片資料
+    const sorted = [...salesData.value].sort((a, b) => b.totalQuantity - a.totalQuantity).slice(0, 3)
+    
+    let hasUpdates = false
+    
+    // 因為 salesData 中的 bookId 為 null，必須改用 bookName 來對應正確的書籍資料
+    let allBooks = [];
+    try {
+        const booksRes = await bookService.getAllBooks();
+        allBooks = booksRes.data || [];
+        console.log("Fetched all books for matching, count:", allBooks.length);
+    } catch(e) {
+        console.error("Failed to fetch all books for matching", e);
+    }
+    
+    for (const item of sorted) {
+       // 嘗試透過書名比對
+       const match = allBooks.find(b => b.bookName === item.bookName);
+       if (match) {
+           console.log(`Matched book by name: ${item.bookName}`, match);
+           // 將取得的書籍資料合併到 item 中
+           Object.assign(item, match);
+           
+           // 額外確保 imagePath 有值
+           if (item.coverImage) item.imagePath = item.coverImage;
+           
+           hasUpdates = true;
+       } else {
+           console.warn(`No match found for book: ${item.bookName}`);
+       }
+    }
+    
+    if (hasUpdates) {
+       salesData.value = [...salesData.value]
+    }
+
     nextTick(() => {
       renderChart()
     })
@@ -513,19 +595,6 @@ onMounted(() => {
     transform: translateY(-5px);
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
   }
-
-  &.rank-1 .rank-badge {
-    background-color: #ffd700;
-    color: #fff;
-  }
-  &.rank-2 .rank-badge {
-    background-color: #c0c0c0;
-    color: #fff;
-  }
-  &.rank-3 .rank-badge {
-    background-color: #cd7f32;
-    color: #fff;
-  }
 }
 
 .rank-badge {
@@ -541,6 +610,6 @@ onMounted(() => {
 }
 
 .text-caption {
-  font-size: 24px;
+  font-size: 20px;
 }
 </style>

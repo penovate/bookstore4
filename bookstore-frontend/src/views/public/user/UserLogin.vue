@@ -7,7 +7,7 @@
       </v-card-item>
 
       <v-form @submit.prevent="handleLogin" class="mt-4">
-        <v-text-field v-model="loginForm.email" label="電子信箱" prepend-inner-icon="mdi-email-outline" variant="outlined"
+        <v-text-field v-model="loginForm.email" label="電子信箱" prepend-inner-icon="mdi-email-outline" type="email" variant="outlined"
           color="primary" class="mb-4 rounded-lg" density="comfortable"></v-text-field>
 
         <v-text-field v-model="loginForm.password" label="密碼" prepend-inner-icon="mdi-lock-outline" type="password"
@@ -109,9 +109,9 @@ const getLabel = (type) => {
 
 const quickLogin = (type) => {
   const accounts = {
-    SUPER_ADMIN: { email: 'pen@bookstore.com', pass: '12345' },
-    ADMIN: { email: 'alice.lee@mail.com', pass: '123456' },
-    USER: { email: 'vip.reader@test.com', pass: 'vip777' },
+    SUPER_ADMIN: { email: 'onlinebookstoreforjava@gmail.com', pass: '123456' },
+    ADMIN: { email: 'cl3vul42006@gmail.com', pass: 'alex74586' },
+    USER: { email: 'leemei122694@gmail.com', pass: 'alex74586' },
     BANNED: { email: 'super@bookstore.com', pass: '123' },
   }
   loginForm.email = accounts[type].email

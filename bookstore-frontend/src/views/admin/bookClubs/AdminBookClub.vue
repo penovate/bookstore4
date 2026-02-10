@@ -144,15 +144,10 @@ onMounted(() => {
 
 <template>
     <div>
-        <v-row class="mb-4" align="center">
-            <!-- <v-col cols="12" md="4">
-                <h2 class="text-h4 font-weight-bold text-primary">讀書會管理</h2>
-                <v-btn color="primary" class="mt-2" prepend-icon="mdi-plus" elevation="2"
-                    @click="router.push({ name: 'admin-bookclubs-insert' })">
-                    新增讀書會
-                </v-btn>
-            </v-col> -->
-            <v-col cols="12" md="3" offset-md="1">
+        <h2 class="text-h4 font-weight-bold text-primary mb-4">讀書會管理</h2>
+
+        <v-row class="mb-4" align="center" justify="space-between">
+            <v-col cols="12" md="3">
                 <v-select v-model="statusFilter" :items="statusOptions" label="狀態篩選" variant="outlined"
                     density="compact" hide-details color="primary" class="bg-white rounded"></v-select>
             </v-col>

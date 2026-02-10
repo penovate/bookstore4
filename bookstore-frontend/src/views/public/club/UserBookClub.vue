@@ -271,6 +271,14 @@ watch(() => userStore.userId, (newVal) => {
     }
 });
 
+
+const getDisplayStatus = (item) => {
+    if (item.status === 1 && item.currentParticipants >= item.maxParticipants) {
+        return statusMap[3];
+    }
+    return statusMap[item.status] || { text: '未知', color: 'grey' };
+};
+
 onMounted(() => {
     // 預設載入目前 Tab 的資料
     if (tab.value === 'all') loadAllClubs();
@@ -318,9 +326,9 @@ onMounted(() => {
                                     {{ formatDate(item.eventDate) }}
                                 </template>
                                 <template v-slot:item.status="{ item }">
-                                    <v-chip :color="statusMap[item.status]?.color" size="small"
+                                    <v-chip :color="getDisplayStatus(item).color" size="small"
                                         class="font-weight-bold status-chip-text">
-                                        {{ statusMap[item.status]?.text || '未知' }}
+                                        {{ getDisplayStatus(item).text }}
                                     </v-chip>
                                 </template>
                                 <template v-slot:item.participants="{ item }">
@@ -378,9 +386,9 @@ onMounted(() => {
                                     {{ formatDate(item.eventDate) }}
                                 </template>
                                 <template v-slot:item.status="{ item }">
-                                    <v-chip :color="statusMap[item.status]?.color" size="small"
+                                    <v-chip :color="getDisplayStatus(item).color" size="small"
                                         class="font-weight-bold status-chip-text">
-                                        {{ statusMap[item.status]?.text || '未知' }}
+                                        {{ getDisplayStatus(item).text }}
                                     </v-chip>
                                 </template>
                                 <template v-slot:item.participants="{ item }">
@@ -442,9 +450,9 @@ onMounted(() => {
                                     {{ formatDate(item.eventDate) }}
                                 </template>
                                 <template v-slot:item.status="{ item }">
-                                    <v-chip :color="statusMap[item.status]?.color" size="small"
+                                    <v-chip :color="getDisplayStatus(item).color" size="small"
                                         class="font-weight-bold status-chip-text">
-                                        {{ statusMap[item.status]?.text || '未知' }}
+                                        {{ getDisplayStatus(item).text }}
                                     </v-chip>
                                 </template>
                                 <template v-slot:item.participants="{ item }">

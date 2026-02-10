@@ -42,4 +42,14 @@ export default {
   updateReportStatus(id, newStatus) {
     return axios.put(`/api/admin/reports/${id}`, { status: newStatus })
   },
+
+  // (後台) 取得待處理檢舉數量
+  getPendingReportCount() {
+    return axios.get('/api/admin/reports/pending-count')
+  },
+
+  // 取得特定使用者的所有評價
+  getUserReviews(userId) {
+    return axios.get(`${API_URL}/user/${userId}`)
+  },
 }

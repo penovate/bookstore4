@@ -34,8 +34,7 @@ public class ReviewReportController {
         if (report.getReviewId() == null || report.getUserId() == null || report.getReason() == null) {
             return ResponseEntity.badRequest().body("欄位缺漏");
         }
-        
-        
+
         // 檢查評論是否為「顯示中」(如果不顯示，代表已被隱藏或刪除，則不可檢舉)
         boolean isVisible = rsReport.isReviewVisible(report.getReviewId());
         if (!isVisible) {
@@ -77,6 +76,19 @@ public class ReviewReportController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("更新失敗: " + e.getMessage());
+        }
+    }
+    
+    // 取得待處理檢舉數量 (給側邊欄通知)
+    @GetMapping("/admin/reports/pending-count")
+    public ResponseEntity<?> getPendingReportCount() {
+        try {
+            long count = rsReport.countPendingReports();
+            // 回傳 JSON 格式: { "count": 5 }
+            return ResponseEntity.ok().body("{\"count\": " + count + "}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("取得數量失敗");
         }
     }
 

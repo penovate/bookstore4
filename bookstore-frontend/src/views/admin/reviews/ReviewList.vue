@@ -66,6 +66,7 @@
           <div class="d-flex align-center justify-center">
             <v-switch
               :model-value="item.status === 1"
+              :disabled="!canToggleStatus(item)"
               color="success"
               hide-details
               density="compact"
@@ -81,7 +82,7 @@
         </template>
 
         <template v-slot:item.actions="{ item }">
-          <v-tooltip location="top" text="檢舉此評價">
+          <v-tooltip location="top" :text="Number(item.userId) === Number(currentUserId.value) ? '無法檢舉自己的評價' : '檢舉此評價'">
             <template v-slot:activator="{ props }">
               <v-btn
                 v-bind="props"
@@ -90,7 +91,7 @@
                 variant="text"
                 color="error"
                 class="action-btn"
-                :disabled="item.status !== 1"
+                :disabled="!canReport(item)"
                 @click="handleReport(item)"
               >
                 <v-icon>mdi-alert-circle-outline</v-icon>
@@ -131,6 +132,18 @@ const router = useRouter()
 const reviews = ref([])
 const loading = ref(false)
 const search = ref('')
+
+const currentUserId = computed(() => {
+  const id = getUserIdFromToken()
+  return id ? Number(id) : null 
+})
+
+const currentUserRole = computed(() => {
+  const role = localStorage.getItem('userRole')
+  if (role === 'SUPER_ADMIN' || role === '0') return 0
+  if (role === 'ADMIN' || role === '1') return 1
+  return 2 
+})
 
 // 判斷目前是查看哪本書
 const currentBookId = ref(route.params.bookId)
@@ -184,6 +197,23 @@ const goToUserDetail = (userId) => {
     name: 'userDetail',
     params: { id: userId },
   })
+}
+
+// 權限判斷邏輯
+const canToggleStatus = (item) => {
+  const myRole = Number(currentUserRole.value)
+  const myUserId = Number(currentUserId.value)
+  const targetRole = Number(item.userType)
+  const targetUserId = Number(item.userId)
+  if (isNaN(myRole)) return false
+  if (myRole === 0) return true
+  
+  if (myRole === 1) {
+    if (targetRole === 2) return true
+    if (targetUserId === myUserId) return true
+    return false
+  }
+  return false
 }
 
 // 狀態切換邏輯
@@ -250,7 +280,7 @@ const getUserIdFromToken = () => {
 
     const payload = JSON.parse(jsonPayload)
 
-    // ★ 這裡很重要：請觀察你的後端 JWT 欄位名稱
+    // ★ 重要：後端 JWT 欄位名稱
     // 通常是 'userId', 'id', 或 'sub'
     // 如果你的後端把 ID 放在 'sub' (Subject)，就回傳 payload.sub
     return payload.userId || payload.id || payload.sub
@@ -332,6 +362,16 @@ const handleReport = async (item) => {
       }
     }
   }
+}
+
+const canReport = (item) => {
+  // 隱藏無法檢舉
+  if (item.status !== 1) return false 
+  // 自己的評價不能檢舉
+  if (Number(item.userId) === Number(currentUserId.value)) {
+    return false
+  }
+  return true
 }
 
 // 監聽路由變化

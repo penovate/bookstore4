@@ -4,11 +4,16 @@ import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 import { useUserStore } from '@/stores/userStore'
+import reviewService from '@/api/reviewService'
+import { useReportStore } from '@/stores/reportStore'
+
+
 
 const router = useRouter()
 const route = useRoute()
 const drawer = ref(true)
 const userStore = useUserStore()
+const reportStore = useReportStore()
 const unreadUserCount = ref(0)
 let timer = null 
 
@@ -55,7 +60,8 @@ const items = ref([
       { title: '書籍評價', to: '/dev/admin/reviews', icon: 'mdi-comment-text-multiple-outline' },
       { title: '檢舉列表', 
         to: '/dev/admin/reviews/reports',
-        icon: 'mdi-alert-octagon-outline' // 或 mdi-flag-outline
+        icon: 'mdi-alert-octagon-outline', // 或 mdi-flag-outline
+        showBadge: true
       },
     ],
   },
@@ -112,6 +118,9 @@ const handleLogout = () => {
 }
 
 onMounted(async () => {
+  
+  reportStore.fetchPendingCount()
+
   if (userStore.isLoggedIn) {
     try {
       await userStore.syncUserProfile();
@@ -121,9 +130,10 @@ onMounted(async () => {
     }
   }
 
-  fetchUnreadUserCount();
   
-  timer = setInterval(fetchUnreadUserCount, 1000); 
+  fetchUnreadUserCount();
+  reportStore.fetchPendingCount();
+  timer = setInterval(() => { fetchUnreadUserCount(); reportStore.fetchPendingCount() }, 1000);
 });
 
 onUnmounted(() => {
@@ -170,8 +180,20 @@ onUnmounted(() => {
           <v-list-group v-if="item.children" :value="item.title">
             <template v-slot:activator="{ props }">
               <v-list-item v-bind="props" :prepend-icon="item.icon" :title="item.title">
-                <template v-slot:append v-if="item.title === '會員管理' && unreadUserCount > 0">
-                  <v-badge color="error" :content="unreadUserCount" inline></v-badge>
+                <template v-slot:append>
+                  <v-badge
+                    v-if="item.title === '評價管理' && reportStore.pendingCount > 0"
+                    color="error"
+                    :content="reportStore.pendingCount"
+                    inline
+                  ></v-badge>
+                  
+                  <v-badge 
+                    v-if="item.title === '會員管理' && unreadUserCount > 0" 
+                    color="error" 
+                    :content="unreadUserCount" 
+                    inline>
+                  </v-badge>
                 </template>
               </v-list-item>
             </template>
@@ -185,8 +207,20 @@ onUnmounted(() => {
               :value="child.title"
               color="accent"
             >
-              <template v-slot:append v-if="child.isChat && unreadUserCount > 0">
-                <v-badge color="error" :content="unreadUserCount" inline></v-badge>
+              <template v-slot:append>
+                  <v-badge
+                    v-if="child.showBadge && reportStore.pendingCount > 0"
+                    color="error"
+                    :content="reportStore.pendingCount"
+                    inline
+                  ></v-badge>
+                  
+                  <v-badge 
+                  v-if="child.isChat && unreadUserCount > 0" 
+                  color="error" 
+                  :content="unreadUserCount" 
+                  inline>
+                  </v-badge>
               </template>
             </v-list-item>
           </v-list-group>

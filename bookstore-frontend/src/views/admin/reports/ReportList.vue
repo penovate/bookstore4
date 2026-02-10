@@ -117,22 +117,27 @@
             ></v-btn>
 
             <template v-if="report.status === 0">
-              <v-btn
-                icon="mdi-check-circle-outline"
-                variant="text"
-                size="small"
-                color="success"
-                @click="processReport(report, false)"
-                title="駁回檢舉"
-              ></v-btn>
-              <v-btn
-                icon="mdi-delete-alert-outline"
-                variant="text"
-                size="small"
-                color="error"
-                @click="processReport(report, true)"
-                title="成立檢舉"
-              ></v-btn>
+              <template v-if="canAudit(report)">
+                <v-btn
+                  icon="mdi-check-circle-outline"
+                  variant="text"
+                  size="small"
+                  color="success"
+                  @click="processReport(report, false)"
+                  title="駁回檢舉"
+                ></v-btn>
+                <v-btn
+                  icon="mdi-delete-alert-outline"
+                  variant="text"
+                  size="small"
+                  color="error"
+                  @click="processReport(report, true)"
+                  title="成立檢舉"
+                ></v-btn>
+              </template>
+              <div v-else class="text-caption text-grey font-weight-bold">
+              無權限審核
+              </div>
             </template>
           </div>
         </template>
@@ -192,24 +197,29 @@
 
         <v-card-actions class="pa-4 justify-end">
           <template v-if="selectedReport.status === 0">
-            <v-btn
+            <template v-if="canAudit(selectedReport)">
+              <v-btn
               variant="outlined"
               color="success"
               class="font-weight-bold"
               prepend-icon="mdi-check"
               @click="processReport(selectedReport, false)"
-            >
+              >
               檢舉不成立
-            </v-btn>
-            <v-btn
+              </v-btn>
+              <v-btn
               variant="flat"
               color="error"
               class="font-weight-bold ml-2"
               prepend-icon="mdi-gavel"
               @click="processReport(selectedReport, true)"
-            >
+              >
               檢舉屬實
-            </v-btn>
+              </v-btn>
+            </template>
+            <div v-else class="text-caption text-error font-weight-bold mr-4">
+            您無權審核此對象
+            </div>
           </template>
           <template v-else>
             <span class="text-caption text-grey mr-3 font-weight-bold"
@@ -229,6 +239,7 @@ import Swal from 'sweetalert2'
 import reviewService from '@/api/reviewService.js'
 import { getReportLabel, getReportColor } from '@/utils/reportOptions.js'
 import * as XLSX from 'xlsx'
+import { useReportStore } from '@/stores/reportStore'
 
 // --- 資料與狀態 ---
 const tab = ref('pending')
@@ -236,6 +247,7 @@ const search = ref('')
 const loading = ref(false)
 const dialog = ref(false)
 const selectedReport = ref({})
+const reportStore = useReportStore()
 
 const headers = [
   { title: '編號', key: 'id', sortable: true, width: '90px', align: 'start' },
@@ -251,6 +263,32 @@ const headers = [
 // 假資料
 const reports = ref([])
 
+const getUserIdFromToken = () => {
+  const token = localStorage.getItem('userToken')
+  if (!token) return null
+
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split('')
+        .map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        })
+        .join(''),
+    )
+
+    const payload = JSON.parse(jsonPayload)
+
+    return payload.userId || payload.id || payload.sub
+  } catch (e) {
+    console.error('Token 解析失敗', e)
+    return null
+  }
+}
+
 // 計算屬性
 const filteredReports = computed(() => {
   return tab.value === 'pending'
@@ -265,7 +303,32 @@ const pendingCount = computed(() => {
   return reports.value.filter((r) => r.status === 0).length
 })
 
-// 方法
+const currentUserId = computed(() => Number(getUserIdFromToken()))
+const currentUserRole = computed(() => {
+    const role = localStorage.getItem('userRole') 
+    if (role === 'SUPER_ADMIN' || role === '0') return 0
+    if (role === 'ADMIN' || role === '1') return 1
+    return 2
+})
+
+// 審核權限
+const canAudit = (report) => {
+  const myRole = currentUserRole.value
+  const myId = currentUserId.value
+  
+  const targetRole = report.reportedUserRole
+  const targetId = report.reportedUserId
+  
+  if (myRole === 0) {
+    return true 
+  }
+  
+  if (myRole === 1) {
+    if (targetRole === 2) return true
+    return false
+  }
+  return false
+}
 
 // 獲取所有檢舉列表
 const fetchReports = async () => {
@@ -310,7 +373,6 @@ const processReport = async (report, isSustain) => {
 
   if (result.isConfirmed) {
     try {
-      loading.value = true
 
       await reviewService.updateReportStatus(report.id, newStatus)
 
@@ -319,6 +381,8 @@ const processReport = async (report, isSustain) => {
       if (index !== -1) {
         reports.value[index].status = newStatus
       }
+
+      await reportStore.fetchPendingCount()
 
       Swal.fire({
         title: '已更新',
@@ -351,9 +415,9 @@ const exportReports = () => {
     狀態: getStatusText(report.status),
     檢舉時間: report.createdAt,
     }))
-    // 2. 轉換為工作表 (Worksheet)
+    // 2. 轉換為工作表
     const worksheet = XLSX.utils.json_to_sheet(exportData)
-    // 設定欄寬 (選用，讓 Excel 比較好看)
+    // 設定欄寬
     const wscols = [
     { wch: 10 }, // 編號
     { wch: 15 }, // 檢舉人
@@ -365,7 +429,6 @@ const exportReports = () => {
     { wch: 20 }, // 檢舉時間
     ]
     worksheet['!cols'] = wscols
-    // 3. 建立活頁簿 (Workbook) 並加入工作表
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, '檢舉紀錄')
     // 4. 下載檔案

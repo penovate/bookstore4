@@ -15,12 +15,14 @@ public class ReportList {
 
     private Integer id;
     private String reporterName;
+    private Integer reportedUserId;
     private String reportedName;
     private String bookTitle;
     private String reviewContent;
     private String fullContent;
     private String reason;
     private Integer status;
+    private Integer reportedUserRole;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;

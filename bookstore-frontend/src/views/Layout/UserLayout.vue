@@ -60,16 +60,22 @@ const handleLogout = () => {
     cancelButtonText: '取消',
   }).then((result) => {
     if (result.isConfirmed) {
-      userStore.logout()
       Swal.fire({
         icon: 'success',
         title: '登出成功',
+        text: '期待與您再次相遇！',
         confirmButtonColor: '#2e5c43',
         timer: 1500,
         showConfirmButton: false,
-      })
+      }).then(() => {
+        userStore.logout();
+        
+        if (route.path !== '/dev/user/home') {
+           router.push('/dev/user/home');
+        }
+      });
     }
-  })
+  });
 }
 
 let notifySocket = null

@@ -389,6 +389,7 @@ router.beforeEach((to, from, next) => {
   document.title = pageTitle ? `${pageTitle} | 森林書屋` : '森林書屋'
 
   const isAdminRoute = to.path.startsWith('/dev/admin') || to.name === 'home'
+  const isUserArea = to.path.startsWith('/dev/user')
   const isUserProtectedRoute = ['myOrders', 'checkout', 'cart', 'userCoupons', 'profile-edit', 'password-confirmation','my-reviews'].includes(to.name)
   const isLoginPage = to.name === 'user-login'
 

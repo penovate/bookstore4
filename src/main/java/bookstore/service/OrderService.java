@@ -686,31 +686,39 @@ public class OrderService {
 
 	@Transactional(readOnly = true)
 	public List<BookSalesDTO> getTopSellingBooksFull(Timestamp start, Timestamp end) {
-		StringBuilder jpql = new StringBuilder(
-				"SELECT new bookstore.dto.BookSalesDTO(" +
-						"b.bookId, b.bookName, b.author, b.price, bi.imageUrl, SUM(oi.quantity)) " +
-						"FROM OrderItem oi " +
-						"JOIN oi.booksBean b " +
-						"LEFT JOIN b.bookImageBean bi " +
-						"JOIN oi.orders o " +
-						"WHERE o.orderStatus NOT IN ('已取消', '已退款') " +
-						"AND b.onShelf = 1 ");
+	    StringBuilder jpql = new StringBuilder(
+	            "SELECT new bookstore.dto.BookSalesDTO(" +
+	                    "b.bookId, b.bookName, b.author, b.price, bi.imageUrl, b.shortDesc, SUM(oi.quantity)) " + // 💡 加入 b.shortDesc
+	                    "FROM OrderItem oi " +
+	                    "JOIN oi.booksBean b " +
+	                    "LEFT JOIN b.bookImageBean bi " +
+	                    "JOIN oi.orders o " +
+	                    "WHERE o.orderStatus NOT IN ('已取消', '已退款') " +
+	                    "AND b.onShelf = 1 ");
 
-		if (start != null && end != null) {
-			jpql.append("AND o.createdAt BETWEEN :start AND :end ");
-		}
+	    if (start != null && end != null) {
+	        jpql.append("AND o.createdAt BETWEEN :start AND :end ");
+	    }
 
-		jpql.append("GROUP BY b.bookId, b.bookName, b.author, b.price, bi.imageUrl " +
-				"ORDER BY SUM(oi.quantity) DESC");
+	    jpql.append("GROUP BY b.bookId, b.bookName, b.author, b.price, bi.imageUrl, b.shortDesc " +
+	            "ORDER BY SUM(oi.quantity) DESC");
 
-		var query = entityManager.createQuery(jpql.toString(), BookSalesDTO.class);
+	    var query = entityManager.createQuery(jpql.toString(), BookSalesDTO.class);
 
-		if (start != null && end != null) {
-			query.setParameter("start", start);
-			query.setParameter("end", end);
-		}
+	    if (start != null && end != null) {
+	        query.setParameter("start", start);
+	        query.setParameter("end", end);
+	    }
 
-		return query.setMaxResults(4).getResultList(); // Limit to top 4
+	    List<BookSalesDTO> resultList = query.setMaxResults(4).getResultList();
+
+	    for (BookSalesDTO dto : resultList) {
+	        bookRepository.findById(dto.getBookId()).ifPresent(fullBook -> {
+	            dto.setGenres(fullBook.getGenres());
+	        });
+	    }
+
+	    return resultList;
 	}
 
 	@Transactional(readOnly = true)

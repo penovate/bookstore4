@@ -3,6 +3,7 @@ package bookstore.service;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import bookstore.bean.BooksBean;
 import bookstore.bean.ClubCategoriesBean;
 import bookstore.bean.ClubConstants;
 import bookstore.bean.ClubDetail;
+import bookstore.bean.ClubRegistrationsBean;
 import bookstore.bean.UserBean;
 import bookstore.dto.BookClubRequestDTO;
 import bookstore.repository.BookClubsRepository;
@@ -32,6 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 @Slf4j
 public class BookClubService {
+
+	private final EmailService emailService;
 
 	@Autowired
 	private BookClubsRepository bookClubsRepository;
@@ -53,6 +57,10 @@ public class BookClubService {
 
 	private static final String ROOT_PATH = "C:/uploads/proof/";
 
+	BookClubService(EmailService emailService) {
+		this.emailService = emailService;
+	}
+
 	// 查詢全部讀書會
 	public List<BookClubsBean> getAllClubs() {
 		List<BookClubsBean> clubList = bookClubsRepository.findAll();
@@ -61,6 +69,10 @@ public class BookClubService {
 	}
 
 	// 查詢所有讀書會分類
+	/**
+	 * 
+	 * @return
+	 */
 	public List<ClubCategoriesBean> getAllCategories() {
 		return categoriesRepository.findAll();
 	}
@@ -243,7 +255,7 @@ public class BookClubService {
 			}
 		} else {
 			validateFullClubDetail(dto);
-			targetStatus = ClubConstants.STATUS_PEDING;
+			targetStatus = ClubConstants.STATUS_PENDING;
 		}
 
 		BookClubsBean mainclub = new BookClubsBean();
@@ -256,7 +268,7 @@ public class BookClubService {
 		BookClubsBean saveClub = bookClubsRepository.save(mainclub);
 
 		ClubDetail detail = new ClubDetail();
-		detail.setMainClub(mainclub);
+		detail.setMainClub(saveClub);
 		mapDtoToDetailEntity(detail, dto);
 		clubDetailRepository.save(detail);
 		log.info("讀書會建立成功 ID:{} ，狀態:{}", saveClub.getClubId(), saveClub.getStatus());
@@ -311,7 +323,7 @@ public class BookClubService {
 				needTest = true; // 駁回後可修改
 			} else if (status == ClubConstants.STATUS_DRAFT) {
 				// 草稿可修改，不做額外限制
-			} else if (status == ClubConstants.STATUS_PEDING) {
+			} else if (status == ClubConstants.STATUS_PENDING) {
 				// 審核中通常不允許修改，或者視需求而定。依報告建議，審核中應鎖定。
 				throw new BusinessException(400, "審核中狀態無法進行修改");
 			} else {
@@ -389,7 +401,7 @@ public class BookClubService {
 			// 若從 草稿 或 駁回 狀態送出 -> 轉為 審核中
 			if (currentStatus == ClubConstants.STATUS_DRAFT || currentStatus == ClubConstants.STATUS_REJECTED) {
 				validateFullClubDetail(dto); // 送審前強制檢查
-				club.setStatus(ClubConstants.STATUS_PEDING);
+				club.setStatus(ClubConstants.STATUS_PENDING);
 				club.setRejectionReason(null); // 清空之前的駁回原因
 				log.info("讀書會 ID: {} 狀態由 {} 轉為 審核中", club.getClubId(), currentStatus);
 			}
@@ -477,9 +489,8 @@ public class BookClubService {
 
 		// 狀態檢查 (需為 報名中/已額滿/已截止)
 		int status = club.getStatus();
-		if (status != ClubConstants.STATUS_APPROVED &&
-				status != ClubConstants.STATUS_FULL &&
-				status != ClubConstants.STATUS_DEADLINE) {
+		if (status != ClubConstants.STATUS_APPROVED && status != ClubConstants.STATUS_FULL
+				&& status != ClubConstants.STATUS_DEADLINE) {
 			throw new BusinessException(400, "目前狀態無法結束讀書會");
 		}
 
@@ -492,15 +503,19 @@ public class BookClubService {
 		bookClubsRepository.save(club);
 
 		// 積分結算: 針對有效報名者 (status=1) 增加 100 積分
-		List<bookstore.bean.ClubRegistrationsBean> registrations = clubRegistrationsRepository.findAllByClubId(clubId);
-		for (bookstore.bean.ClubRegistrationsBean reg : registrations) {
+		List<ClubRegistrationsBean> registrations = clubRegistrationsRepository.findAllByClubId(clubId);
+		List<UserBean> userPointUpdate = new ArrayList<UserBean>();
+		for (ClubRegistrationsBean reg : registrations) {
 			if (reg.getStatus() == 1) { // 1: 報名成功
 				UserBean participant = reg.getUser();
 				int currentPoints = participant.getPoints() != null ? participant.getPoints() : 0;
 				participant.setPoints(currentPoints + 100);
-				userRepository.save(participant);
 				log.info("會員ID:{} 參加讀書會ID:{} 獲得 100 積分", participant.getUserId(), clubId);
+				userPointUpdate.add(participant);
 			}
+		}
+		if (!userPointUpdate.isEmpty()) {
+			userRepository.saveAll(userPointUpdate);
 		}
 
 		log.info("讀書會ID:{} 已結束，並完成積分發放", clubId);
@@ -510,6 +525,11 @@ public class BookClubService {
 	// 發起人取消讀書會
 	public BookClubsBean cancelClub(Integer clubId, Integer userId) {
 		BookClubsBean club = getClub(clubId);
+		Optional<UserBean> opt = userRepository.findById(userId);
+		if (opt == null) {
+			throw new BusinessException(400, "查無該會員資料");
+		}
+		UserBean host = opt.get();
 
 		// 權限檢查: 必須是發起人
 		if (!Objects.equals(club.getHost().getUserId(), userId)) {
@@ -523,6 +543,15 @@ public class BookClubService {
 		}
 
 		club.setStatus(ClubConstants.STATUS_CANCELLED);
+
+		// 通知所有參與者讀書會取消
+		List<ClubRegistrationsBean> regs = clubRegistrationsRepository.findByBookClub_ClubId(clubId);
+		for (ClubRegistrationsBean reg : regs) {
+			emailService.sendClubCancelToRegister(reg.getUser().getEmail(), club.getClubName(), host.getUserName(),
+					club.getEventDate(), reg.getUser().getUserName(), club.getLocation(), host.getEmail(),
+					host.getPhoneNum());
+		}
+
 		log.info("發起人ID:{} 取消了讀書會ID:{}", userId, clubId);
 		return bookClubsRepository.save(club);
 	}
@@ -534,6 +563,11 @@ public class BookClubService {
 			log.warn("刪除失敗 - 無ID{}相關讀書會資料", clubId);
 			throw new BusinessException(400, "刪除失敗 - 無ID" + clubId + "相關讀書會資料");
 		}
+		List<ClubRegistrationsBean> regs = clubRegistrationsRepository.findByBookClub_ClubId(clubId);
+		for (ClubRegistrationsBean reg : regs) {
+			clubRegistrationsRepository.delete(reg);
+		}
+
 		bookClubsRepository.deleteById(clubId);
 	}
 

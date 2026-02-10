@@ -1,5 +1,6 @@
 package bookstore.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -114,15 +115,18 @@ public class ClubRegistrationService {
 		newReg.setCheckIn(false);
 		newReg.setRegisteredAt(java.time.LocalDateTime.now());
 
-		updateClubParticipants(club, 1);
-
-		return clubRegistrationsRepository.save(newReg);
+		try {
+			updateClubParticipants(club, 1);
+			return clubRegistrationsRepository.save(newReg);
+		} catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+			throw new BusinessException(409, "報名人數更動頻繁，請稍後重試");
+		}
 	}
 
 	private void updateClubParticipants(BookClubsBean club, int delta) {
 		int current = club.getCurrentParticipants() == null ? 0 : club.getCurrentParticipants();
 		club.setCurrentParticipants(current + delta);
-		bookClubsRepository.save(club);
+		bookClubsRepository.saveAndFlush(club);
 	}
 
 	// 棄用: 用 register 代替
@@ -132,12 +136,21 @@ public class ClubRegistrationService {
 
 	// 發起人修改報名者報到狀態
 	public void updateUserCheckIn(Integer clubId, Integer userId) {
+		Optional<BookClubsBean> opt = bookClubsRepository.findById(clubId);
+		if (opt == null) {
+			throw new BusinessException(400, "查無該讀書會資料");
+		}
+		BookClubsBean club = opt.get();
+
 		ClubRegistrationsBean reg = clubRegistrationsRepository
 				.findByBookClub_ClubIdAndUser_UserId(clubId, userId)
 				.orElseThrow(() -> new BusinessException(404, "找不到該報名資料"));
 
 		if (Boolean.TRUE.equals(reg.getCheckIn())) {
 			throw new BusinessException(400, "該會員已報到，不可重複修改");
+		}
+		if (LocalDateTime.now().isBefore(club.getEventDate())) {
+			throw new BusinessException(409, "活動開始前不開放報到");
 		}
 		reg.setCheckIn(true);
 		clubRegistrationsRepository.save(reg);

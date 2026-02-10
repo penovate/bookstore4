@@ -84,4 +84,8 @@ public class BookClubsBean {
 
 	@Column(name = "created_at", insertable = false, updatable = false)
 	private LocalDateTime createdAt;
+
+	@jakarta.persistence.Version
+	@Column(name = "version")
+	private Integer version;
 }

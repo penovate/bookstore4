@@ -40,7 +40,7 @@ public class WebConfig implements WebMvcConfigurer {
 					.excludePathPatterns("/logout")
 					.excludePathPatterns("/get-test-token")
 
-					.excludePathPatterns("/static/**", "/css/**", "/js/**", "/images/**");
+					.excludePathPatterns("/static/**", "/css/**", "/js/**", "/images/**", "/proof/**");
 		}
 
 		if (jwtInterceptor != null) {
@@ -56,7 +56,9 @@ public class WebConfig implements WebMvcConfigurer {
 					.excludePathPatterns("/orders/ecpay/**")
 					.excludePathPatterns("/orders/ecpay/**")
 					.excludePathPatterns("/api/clubs/allClubs")
+					.excludePathPatterns("/api/clubs/clubs/**")
 					.excludePathPatterns("/uploads/**");
+			
 			// .addPathPatterns("/api/books**")
 			// .excludePathPatterns("/api/books/getAllBooks",
 			// "api/books/getBook/**",
@@ -71,7 +73,9 @@ public class WebConfig implements WebMvcConfigurer {
 		registry.addResourceHandler("/upload-images/**")
 				.addResourceLocations("file:" + uploadDir);
 		registry.addResourceHandler("/uploads/**")
-        		.addResourceLocations("file:///C:/uploads/");
+				.addResourceLocations("file:///C:/uploads/");
+		registry.addResourceHandler("/proof/**")
+				.addResourceLocations("file:///C:/uploads/proof/proof/");
 	}
 
 }

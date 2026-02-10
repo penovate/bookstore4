@@ -17,6 +17,8 @@ public class BookSalesDTO {
     private BigDecimal price;
     private String author;
     private String coverImage;
+    private String shortDesc;
+    private Object genres;
 
     // 後台分析使用
     public BookSalesDTO(String bookName, Long totalQuantity) {
@@ -25,14 +27,15 @@ public class BookSalesDTO {
     }
 
     // 前台熱銷排名使用
-    public BookSalesDTO(Integer bookId, String bookName, String author, BigDecimal price, String coverImage,
-            Long totalQuantity) {
-        this.bookId = bookId;
-        this.bookName = bookName;
-        this.author = author;
-        this.price = price;
-        this.coverImage = coverImage;
-        this.totalQuantity = totalQuantity;
-    }
+    public BookSalesDTO(Integer bookId, String bookName, String author, BigDecimal price, 
+            String coverImage, String shortDesc, Long totalQuantity) {
+		this.bookId = bookId;
+		this.bookName = bookName;
+		this.author = author;
+		this.price = price;
+		this.coverImage = coverImage;
+		this.shortDesc = shortDesc;
+		this.totalQuantity = totalQuantity;
+    }	
 
 }

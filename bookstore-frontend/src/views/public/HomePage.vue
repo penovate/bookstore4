@@ -56,13 +56,14 @@ const topSellers = ref([])
 const getTopSellers = async () => {
   try {
     const res = await orderService.getHomepageTopSellers()
-    // 對應 BookCard 需要的格式，BookSalesDTO 回傳的欄位: bookId, bookName, author, price, coverImage, totalQuantity
-    // BookCard 可能需要: bookId, bookName, author, price, imagePath (通常後端回傳 coverImage 或 imagePath)
-    // 確保格式一致
-    topSellers.value = res.data.map((item) => ({
-      ...item,
-      imagePath: item.coverImage, // Mapping coverImage to imagePath if needed by BookCard
-    }))
+    topSellers.value = res.data.map((item) => {
+      return {
+        ...item,
+        imagePath: item.coverImage, 
+        shortDesc: item.description || item.bookDescription || item.shortDesc || '',
+        genres: item.genres || [] 
+      }
+    })
   } catch (e) {
     console.error('Fetch top sellers failed', e)
   }

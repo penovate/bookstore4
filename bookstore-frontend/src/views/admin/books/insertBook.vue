@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import bookService from '@/api/bookService.js';
 import Swal from 'sweetalert2';
+import SmartInputButtons from '@/components/SmartInputButtons.vue';
 
 const router = useRouter();
 const genres = ref([]);
@@ -71,29 +72,38 @@ const handleFileUpdate = (files) => {
 const generateRandomBook = () => {
     const randomSuffix = Math.floor(Math.random() * 10000);
 
-    // Generate random ISBN 13 (starts with 978)
+    // Generate random ISBN 13 (starts with 978) to ensure uniqueness
     let isbn = '978';
     for (let i = 0; i < 10; i++) {
         isbn += Math.floor(Math.random() * 10);
     }
 
     book.value = {
-        bookName: `書籍 ${randomSuffix}`,
-        author: `作者 ${randomSuffix}`,
-        translator: `譯者 ${randomSuffix}`,
-        press: `出版社 ${randomSuffix}`,
-        price: Math.floor(Math.random() * 901) + 100, // 100-1000
+        bookName: `巴菲特寫給股東的信`,
+        author: `Warren Edward Buffett`,
+        translator: `許晶晶`,
+        press: `財信出版`,
+        price: 600,
         isbn: isbn,
-        // stock: Math.floor(Math.random() * 91) + 10, // 10-100
-        shortDesc: `這是一本隨機生成的書籍介紹 ${randomSuffix}。內容豐富，值得一讀。`,
-        onShelf: 0
+        stock: 0,
+        shortDesc: `本書收錄了巴菲特寫給波克夏股東的信，闡述了他的投資哲學與管理智慧。是投資人必讀的經典之作。 (測試編號: ${randomSuffix})`,
+        onShelf: 1
     };
 
-    // Randomly select 1-3 genres if available
+    // Attempt to select "Business" or "Finance" related genres if available, otherwise random
     if (genres.value.length > 0) {
-        const numGenres = Math.floor(Math.random() * 3) + 1;
-        const shuffled = [...genres.value].sort(() => 0.5 - Math.random());
-        selectedGenreIds.value = shuffled.slice(0, numGenres).map(g => g.genreId);
+        // Try to find keywords like '理財', '投資', '商業'
+        const targetKeywords = ['理財', '投資', '商業', '經濟'];
+        const targetGenres = genres.value.filter(g => targetKeywords.some(k => g.genreName.includes(k)));
+
+        if (targetGenres.length > 0) {
+            selectedGenreIds.value = targetGenres.map(g => g.genreId);
+        } else {
+            // Fallback to random
+            const numGenres = Math.floor(Math.random() * 3) + 1;
+            const shuffled = [...genres.value].sort(() => 0.5 - Math.random());
+            selectedGenreIds.value = shuffled.slice(0, numGenres).map(g => g.genreId);
+        }
     }
 };
 
@@ -107,7 +117,7 @@ const clearForm = () => {
         isbn: '',
         stock: null,
         shortDesc: '',
-        onShelf: 0 
+        onShelf: 0
     };
     selectedGenreIds.value = [];
     imageFile.value = null;
@@ -246,16 +256,9 @@ const submit = async () => {
                         </v-row>
 
                         <div class="d-flex justify-space-between mt-4">
-                            <div class="d-flex gap-2">
-                                <v-btn color="info" variant="tonal" prepend-icon="mdi-flash"
-                                    @click="generateRandomBook">
-                                    一鍵輸入
-                                </v-btn>
-                                <v-btn color="error" variant="tonal" prepend-icon="mdi-delete-sweep" class="ml-2"
-                                    @click="clearForm">
-                                    清空欄位
-                                </v-btn>
-                            </div>
+                            <SmartInputButtons :presets="[
+                                { title: '一鍵輸入', handler: generateRandomBook, icon: 'mdi-flash', color: 'info' }
+                            ]" :showClear="true" :clearHandler="clearForm" />
                             <div>
                                 <v-btn variant="text" class="mr-2" @click="router.back()">取消</v-btn>
                                 <v-btn type="submit" color="primary" :loading="loading" elevation="2"

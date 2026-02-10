@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import bookService from '@/api/bookService.js';
 import Swal from 'sweetalert2';
+import ActionPageButton from '@/components/ActionPageButton.vue';
 
 const router = useRouter();
 const books = ref([]);
@@ -156,21 +157,20 @@ onMounted(() => {
 <template>
     <div>
         <!-- 放大圖片顯示層 (Overlay) -->
-        <div v-if="zoomedImageUrl" class="zoomed-image-overlay elevation-10 rounded-lg" :style="{
+        <!-- <div v-if="zoomedImageUrl" class="zoomed-image-overlay elevation-10 rounded-lg" :style="{
             top: `${zoomPosition.y}px`,
             left: `${zoomPosition.x}px`
         }" @mouseleave="closeZoom">
             <v-img :src="zoomedImageUrl" cover width="100%" height="100%"></v-img>
-        </div>
+        </div> -->
 
         <!-- 標題與搜尋區 -->
         <v-row class="mb-4" align="center">
             <v-col cols="12" md="4">
                 <h2 class="text-h4 font-weight-bold text-primary">書籍管理列表</h2>
-                <v-btn color="primary" class="mt-2" prepend-icon="mdi-plus"
-                    @click="router.push('/dev/admin/books/insert')">
+                <ActionPageButton class="mt-2" @click="router.push('/dev/admin/books/insert')">
                     新增書籍
-                </v-btn>
+                </ActionPageButton>
             </v-col>
             <v-col cols="12" md="4" offset-md="4">
                 <v-text-field v-model="search" label="搜尋書籍..." prepend-inner-icon="mdi-magnify" variant="outlined"
@@ -180,8 +180,8 @@ onMounted(() => {
 
         <!-- 書籍列表區 -->
         <v-card class="rounded-lg elevation-2 border-t-4 border-primary">
-            <v-data-table v-model:page="page" :headers="headers" :items="books" :loading="loading" :search="search" class="forest-table"
-                item-value="bookId" hover>
+            <v-data-table v-model:page="page" :headers="headers" :items="books" :loading="loading" :search="search"
+                class="forest-table" item-value="bookId" hover>
 
                 <!-- [新增] 圖片顯示 Slot -->
                 <template v-slot:item.bookImage="{ item }">

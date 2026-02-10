@@ -5,7 +5,8 @@ import Swal from 'sweetalert2';
 
 const props = defineProps({
     modelValue: Boolean,
-    clubId: Number
+    clubId: Number,
+    eventDate: String
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -16,6 +17,12 @@ const visible = computed({
     set: (value) => emit('update:modelValue', value)
 });
 
+// Check if current time is after event start time
+const canCheckIn = computed(() => {
+    if (!props.eventDate) return false;
+    return new Date() >= new Date(props.eventDate);
+});
+
 const loading = ref(false);
 const registrations = ref([]);
 const search = ref('');
@@ -23,6 +30,7 @@ const search = ref('');
 const headers = [
     { title: '會員名稱', key: 'user.userName', sortable: true },
     { title: 'Email', key: 'user.email', sortable: true },
+    { title:'電話', key: 'user.phoneNum', sortable: true },
     { title: '報名時間', key: 'registeredAt', sortable: true },
     { title: '狀態', key: 'status', sortable: true },
     { title: '報到', key: 'checkIn', sortable: true },
@@ -131,10 +139,19 @@ onMounted(() => {
 
                     <template v-slot:item.actions="{ item }">
                         <!-- 僅已報名且未取消者可報到 -->
-                        <v-btn v-if="item.status === 1" size="small" :color="item.checkIn ? 'grey' : 'primary'"
-                            :disabled="item.checkIn" variant="elevated" @click="handleCheckIn(item)">
-                            {{ item.checkIn ? '已完成' : '報到' }}
-                        </v-btn>
+                        <div v-if="item.status === 1">
+                            <v-tooltip :text="!canCheckIn ? '活動尚未開始，不可報到' : ''" :disabled="canCheckIn" location="top">
+                                <template v-slot:activator="{ props }">
+                                    <div v-bind="props" class="d-inline-block">
+                                        <v-btn size="small" :color="item.checkIn ? 'grey' : 'primary'"
+                                            :disabled="item.checkIn || !canCheckIn" variant="elevated"
+                                            @click="handleCheckIn(item)">
+                                            {{ item.checkIn ? '已完成' : '報到' }}
+                                        </v-btn>
+                                    </div>
+                                </template>
+                            </v-tooltip>
+                        </div>
                         <span v-else class="text-caption text-grey">該會員已取消報名</span>
                     </template>
 

@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router';
 import stockLogService from '@/api/stockLogService.js';
 import bookService from '@/api/bookService.js';
 import Swal from 'sweetalert2';
+import BackPageButton from '@/components/BackPageButton.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -164,7 +165,10 @@ const submit = async () => {
 
 <template>
     <div class="pa-4">
-        <h2 class="text-h4 font-weight-bold text-primary mb-6">修改進退貨單</h2>
+        <div class="d-flex align-center mb-6">
+            <BackPageButton />
+            <h2 class="text-h4 font-weight-bold text-primary">修改進退貨單</h2>
+        </div>
 
         <v-card class="rounded-lg elevation-2 pa-6" :loading="loading">
             <v-form @submit.prevent="submit">

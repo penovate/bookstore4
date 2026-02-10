@@ -44,7 +44,7 @@ public class BookClubAdminActionsTest {
         // 1. Create a Pending Club
         BookClubRequestDTO dto = createPendingClubDTO();
         BookClubsBean created = bookClubService.createBookClub(dto, hostUserId);
-        assertEquals(ClubConstants.STATUS_PEDING, created.getStatus());
+        assertEquals(ClubConstants.STATUS_PENDING, created.getStatus());
 
         // 2. Approve
         BookClubsBean approved = bookClubService.approveClub(created.getClubId(), adminUserId);

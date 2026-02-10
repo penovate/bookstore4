@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import bookClubService from '@/api/bookClubService.js';
 import Swal from 'sweetalert2';
@@ -8,6 +8,19 @@ const router = useRouter();
 const clubs = ref([]);
 const loading = ref(false);
 const search = ref('');
+const statusFilter = ref(null);
+
+const statusOptions = [
+  { title: '全部', value: null },
+  { title: '報名中', value: 1 },
+  { title: '已額滿', value: 3 },
+  { title: '已截止', value: 4 },
+  { title: '已結束', value: 5 },
+  { title: '審核中', value: 0 },
+  { title: '草稿', value: 7 },
+  { title: '已駁回', value: 2 },
+  { title: '已取消', value: 6 },
+];
 
 // 表格標頭定義
 const headers = [
@@ -44,6 +57,14 @@ const loadClubs = async () => {
         loading.value = false;
     }
 };
+
+const filteredClubs = computed(() => {
+    let data = clubs.value;
+    if (statusFilter.value !== null) {
+        data = data.filter(item => item.status === statusFilter.value);
+    }
+    return data;
+});
 
 const formatDate = (dateStr) => {
     if (!dateStr) return '-';
@@ -131,14 +152,18 @@ onMounted(() => {
                     新增讀書會
                 </v-btn>
             </v-col> -->
-            <v-col cols="12" md="4" offset-md="4">
+            <v-col cols="12" md="3" offset-md="1">
+                <v-select v-model="statusFilter" :items="statusOptions" label="狀態篩選" variant="outlined"
+                    density="compact" hide-details color="primary" class="bg-white rounded"></v-select>
+            </v-col>
+            <v-col cols="12" md="4">
                 <v-text-field v-model="search" label="搜尋讀書會..." prepend-inner-icon="mdi-magnify" variant="outlined"
                     density="compact" hide-details color="primary" class="bg-white rounded"></v-text-field>
             </v-col>
         </v-row>
 
         <v-card class="rounded-lg elevation-2 border-t-4 border-primary">
-            <v-data-table :headers="headers" :items="clubs" :loading="loading" :search="search" class="forest-table"
+            <v-data-table :headers="headers" :items="filteredClubs" :loading="loading" :search="search" class="forest-table"
                 item-value="clubId" hover>
 
                 <!-- 主辦人 -->

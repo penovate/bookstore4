@@ -155,19 +155,19 @@ const router = createRouter({
           path: 'bookclubs/insert',
           name: 'admin-bookclubs-insert',
           component: () => import('../views/admin/bookClubs/insertBookClub.vue'),
-          meta: { title: '新增讀書會'},
+          meta: { title: '新增讀書會' },
         },
         {
           path: 'bookclubs',
           name: 'admin-bookclubs',
           component: () => import('../views/admin/bookClubs/AdminBookClub.vue'),
-          meta: { title: '讀書會管理'},
+          meta: { title: '讀書會管理' },
         },
         {
           path: 'bookclubs/review/:id',
           name: 'admin-bookclubs-review',
           component: () => import('../views/admin/bookClubs/AdminBookClubDetail.vue'),
-          meta: { title: '審核讀書會'},
+          meta: { title: '讀書會審核' },
         },
         {
           path: 'orders/items/add/:id',
@@ -302,7 +302,7 @@ const router = createRouter({
           path: 'books/:id',
           name: 'user-book-detail',
           component: () => import('../views/public/books/UserBookDetail.vue'),
-          // meta: { title: '書籍專區' },
+          meta: { title: '書籍詳細資訊' },
         },
         {
           path: 'store',
@@ -361,19 +361,19 @@ const router = createRouter({
           path: 'bookclubs',
           name: 'user-bookclubs',
           component: () => import('../views/public/club/UserBookClub.vue'),
-          meta: { title: '讀書會專區'},
+          meta: { title: '讀書會專區' },
         },
         {
           path: 'bookclubs/insert',
           name: 'user-bookclubs-insert',
           component: () => import('../views/public/club/UserInsertBookClub.vue'),
-          meta: { title: '發起讀書會'},
+          meta: { title: '新增讀書會' },
         },
         {
           path: 'bookclubs/detail/:id',
           name: 'user-bookclub-detail-page',
           component: () => import('../views/public/club/UserBookClubDetail.vue'),
-          meta: { title: '發起讀書會'},
+          meta: { title: '讀書會詳細資訊' },
         },
       ],
     },
@@ -390,7 +390,15 @@ router.beforeEach((to, from, next) => {
 
   const isAdminRoute = to.path.startsWith('/dev/admin') || to.name === 'home'
   const isUserArea = to.path.startsWith('/dev/user')
-  const isUserProtectedRoute = ['myOrders', 'checkout', 'cart', 'userCoupons', 'profile-edit', 'password-confirmation','my-reviews'].includes(to.name)
+  const isUserProtectedRoute = [
+    'myOrders',
+    'checkout',
+    'cart',
+    'userCoupons',
+    'profile-edit',
+    'password-confirmation',
+    'my-reviews',
+  ].includes(to.name)
   const isLoginPage = to.name === 'user-login'
 
   if (isLoginPage && token) {

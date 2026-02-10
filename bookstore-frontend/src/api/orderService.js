@@ -213,7 +213,7 @@ export default {
 
     // 首頁月度熱銷 (前台)
     getHomepageTopSellers() {
-        return apiClient.get('/order/api/analysis/homepage-books');
+        return apiClient.get('/order/api/analysis/homepage-books', getAuthHeaders());
     },
 
     // 近12個月銷售趨勢 (後台) - 組合圖數據

@@ -384,6 +384,7 @@ router.beforeEach((to, from, next) => {
   document.title = pageTitle ? `${pageTitle} | 森林書屋` : '森林書屋'
 
   const isAdminRoute = to.path.startsWith('/dev/admin') || to.name === 'home'
+  const isUserArea = to.path.startsWith('/dev/user')
   const isUserProtectedRoute = ['myOrders', 'checkout', 'cart', 'userCoupons', 'profile-edit', 'password-confirmation'].includes(to.name)
   const isLoginPage = to.name === 'user-login'
 
@@ -411,6 +412,10 @@ router.beforeEach((to, from, next) => {
       confirmButtonColor: '#2e5c43',
     })
     return next({ name: 'user-login', query: { redirect: to.fullPath } })
+  }
+
+  if (isUserArea && !token && isUserProtectedRoute) {
+    return next({ name: 'user-login'})
   }
 
   next()

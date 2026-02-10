@@ -209,7 +209,15 @@
             variant="text"
             prepend-icon="mdi-magic-staff"
             @click="fillDemoData"
-            >一鍵帶入</v-btn
+            >一鍵帶入 I</v-btn
+          >
+          <v-btn
+            v-if="editedIndex === -1"
+            color="success"
+            variant="text"
+            prepend-icon="mdi-magic-staff"
+            @click="fillDemoData2"
+            >一鍵帶入 II</v-btn
           >
           <v-spacer></v-spacer>
           <v-btn color="grey-darken-1" variant="text" @click="closeDialog">取消</v-btn>
@@ -385,12 +393,23 @@ const closeDialog = () => {
 const fillDemoData = () => {
   editedItem.value = {
     couponName: '森呼吸．讀書趣',
-    couponCode: 'read',
+    couponCode: 'read50',
     discountAmount: 50,
     minSpend: 499,
     isAvailable: 1,
   }
 }
+
+const fillDemoData2 = () => {
+  editedItem.value = {
+    couponName: '森呼吸．享讀書',
+    couponCode: 'read500',
+    discountAmount: 500,
+    minSpend: 4999,
+    isAvailable: 0,
+  }
+}
+
 
 const saveCoupon = async () => {
   if (isSaveDisabled.value) return

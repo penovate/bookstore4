@@ -31,7 +31,7 @@ public class ClubDetail {
 	@Column(name = "diffult_level")
 	private Integer diffultLevel;
 
-	@Column(name = "agenda")
+	@Column(name = "agenda", columnDefinition = "nvarchar(MAX)")
 	private String agenda;
 
 	@Column(name = "mode_type")

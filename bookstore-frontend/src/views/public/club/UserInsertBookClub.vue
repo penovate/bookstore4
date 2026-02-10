@@ -55,7 +55,18 @@ const form = ref(null);
 const route = useRoute(); // Need to import useRoute
 const isEditMode = computed(() => !!route.query.id); // Need computed
 
+import { useUserStore } from '@/stores/userStore';
+import { useLoginCheck } from '@/composables/useLoginCheck';
+
+const userStore = useUserStore();
+const { validateLogin } = useLoginCheck();
+
+// ...
+
 onMounted(async () => {
+    // Check login status first
+    if (!await validateLogin('您必須先登入帳號才能發起讀書會。')) return;
+
     try {
         const [catResponse, bookResponse] = await Promise.all([
             bookClubService.getClubCategories(),
@@ -214,9 +225,9 @@ const fillFirstReview = () => {
     const dates = getCalculatedDates();
 
     club.value = {
-        clubName: `輕鬆讀：${randomBook.bookName}`,
+        clubName: `輕鬆讀：巴菲特寫給股東的信`,
         categoryId: categories.value.length > 0 ? categories.value[0].categoryId : null,
-        bookId: randomBook.bookId,
+        bookId: 17,
         eventDate: dates.eventDate,
         deadline: dates.deadline,
         location: '台北市信義區信義路五段7號 (101大樓 35F 會議室)',
@@ -239,9 +250,9 @@ const fillSecondReview = () => {
     const dates = getCalculatedDates();
 
     club.value = {
-        clubName: `【深度解析】${randomBook.bookName} - 專業導讀會`,
+        clubName: `【深度解析】巴菲特寫給股東的信 - 專業導讀會`,
         categoryId: categories.value.length > 0 ? categories.value[0].categoryId : null,
-        bookId: randomBook.bookId,
+        bookId: 17,
         eventDate: dates.eventDate,
         deadline: dates.deadline,
         location: '台北市信義區信義路五段7號 (101大樓 35F 會議室)',

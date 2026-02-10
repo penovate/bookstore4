@@ -1,5 +1,6 @@
 package bookstore.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -135,12 +136,21 @@ public class ClubRegistrationService {
 
 	// 發起人修改報名者報到狀態
 	public void updateUserCheckIn(Integer clubId, Integer userId) {
+		Optional<BookClubsBean> opt = bookClubsRepository.findById(clubId);
+		if (opt == null) {
+			throw new BusinessException(400, "查無該讀書會資料");
+		}
+		BookClubsBean club = opt.get();
+
 		ClubRegistrationsBean reg = clubRegistrationsRepository
 				.findByBookClub_ClubIdAndUser_UserId(clubId, userId)
 				.orElseThrow(() -> new BusinessException(404, "找不到該報名資料"));
 
 		if (Boolean.TRUE.equals(reg.getCheckIn())) {
 			throw new BusinessException(400, "該會員已報到，不可重複修改");
+		}
+		if (LocalDateTime.now().isBefore(club.getEventDate())) {
+			throw new BusinessException(409, "活動開始前不開放報到");
 		}
 		reg.setCheckIn(true);
 		clubRegistrationsRepository.save(reg);

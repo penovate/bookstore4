@@ -125,10 +125,13 @@ const getDifficultyColor = (level) => {
                             <v-list-item-title class="font-weight-bold">
                                 {{ club.host?.userName || '未知用戶' }}
                                 <!-- Admin sees User ID perhaps? -->
-                                <span v-if="isAdmin" class="text-caption text-grey ml-2">(ID: {{ club.host?.userId
-                                    }})</span>
+                                <!-- <span v-if="isAdmin" class="text-caption text-grey ml-2">(ID: {{ club.host?.userId
+                                    }})</span> -->
                             </v-list-item-title>
-                            <v-list-item-subtitle>{{ club.host?.email }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>
+                                <v-icon icon="mdi-email" size="x-small" class="mr-1"></v-icon>
+                                {{ club.host?.email }}
+                            </v-list-item-subtitle>
 
                             <!-- Admin Only: Phone Number -->
                             <v-list-item-subtitle v-if="isAdmin && club.host?.phoneNum">

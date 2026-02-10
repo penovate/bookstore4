@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import bookClubService from '@/api/bookClubService.js';
 import { useUserStore } from '@/stores/userStore';
+import { useLoginCheck } from '@/composables/useLoginCheck';
 import Swal from 'sweetalert2';
 // Import Registration Details Component
 import RegistrationDetails from './RegistrationDetails.vue';
@@ -13,6 +14,7 @@ import { headers, statusMap, statusOptions } from './UserBookClubConfig.js';
 
 const router = useRouter();
 const userStore = useUserStore();
+const { validateLogin } = useLoginCheck();
 const tab = ref('all'); // all | hosted | participated
 const loading = ref(false);
 const allClubs = ref([]); // 所有讀書會
@@ -24,6 +26,7 @@ const search = ref('');
 // Modal Control
 const showDetailsModal = ref(false);
 const selectedClubId = ref(null);
+const selectedClubEventDate = ref(null);
 
 const statusFilter = ref(null);
 
@@ -40,8 +43,8 @@ const loadMyRegistrations = async () => {
         const response = await bookClubService.getMyRegistrations();
         if (response.data) {
             // Backend returns List<ClubRegistrationsBean>
-            // Filter out cancelled (status=2) if needed, but backend service logic suggests status=1 is active
-            const activeRegs = response.data.filter(r => r.status === 1);
+            // Filter: 1=報名中, 3=已額滿, 4=已截止, 5=已結束
+            const activeRegs = response.data.filter(r => [1, 3, 4, 5].includes(r.status));
             participatedClubs.value = activeRegs.map(r => {
                 // Enhance club object with registration info if needed
                 return { ...r.bookClub, regStatus: r.status };
@@ -63,8 +66,8 @@ const loadAllClubs = async () => {
         await loadMyRegistrations();
 
         const response = await bookClubService.getAllClubs();
-        // 只顯示狀態為 1 (報名中) 的讀書會
-        allClubs.value = response.data.filter(club => club.status === 1);
+        // 只顯示狀態為 1(報名中), 3(已額滿), 4(已截止) 的讀書會
+        allClubs.value = response.data.filter(club => [1, 3, 4].includes(club.status));
     } catch (error) {
         console.error('載入所有讀書會失敗', error);
         Swal.fire('錯誤', '無法載入所有讀書會資料', 'error');
@@ -87,7 +90,10 @@ const loadHostedClubs = async () => {
 };
 
 // 報名動作
-const handleRegister = (club) => {
+const handleRegister = async (club) => {
+    // Check if user is logged in
+    if (!await validateLogin('您必須先登入帳號才能報名參加讀書會。')) return;
+
     Swal.fire({
         title: '確認報名',
         text: `確定要報名「${club.clubName}」嗎？`,
@@ -195,6 +201,7 @@ const handleClubEnd = (club) => {
 // 發起人檢視明細
 const openDetails = (club) => {
     selectedClubId.value = club.clubId;
+    selectedClubEventDate.value = club.eventDate;
     showDetailsModal.value = true;
 };
 
@@ -237,7 +244,10 @@ const isEventEnded = (club) => {
     return false;
 };
 
-const navigateToInsert = () => {
+const navigateToInsert = async () => {
+    // Check if user is logged in
+    if (!await validateLogin('您必須先登入帳號才能發起讀書會。')) return;
+    
     router.push('/dev/user/bookclubs/insert');
 };
 
@@ -471,7 +481,8 @@ onMounted(() => {
         </v-card>
 
         <!-- Registration Details Modal -->
-        <RegistrationDetails v-if="showDetailsModal" v-model="showDetailsModal" :club-id="selectedClubId" />
+        <RegistrationDetails v-if="showDetailsModal" v-model="showDetailsModal" :club-id="selectedClubId"
+            :event-date="selectedClubEventDate" />
 
     </v-container>
 </template>

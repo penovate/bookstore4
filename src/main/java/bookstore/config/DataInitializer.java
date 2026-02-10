@@ -318,12 +318,11 @@ public class DataInitializer {
 
 		for (int i = 1; i <= count; i++) {
 			UserBean host = users.get(random.nextInt(users.size()));
-
-			BookClubsBean club = new BookClubsBean();
-			club.setClubName("讀書會聚會 #" + i + " - " + books.get(random.nextInt(books.size())).getBookName());
+			BookClubsBean club = new BookClubsBean();			BooksBean selectedBook = books.get(random.nextInt(books.size()));
 			club.setHost(host);
 			club.setCategoriesBean(cats.get(random.nextInt(cats.size())));
-			club.setBook(books.get(random.nextInt(books.size())));
+			club.setBook(selectedBook);
+			club.setClubName("讀書會聚會 #" + i + " - " + selectedBook.getBookName());
 			club.setStatus(1);
 			club.setMaxParticipants(30);
 			club.setCurrentParticipants(0);

@@ -1,4 +1,4 @@
- package bookstore.service;
+package bookstore.service;
 
 import java.io.File;
 import java.io.IOException;
@@ -268,7 +268,7 @@ public class BookClubService {
 		BookClubsBean saveClub = bookClubsRepository.save(mainclub);
 
 		ClubDetail detail = new ClubDetail();
-		detail.setMainClub(mainclub);
+		detail.setMainClub(saveClub);
 		mapDtoToDetailEntity(detail, dto);
 		clubDetailRepository.save(detail);
 		log.info("讀書會建立成功 ID:{} ，狀態:{}", saveClub.getClubId(), saveClub.getStatus());
@@ -544,14 +544,13 @@ public class BookClubService {
 
 		club.setStatus(ClubConstants.STATUS_CANCELLED);
 
-
-		//通知所有參與者讀書會取消
+		// 通知所有參與者讀書會取消
 		List<ClubRegistrationsBean> regs = clubRegistrationsRepository.findByBookClub_ClubId(clubId);
 		for (ClubRegistrationsBean reg : regs) {
 			emailService.sendClubCancelToRegister(reg.getUser().getEmail(), club.getClubName(), host.getUserName(),
-					club.getEventDate(), reg.getUser().getUserName(), club.getLocation(), host.getEmail(),host.getPhoneNum());
+					club.getEventDate(), reg.getUser().getUserName(), club.getLocation(), host.getEmail(),
+					host.getPhoneNum());
 		}
-
 
 		log.info("發起人ID:{} 取消了讀書會ID:{}", userId, clubId);
 		return bookClubsRepository.save(club);
@@ -568,7 +567,7 @@ public class BookClubService {
 		for (ClubRegistrationsBean reg : regs) {
 			clubRegistrationsRepository.delete(reg);
 		}
-		
+
 		bookClubsRepository.deleteById(clubId);
 	}
 

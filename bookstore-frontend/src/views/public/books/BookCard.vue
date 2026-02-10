@@ -5,8 +5,10 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useCartStore } from '@/stores/cartStore';
 import orderService from '@/api/orderService.js';
+import { useLoginCheck } from '@/composables/useLoginCheck';
 
 const props = defineProps({
+    // ...
     book: {
         type: Object,
         required: true
@@ -24,6 +26,7 @@ const props = defineProps({
 
 const router = useRouter();
 const cartStore = useCartStore();
+const { validateLogin } = useLoginCheck();
 const userId = localStorage.getItem('userId');
 const isFavorited = ref(props.initialFavorited);
 
@@ -55,6 +58,8 @@ const goToDetail = () => {
 };
 
 const addToCart = async () => {
+    if (!await validateLogin('請先登入後再加入購物車')) return;
+
     try {
         const response = await orderService.addToCart(props.book.bookId, 1);
 
@@ -76,16 +81,11 @@ const addToCart = async () => {
                 cartStore.fetchCartCount();
             }
         } else {
-            if (response.data.message === '請先登入') {
-                router.push('/login');
-            }
             Swal.fire('加入失敗', response.data.message, 'error');
         }
     } catch (error) {
         if (error.response && error.response.status === 401) {
-            Swal.fire('驗證失效', '請重新登入', 'error').then(() => {
-                router.push('/login');
-            });
+            await validateLogin('驗證失效，請重新登入');
         } else {
             console.error(error);
             Swal.fire('錯誤', '加入購物車失敗', 'error');
@@ -94,12 +94,7 @@ const addToCart = async () => {
 }
 
 const toggleFavorite = async () => {
-    if (!userId) {
-        Swal.fire('請先登入', '登入後即可收藏書籍', 'warning').then(() => {
-            router.push('/login');
-        });
-        return;
-    }
+    if (!await validateLogin('登入後即可收藏書籍')) return;
 
     try {
         const response = await axios.post('http://localhost:8080/api/wishlist/toggle', {

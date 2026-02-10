@@ -89,6 +89,7 @@ public class UserController {
 			response.put("role", role);
 			response.put("userName", user.getUserName());
 			response.put("userId", user.getUserId());
+			response.put("img", user.getImg());
 			return response;
 		} else {
 			response.put("success", false);

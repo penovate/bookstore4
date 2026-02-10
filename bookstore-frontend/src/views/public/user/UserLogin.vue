@@ -154,7 +154,6 @@ const handleGoogleSuccess = async (response) => {
         })
       })
     } else {
-      // 處理後端回傳的錯誤 (例如: Google 驗證失敗、JWT 生成錯誤等)
       Swal.fire({
         icon: 'error',
         title: '登入失敗',
@@ -202,14 +201,14 @@ const handleLogin = async () => {
         timer: 1500,
         showConfirmButton: false,
       }).then(() => {
-        const redirectPath = router.currentRoute.value.query.redirect || '/'
+        const redirectPath = router.currentRoute.value.query.redirect || '/dev/user/home'
         router.push(redirectPath)
       })
     } else {
       Swal.fire({
         icon: 'error',
         title: '登入失敗',
-        text: response.data.message
+        text: response.data.message || '帳號或密碼錯誤'
       })
     }
   } catch (error) {

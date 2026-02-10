@@ -53,6 +53,11 @@ public class UserFrontController {
 			UserBean user = userService.findByEmail(email);
 			
 			if (user != null) {
+				if (user.getStatus() != null && user.getStatus() == 2) {
+			        response.put("success", false);
+			        response.put("message", "您的帳號已被停權，請聯繫管理員！");
+			        return response;
+			    }
 				session.setAttribute("currentUserId", user.getUserId().toString());
 				String role = (user.getUserType() == 0) ? "SUPER_ADMIN" : (user.getUserType() == 1 ? "ADMIN" : "USER");
 				String token = jwtUtil.generateToken(user.getUserId().toString(), role);
@@ -90,6 +95,12 @@ public class UserFrontController {
 
 	    if (user != null) {
 	        if (passwordEncoder.matches(rawPassword, user.getUserPwd())) {
+	        	
+	        	if (user.getStatus() != null && user.getStatus() == 2) {
+	                response.put("success", false);
+	                response.put("message", "您的帳號已被停權，請聯繫管理員！");
+	                return response;
+	            }
 	        	session.setAttribute("currentUserId", user.getUserId().toString());
 	            String role = (user.getUserType() == 0) ? "SUPER_ADMIN" : (user.getUserType() == 1 ? "ADMIN" : "USER");
 	            String token = jwtUtil.generateToken(user.getUserId().toString(), role);

@@ -70,27 +70,11 @@ const getDifficultyColor = (level) => {
 
     <template v-else>
         <!-- Header Section -->
-        <div class="d-flex align-center justify-space-between mb-6">
-            <div>
-                <div class="d-flex align-center mb-2">
-                    <slot name="back-button"></slot>
-                    <h1 class="text-h4 font-weight-bold text-primary ml-2">
-                        {{ club.clubName }}
-                    </h1>
-                </div>
-                <div class="d-flex align-center gap-2 ml-10">
-                    <v-chip :color="getStatusInfo(club.status).color" class="mr-2" label>
-                        {{ getStatusInfo(club.status).text }}
-                    </v-chip>
-                    <v-chip variant="outlined" color="secondary" size="small">
-                        {{ club.categoriesBean?.categoryName || '未分類' }}
-                    </v-chip>
-                </div>
-            </div>
-            <!-- Action Buttons Slot -->
-            <div class="d-flex gap-4">
-                <slot name="header-actions"></slot>
-            </div>
+        <div class="d-flex align-center mb-6">
+            <slot name="back-button"></slot>
+            <h1 class="text-h4 font-weight-bold text-primary ml-2">
+                {{ club.clubName }}
+            </h1>
         </div>
 
         <v-row>
@@ -134,7 +118,7 @@ const getDifficultyColor = (level) => {
                             </v-list-item-subtitle>
 
                             <!-- Admin Only: Phone Number -->
-                            <v-list-item-subtitle >
+                            <v-list-item-subtitle>
                                 <v-icon icon="mdi-phone" size="x-small" class="mr-1"></v-icon>
                                 {{ club.host?.phoneNum }}
                             </v-list-item-subtitle>
@@ -148,6 +132,21 @@ const getDifficultyColor = (level) => {
                                 @click="showProofDialog = true">
                                 查看佐證資料
                             </v-btn>
+                        </div>
+
+                        <v-divider class="my-3"></v-divider>
+
+                        <div class="d-flex gap-2 mb-4">
+                            <v-chip :color="getStatusInfo(club.status).color" class="flex-grow-1 justify-center" label>
+                                {{ getStatusInfo(club.status).text }}
+                            </v-chip>
+                            <v-chip variant="outlined" color="secondary" class="flex-grow-1 justify-center">
+                                {{ club.categoriesBean?.categoryName || '未分類' }}
+                            </v-chip>
+                        </div>
+
+                        <div class="d-flex flex-column gap-2">
+                            <slot name="header-actions"></slot>
                         </div>
                     </v-card-text>
                 </v-card>

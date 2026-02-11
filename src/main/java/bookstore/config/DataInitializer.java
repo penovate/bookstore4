@@ -784,7 +784,7 @@ public class DataInitializer {
 		UserBean opt = userRepository.findByEmail("cl3vul42006@gmail.com");
 		reg.setBookClub(club1);
 		reg.setCheckIn(true);
-		reg.setRegisteredAt(LocalDateTime.now());
+		reg.setRegisteredAt(LocalDateTime.now().plusDays(-3).plusHours(-1));
 		reg.setStatus(1);
 		reg.setUser(opt);
 		clubRegistrationsRepository.save(reg);

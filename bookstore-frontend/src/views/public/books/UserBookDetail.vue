@@ -32,26 +32,26 @@ const loadBookMsg = async () => {
   try {
     const response = await bookService.getBook(bookId)
     book.value = response.data
-    
+
     // 載入相關讀書會
     try {
-        const clubResponse = await bookClubService.getAllClubs()
-        if (clubResponse.data) {
-            // Filter: 
-            // 1. Same book
-            // 2. Status: 1(Registering), 3(Full), 4(Deadline), 5(Ended) - Maybe hide ended/cancelled?
-            // User requested "Show available sessions" or similar?
-            // "Joining content" - usually implies active ones.
-            // Let's show [1, 3, 4] (Active) and maybe 5 (Ended) for reference, filtering out draft/rejected/cancelled.
-            // Actually, let's just match the "All Clubs" filter: [1, 3, 4].
-            relatedClubs.value = clubResponse.data.filter(club => 
-                club.book && club.book.bookId == bookId && [1, 3, 4].includes(club.status)
-            )
-        }
-        // Load registration status
-        await loadMyRegistrations();
+      const clubResponse = await bookClubService.getAllClubs()
+      if (clubResponse.data) {
+        // Filter: 
+        // 1. Same book
+        // 2. Status: 1(Registering), 3(Full), 4(Deadline), 5(Ended) - Maybe hide ended/cancelled?
+        // User requested "Show available sessions" or similar?
+        // "Joining content" - usually implies active ones.
+        // Let's show [1, 3, 4] (Active) and maybe 5 (Ended) for reference, filtering out draft/rejected/cancelled.
+        // Actually, let's just match the "All Clubs" filter: [1, 3, 4].
+        relatedClubs.value = clubResponse.data.filter(club =>
+          club.book && club.book.bookId == bookId && [1, 3, 4].includes(club.status)
+        )
+      }
+      // Load registration status
+      await loadMyRegistrations();
     } catch (e) {
-        console.error('相關讀書會載入失敗', e)
+      console.error('相關讀書會載入失敗', e)
     }
 
   } catch (error) {
@@ -104,8 +104,8 @@ const addToCart = async () => {
     }
   } catch (error) {
     if (error.response && error.response.status === 401) {
-       // Should be caught by validateLogin if state is correct, but double safety
-       await validateLogin('驗證失效，請重新登入');
+      // Should be caught by validateLogin if state is correct, but double safety
+      await validateLogin('驗證失效，請重新登入');
     } else {
       console.error(error)
       Swal.fire('錯誤', '加入購物車失敗', 'error')
@@ -133,7 +133,7 @@ const buyNow = async () => {
     }
   } catch (error) {
     if (error.response && error.response.status === 401) {
-       await validateLogin('驗證失效，請重新登入');
+      await validateLogin('驗證失效，請重新登入');
     } else {
       console.error(error)
       Swal.fire('錯誤', '無法加入購物車', 'error')
@@ -164,11 +164,11 @@ const addToCollection = async () => {
     })
 
     if (response.data.success) {
-      isFavorited.value = response.data.isFavorited 
-      
+      isFavorited.value = response.data.isFavorited
+
       Swal.fire({
         icon: 'success',
-        title: response.data.message, 
+        title: response.data.message,
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
@@ -187,7 +187,7 @@ const goBack = () => {
 
 const recordView = async () => {
   const userId = localStorage.getItem('userId')
-  
+
   if (userId && bookId) {
     try {
       await axios.post('http://localhost:8080/api/history/record', {
@@ -202,83 +202,83 @@ const recordView = async () => {
 }
 
 const formatDate = (dateStr) => {
-    if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleString()
+  if (!dateStr) return '-'
+  return new Date(dateStr).toLocaleString()
 }
 
 const navigateToClub = (clubId) => {
-    router.push({
-        name: 'user-bookclub-detail-page',
-        params: { id: clubId }
-    })
+  router.push({
+    name: 'user-bookclub-detail-page',
+    params: { id: clubId }
+  })
 }
 
 // 載入我報名的讀書會
 const loadMyRegistrations = async () => {
-    if (!userStore.isLoggedIn) return;
-    try {
-        const response = await bookClubService.getMyRegistrations();
-        if (response.data) {
-            // Filter active registrations (1=Registering, 3=Full, 4=Deadline)
-            const activeRegs = response.data.filter(r => [1, 3, 4].includes(r.status));
-            myRegistrationIds.value = new Set(activeRegs.map(r => r.bookClub.clubId));
-        }
-    } catch (error) {
-        console.error('載入報名資料失敗', error);
+  if (!userStore.isLoggedIn) return;
+  try {
+    const response = await bookClubService.getMyRegistrations();
+    if (response.data) {
+      // Filter active registrations (1=Registering, 3=Full, 4=Deadline)
+      const activeRegs = response.data.filter(r => [1, 3, 4].includes(r.status));
+      myRegistrationIds.value = new Set(activeRegs.map(r => r.bookClub.clubId));
     }
+  } catch (error) {
+    console.error('載入報名資料失敗', error);
+  }
 };
 
 // 快速報名
 const handleRegister = async (club) => {
-    // Check if user is logged in
-    if (!await validateLogin('您必須先登入帳號才能報名參加讀書會。')) return;
+  // Check if user is logged in
+  if (!await validateLogin('您必須先登入帳號才能報名參加讀書會。')) return;
 
-    Swal.fire({
-        title: '確認報名',
-        text: `確定要報名「${club.clubName}」嗎？`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: '確定報名',
-        cancelButtonText: '取消',
-        confirmButtonColor: '#2E5C43'
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
-                await bookClubService.register(club.clubId);
-                Swal.fire('成功', '報名成功！', 'success');
-                // Refresh data
-                await loadMyRegistrations();
-                await loadBookMsg(); // Refresh club list (participants count)
-            } catch (error) {
-                Swal.fire('失敗', error.response?.data?.message || '報名失敗', 'error');
-            }
-        }
-    });
+  Swal.fire({
+    title: '確認報名',
+    text: `確定要報名「${club.clubName}」嗎？`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: '確定報名',
+    cancelButtonText: '取消',
+    confirmButtonColor: '#2E5C43'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await bookClubService.register(club.clubId);
+        Swal.fire('成功', '報名成功！', 'success');
+        // Refresh data
+        await loadMyRegistrations();
+        await loadBookMsg(); // Refresh club list (participants count)
+      } catch (error) {
+        Swal.fire('失敗', error.response?.data?.message || '報名失敗', 'error');
+      }
+    }
+  });
 };
 
 // 取消報名
 const handleCancel = (club) => {
-    Swal.fire({
-        title: '取消報名',
-        text: `確定要取消「${club.clubName}」的報名嗎？`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: '確定取消',
-        cancelButtonText: '保留',
-        confirmButtonColor: '#d33'
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
-                await bookClubService.cancelRegistration(club.clubId);
-                Swal.fire('成功', '已取消報名', 'success');
-                // Refresh data
-                await loadMyRegistrations();
-                await loadBookMsg();
-            } catch (error) {
-                Swal.fire('失敗', error.response?.data?.message || '取消失敗', 'error');
-            }
-        }
-    });
+  Swal.fire({
+    title: '取消報名',
+    text: `確定要取消「${club.clubName}」的報名嗎？`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: '確定取消',
+    cancelButtonText: '保留',
+    confirmButtonColor: '#d33'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await bookClubService.cancelRegistration(club.clubId);
+        Swal.fire('成功', '已取消報名', 'success');
+        // Refresh data
+        await loadMyRegistrations();
+        await loadBookMsg();
+      } catch (error) {
+        Swal.fire('失敗', error.response?.data?.message || '取消失敗', 'error');
+      }
+    }
+  });
 };
 
 onMounted(() => {
@@ -302,20 +302,8 @@ onMounted(() => {
         <!-- 左側：圖片區 -->
         <v-col cols="12" md="4" class="d-flex justify-center align-start">
           <div class="image-wrapper elevation-3 rounded">
-            <v-img
-              v-if="imageUrl"
-              :src="imageUrl"
-              cover
-              max-width="100%"
-              aspect-ratio="0.7"
-            ></v-img>
-            <v-sheet
-              v-else
-              color="grey-lighten-3"
-              class="d-flex align-center justify-center"
-              height="400"
-              width="300"
-            >
+            <v-img v-if="imageUrl" :src="imageUrl" cover max-width="100%" aspect-ratio="0.7"></v-img>
+            <v-sheet v-else color="grey-lighten-3" class="d-flex align-center justify-center" height="400" width="300">
               <v-icon icon="mdi-book-open-page-variant" size="80" color="grey"></v-icon>
             </v-sheet>
           </div>
@@ -354,34 +342,16 @@ onMounted(() => {
 
             <!-- 按鈕區 -->
             <div class="d-flex gap-3 mt-4">
-              <v-btn
-                variant="outlined"
-                :color="isFavorited ? 'error' : 'primary'" 
-                size="large"
-                :prepend-icon="isFavorited ? 'mdi-heart' : 'mdi-heart-outline'"
-                @click="addToCollection"
-              >
+              <v-btn variant="outlined" :color="isFavorited ? 'error' : 'primary'" size="large"
+                :prepend-icon="isFavorited ? 'mdi-heart' : 'mdi-heart-outline'" @click="addToCollection">
                 {{ isFavorited ? '已收藏' : '收藏' }}
               </v-btn>
-              <v-btn
-                variant="tonal"
-                color="secondary"
-                size="large"
-                prepend-icon="mdi-cart-plus"
-                class="ms-3"
-                @click="addToCart"
-                :disabled="book.stock <= 0"
-              >
+              <v-btn variant="tonal" color="secondary" size="large" prepend-icon="mdi-cart-plus" class="ms-3"
+                @click="addToCart" :disabled="book.stock <= 0">
                 加入購物車
               </v-btn>
-              <v-btn
-                variant="flat"
-                color="primary"
-                size="large"
-                class="ms-3 flex-grow-1"
-                @click="buyNow"
-                :disabled="book.stock <= 0"
-              >
+              <v-btn variant="flat" color="primary" size="large" class="ms-3 flex-grow-1" @click="buyNow"
+                :disabled="book.stock <= 0">
                 立即購買
               </v-btn>
             </div>
@@ -404,53 +374,52 @@ onMounted(() => {
       <!-- 讀書會場次區塊 -->
       <div class="club-section mb-6" v-if="relatedClubs.length > 0">
         <h3 class="text-h5 font-weight-bold text-primary mb-4">相關讀書會場次</h3>
-        
+
         <v-card variant="outlined" class="rounded-lg overflow-hidden border-primary">
-            <v-table hover>
-                <thead>
-                    <tr class="bg-grey-lighten-4">
-                        <th class="text-left font-weight-bold">讀書會名稱</th>
-                        <th class="text-center font-weight-bold">活動時間</th>
-                        <th class="text-center font-weight-bold">地點</th>
-                        <th class="text-center font-weight-bold">報名狀況</th>
-                        <th class="text-center font-weight-bold">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="club in relatedClubs" :key="club.clubId">
-                        <td>{{ club.clubName }}</td>
-                        <td class="text-center">{{ formatDate(club.eventDate) }}</td>
-                        <td class="text-center">{{ club.location }}</td>
-                        <td class="text-center">
-                            {{ club.currentParticipants || 0 }} / {{ club.maxParticipants }}
-                            <v-chip size="x-small" class="ml-2" 
-                                :color="club.currentParticipants >= club.maxParticipants ? 'error' : 'success'">
-                                {{ club.currentParticipants >= club.maxParticipants ? '已滿' : '報名中' }}
-                            </v-chip>
-                        </td>
-                        <td class="text-center">
-                            <div class="d-flex justify-center gap-2">
-                                <v-btn size="small" color="info" variant="text" @click="navigateToClub(club.clubId)">
-                                    詳情
-                                </v-btn>
-                                
-                                <template v-if="myRegistrationIds.has(club.clubId)">
-                                    <v-btn size="small" color="error" variant="flat" @click="handleCancel(club)">
-                                        取消報名
-                                    </v-btn>
-                                </template>
-                                <template v-else>
-                                    <v-btn size="small" color="primary" variant="elevated" 
-                                        @click="handleRegister(club)"
-                                        :disabled="club.currentParticipants >= club.maxParticipants">
-                                        {{ club.currentParticipants >= club.maxParticipants ? '已滿' : '報名' }}
-                                    </v-btn>
-                                </template>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </v-table>
+          <v-table hover>
+            <thead>
+              <tr class="bg-grey-lighten-4">
+                <th class="text-left font-weight-bold">讀書會名稱</th>
+                <th class="text-center font-weight-bold">活動時間</th>
+                <th class="text-center font-weight-bold">地點</th>
+                <th class="text-center font-weight-bold">報名狀況</th>
+                <th class="text-center font-weight-bold">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="club in relatedClubs" :key="club.clubId">
+                <td>{{ club.clubName }}</td>
+                <td class="text-center">{{ formatDate(club.eventDate) }}</td>
+                <td class="text-center">{{ club.location }}</td>
+                <td class="text-center">
+                  {{ club.currentParticipants || 0 }} / {{ club.maxParticipants }}
+                  <v-chip size="x-small" class="ml-2"
+                    :color="club.currentParticipants >= club.maxParticipants ? 'error' : 'success'">
+                    {{ club.currentParticipants >= club.maxParticipants ? '已滿' : '報名中' }}
+                  </v-chip>
+                </td>
+                <td class="text-center">
+                  <div class="d-flex justify-center gap-2">
+                    <v-btn size="small" color="info" variant="text" @click="navigateToClub(club.clubId)">
+                      詳情
+                    </v-btn>
+
+                    <template v-if="myRegistrationIds.has(club.clubId)">
+                      <v-btn size="small" color="error" variant="flat" @click="handleCancel(club)">
+                        取消報名
+                      </v-btn>
+                    </template>
+                    <template v-else>
+                      <!-- <v-btn size="small" color="primary" variant="elevated" @click="handleRegister(club)"
+                        :disabled="club.currentParticipants >= club.maxParticipants">
+                        {{ club.currentParticipants >= club.maxParticipants ? '已滿' : '報名' }}
+                      </v-btn> -->
+                    </template>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
         </v-card>
       </div>
 

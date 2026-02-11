@@ -310,7 +310,9 @@ const clearForm = () => {
                 <div class="text-body-2">
                     1. 填寫活動資訊後，您可以選擇「<span class="font-weight-bold text-primary">儲存草稿</span>」稍後再編輯。<br>
                     2. 若確認資料無誤，請點擊「<span class="font-weight-bold text-primary">送出審核</span>」。<br>
-                    3. 送出後將進入審核階段，審核期間無法修改資料。需約 3 個工作天。
+                    3. 送出後將進入審核階段，審核期間無法修改資料。需約 3 個工作天。<br>
+                    4. 每參與一場讀書會可獲得100點積分。<br>
+                    5. 需參與5場讀書會才可發起讀書會。
                 </div>
             </v-alert>
 

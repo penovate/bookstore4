@@ -110,7 +110,7 @@ public class DataInitializer {
 			createOrders(users, existingBooks);
 			createReviews(existingBooks, users, 5); // 每本書 5 則評價
 			createBookClubs(10, users, existingBooks, clubCats);
-			List<CouponBean> couponBeans = createCoupons();
+//			List<CouponBean> couponBeans = createCoupons();
 			log.info("=== 資料初始化完成：模擬真實數據已生成 ===");
 		};
 	}

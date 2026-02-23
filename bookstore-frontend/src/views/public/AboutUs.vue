@@ -60,7 +60,7 @@
               <v-row no-gutters align="center">
                 <v-col cols="auto" class="me-4">
                   <v-avatar size="80" class="bg-white elevation-1">
-                    <v-img src="@/assets/imgs/avatar_alex_hsieh.jpg" alt="謝承翰"></v-img>
+                    <v-img :src="alexHsieh" alt="謝承翰"></v-img>
                   </v-avatar>
                 </v-col>
                 <v-col>
@@ -90,7 +90,7 @@
               <v-row no-gutters align="center">
                 <v-col cols="auto" class="me-4">
                   <v-avatar size="80" class="bg-white elevation-1">
-                    <v-img src="@/assets/imgs/avatar_alex_sung.jpg" alt="宋泓孝"></v-img>
+                    <v-img :src="alexSung" alt="宋泓孝"></v-img>
                   </v-avatar>
                 </v-col>
                 <v-col>
@@ -162,6 +162,8 @@
 import aboutImage from '@/components/imgs/S__34324484_0.jpg'
 import alexFan from '@/components/imgs/alex_fan.png'
 import jamesLai from '@/components/imgs/james_lai.jpg'
+import alexHsieh from '@/components/imgs/alex_hsieh.jpg'
+import alexSung from '@/components/imgs/alex_sung.jpg'
 </script>
 
 <style scoped>

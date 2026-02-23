@@ -294,7 +294,7 @@ onMounted(() => {
         <div class="club-hero">
             <div class="hero-overlay"></div>
             <div class="hero-content mx-4">
-                <h1 class="hero-title">森林讀書會</h1>
+                <h1 class="hero-title">🌲森林讀書會📚</h1>
                 <h2 class="text-h5 mb-6 opacity-80">在閱讀中相遇，在交流中成長</h2>
                 <p class="hero-description">
                     專屬愛書人的交流園地！我們相信，閱讀是獨處的快樂，而分享能讓思想碰撞出更多火花。

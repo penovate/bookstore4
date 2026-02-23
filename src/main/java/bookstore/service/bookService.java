@@ -129,6 +129,8 @@ public class bookService {
 		if (book.getStock() == null || book.getStock() < 0) {
 			book.setStock(0);
 		}
+		
+		book.setOnShelf(0);
 
 		// --- 2. 處理 Genre (多對多關聯) ---
 		if (book.getGenres() != null && !book.getGenres().isEmpty()) {

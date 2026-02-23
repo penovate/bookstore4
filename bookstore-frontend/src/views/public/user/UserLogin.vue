@@ -7,7 +7,7 @@
       </v-card-item>
 
       <v-form @submit.prevent="handleLogin" class="mt-4">
-        <v-text-field v-model="loginForm.email" label="電子信箱" prepend-inner-icon="mdi-email-outline" variant="outlined"
+        <v-text-field v-model="loginForm.email" label="電子信箱" prepend-inner-icon="mdi-email-outline" type="email" variant="outlined"
           color="primary" class="mb-4 rounded-lg" density="comfortable"></v-text-field>
 
         <v-text-field v-model="loginForm.password" label="密碼" prepend-inner-icon="mdi-lock-outline" type="password"

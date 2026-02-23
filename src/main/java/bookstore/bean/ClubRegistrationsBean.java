@@ -36,6 +36,6 @@ public class ClubRegistrationsBean {
     @Column(name = "check_in")
     private Boolean checkIn; // BIT 對應 Boolean
 
-    @Column(name = "registered_at", insertable = false, updatable = false)
+    @Column(name = "registered_at")
     private LocalDateTime registeredAt;
 }

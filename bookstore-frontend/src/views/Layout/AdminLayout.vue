@@ -37,7 +37,7 @@ const items = ref([
     children: [
       { title: '書籍列表', to: '/dev/admin/books', icon: 'mdi-format-list-bulleted' },
       { title: '進退貨管理', to: '/dev/admin/logs', icon: 'mdi-swap-horizontal-bold' },
-      { title: '數據報表分析', to: '/dev/admin/reports', icon: 'mdi-chart-bar' },
+      // { title: '數據報表分析', to: '/dev/admin/reports', icon: 'mdi-chart-bar' },
     ],
   },
   {

@@ -23,7 +23,18 @@ const isHost = computed(() => {
 
 // Helper: Check if user has registered
 const isRegistered = computed(() => {
-    return myRegistrationStatus.value === 1; 
+    return myRegistrationStatus.value === 1;
+});
+
+const isEventEnded = computed(() => {
+    // 檢查狀態是否已截止(4)、已結束(5) 或已取消(6)
+    if ([4, 5, 6].includes(club.value.status)) return true;
+
+    // 檢查時間是否已過
+    if (club.value.eventDate) {
+        return new Date(club.value.eventDate) < new Date();
+    }
+    return false;
 });
 
 const myRegistrationStatus = ref(null);
@@ -36,7 +47,7 @@ const loadMyRegistrationStatus = async () => {
         if (myReg) {
             myRegistrationStatus.value = 1;
         } else {
-             myRegistrationStatus.value = null;
+            myRegistrationStatus.value = null;
         }
     } catch (e) {
         console.error('Failed to load my registration', e);
@@ -61,7 +72,7 @@ const handleRegister = async () => {
                 Swal.fire('成功', '報名成功！', 'success');
                 loadMyRegistrationStatus();
                 // We might want to reload club to update participant count
-                loadClub(); 
+                loadClub();
             } catch (error) {
                 Swal.fire('失敗', error.response?.data?.message || '報名失敗', 'error');
             }
@@ -135,15 +146,16 @@ onMounted(async () => {
             </template>
             <template #header-actions>
                 <template v-if="isHost">
-                     <v-chip color="info" variant="outlined">我是發起人</v-chip>
+                    <v-chip color="info" variant="outlined">我是發起人</v-chip>
                 </template>
                 <template v-else-if="myRegistrationStatus === 1">
-                     <v-btn color="error" variant="flat" @click="handleCancel">取消報名</v-btn>
+                    <v-btn v-if="!isEventEnded" color="error" variant="flat" @click="handleCancel">取消報名</v-btn>
                 </template>
                 <template v-else>
-                     <v-btn color="primary" variant="elevated" @click="handleRegister" :disabled="club.currentParticipants >= club.maxParticipants">
-                        {{ club.currentParticipants >= club.maxParticipants ? '已額滿' : '報名參加' }}
-                     </v-btn>
+                    <v-btn v-if="!isEventEnded" color="primary" variant="elevated" @click="handleRegister"
+                        :disabled="club.status === 3 || club.currentParticipants >= club.maxParticipants">
+                        {{ (club.status === 3 || club.currentParticipants >= club.maxParticipants) ? '已額滿' : '報名參加' }}
+                    </v-btn>
                 </template>
             </template>
         </BookClubDetailCard>

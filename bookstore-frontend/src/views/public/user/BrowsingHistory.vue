@@ -139,6 +139,7 @@ const clearHistory = () => {
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: '確定清空',
+    cancelButtonText: '取消',
     cancelButtonColor: '#aaa',
     confirmButtonColor: '#d33',
   }).then(async (result) => {

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import bookstore.bean.UserBean;
 
@@ -47,6 +48,11 @@ public interface UserRepository extends JpaRepository<UserBean, Integer> {
 	    @Param("email") String email, 
 	    @Param("birthStr") String birth
 	);
+	
+	@Modifying
+    @Transactional
+    @Query(value = "DBCC CHECKIDENT ('users', RESEED, 0)", nativeQuery = true)
+    void resetIdentity();
 	
 	
 }

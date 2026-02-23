@@ -15,19 +15,10 @@
           <v-form ref="profileFormRef">
             <div class="d-flex flex-column align-center mb-10">
               <v-hover v-slot="{ isHovering, props }">
-                <v-avatar 
-                  size="150" 
-                  class="avatar-picker elevation-4 cursor-pointer" 
-                  v-bind="props"
-                  @click="triggerFileInput"
-                >
+                <v-avatar size="150" class="avatar-picker elevation-4 cursor-pointer" v-bind="props"
+                  @click="triggerFileInput">
                   <v-img :src="avatarPreview || '/default-avatar.png'" cover>
-                    <v-overlay
-                      :model-value="isHovering"
-                      contained
-                      scrim="#2e5c43"
-                      class="align-center justify-center"
-                    >
+                    <v-overlay :model-value="isHovering" contained scrim="#2e5c43" class="align-center justify-center">
                       <div class="text-center">
                         <v-icon color="white" size="40">mdi-camera-flip-outline</v-icon>
                         <div class="text-white text-caption font-weight-bold">更換大頭貼</div>
@@ -40,19 +31,33 @@
             </div>
 
             <v-row>
-              <v-col cols="12" md="6"><v-text-field v-model="user.userName" label="姓名" variant="outlined" readonly bg-color="grey-lighten-4" prepend-inner-icon="mdi-account"></v-text-field></v-col>
-              <v-col cols="12" md="6"><v-text-field v-model="user.birth" label="生日" variant="outlined" readonly bg-color="grey-lighten-4" prepend-inner-icon="mdi-calendar"></v-text-field></v-col>
-              <v-col cols="12" md="6"><v-select v-model="user.gender" label="性別" :items="[{title:'男', value:'M'}, {title:'女', value:'F'}]" variant="outlined" prepend-inner-icon="mdi-gender-male-female" color="primary"></v-select></v-col>
-              <v-col cols="12" md="6"><v-text-field v-model="user.email" label="電子信箱" variant="outlined" prepend-inner-icon="mdi-email-outline" :rules="emailRules" validate-on="blur" color="primary"></v-text-field></v-col>
-              <v-col cols="12" md="6"><v-text-field v-model="user.phoneNum" label="手機號碼" variant="outlined" prepend-inner-icon="mdi-phone-outline" :rules="phoneRules" validate-on="blur" maxlength="10" color="primary"></v-text-field></v-col>
-              <v-col cols="12"><v-text-field v-model="user.address" label="聯絡地址" variant="outlined" prepend-inner-icon="mdi-map-marker-outline" color="primary"></v-text-field></v-col>
+              <v-col cols="12" md="6"><v-text-field v-model="user.userName" label="姓名" variant="outlined" readonly
+                  bg-color="grey-lighten-4" prepend-inner-icon="mdi-account"></v-text-field></v-col>
+              <v-col cols="12" md="6"><v-text-field v-model="user.birth" label="生日" variant="outlined" readonly
+                  bg-color="grey-lighten-4" prepend-inner-icon="mdi-calendar"></v-text-field></v-col>
+              <v-col cols="12" md="6"><v-text-field v-model="user.points" label="累積點數" variant="outlined" readonly
+                  bg-color="grey-lighten-4" prepend-inner-icon="mdi-star-circle-outline"></v-text-field></v-col>
+              <v-col cols="12" md="6"><v-select v-model="user.gender" label="性別"
+                  :items="[{ title: '男', value: 'M' }, { title: '女', value: 'F' }]" variant="outlined"
+                  prepend-inner-icon="mdi-gender-male-female" color="primary"></v-select></v-col>
+              <v-col cols="12" md="6"><v-text-field v-model="user.email" label="電子信箱" variant="outlined"
+                  prepend-inner-icon="mdi-email-outline" :rules="emailRules" validate-on="blur"
+                  color="primary"></v-text-field></v-col>
+              <v-col cols="12" md="6"><v-text-field v-model="user.phoneNum" label="手機號碼" variant="outlined"
+                  prepend-inner-icon="mdi-phone-outline" :rules="phoneRules" validate-on="blur" maxlength="10"
+                  color="primary"></v-text-field></v-col>
+
+              <v-col cols="12"><v-text-field v-model="user.address" label="聯絡地址" variant="outlined"
+                  prepend-inner-icon="mdi-map-marker-outline" color="primary"></v-text-field></v-col>
             </v-row>
-            
+
             <div class="d-flex justify-center mt-10 gap-4">
-              <v-btn color="primary" class="px-10 rounded-lg shadow-sm font-weight-bold" height="50" @click="saveProfile">
+              <v-btn color="primary" class="px-10 rounded-lg shadow-sm font-weight-bold" height="50"
+                @click="saveProfile">
                 <v-icon start icon="mdi-content-save-outline"></v-icon>儲存修改
               </v-btn>
-              <v-btn variant="outlined" color="grey-darken-1" class="px-10 rounded-lg" height="50" @click="router.push('/dev/user/user-menu')">
+              <v-btn variant="outlined" color="grey-darken-1" class="px-10 rounded-lg" height="50"
+                @click="router.push('/dev/user/user-menu')">
                 返回選單
               </v-btn>
             </div>
@@ -61,23 +66,31 @@
 
         <v-window-item value="password">
           <v-form ref="pwdFormRef" class="mx-auto" style="max-width: 450px">
-            <v-text-field v-model="pwdData.oldPwd" label="原登入密碼" type="password" variant="outlined" prepend-inner-icon="mdi-lock-outline" class="mb-4" color="primary"></v-text-field>
-            <v-text-field v-model="pwdData.newPwd" label="設定新密碼" type="password" variant="outlined" prepend-inner-icon="mdi-lock-plus-outline" class="mb-4" color="primary" :rules="[v => !!v || '新密碼必填', v => v.length >= 6 || '新密碼至少 6 位']"></v-text-field>
-            <v-text-field v-model="pwdData.confirmPwd" label="確認新密碼" type="password" variant="outlined" prepend-inner-icon="mdi-lock-check-outline" class="mb-8" color="primary" :rules="[v => v === pwdData.newPwd || '兩次密碼輸入不一致']"></v-text-field>
-            
+            <v-text-field v-model="pwdData.oldPwd" label="原登入密碼" type="password" variant="outlined"
+              prepend-inner-icon="mdi-lock-outline" class="mb-4" color="primary"></v-text-field>
+            <v-text-field v-model="pwdData.newPwd" label="設定新密碼" type="password" variant="outlined"
+              prepend-inner-icon="mdi-lock-plus-outline" class="mb-4" color="primary"
+              :rules="[v => !!v || '新密碼必填', v => v.length >= 6 || '新密碼至少 6 位']"></v-text-field>
+            <v-text-field v-model="pwdData.confirmPwd" label="確認新密碼" type="password" variant="outlined"
+              prepend-inner-icon="mdi-lock-check-outline" class="mb-8" color="primary"
+              :rules="[v => v === pwdData.newPwd || '兩次密碼輸入不一致']"></v-text-field>
+
             <v-row dense>
               <v-col cols="12">
-                <v-btn color="primary" block height="54" class="rounded-lg font-weight-bold mb-4 shadow-sm" @click="updatePassword">
+                <v-btn color="primary" block height="54" class="rounded-lg font-weight-bold mb-4 shadow-sm"
+                  @click="updatePassword">
                   <v-icon start icon="mdi-shield-check-outline"></v-icon>確認修改密碼
                 </v-btn>
               </v-col>
               <v-col cols="6">
-                <v-btn variant="tonal" color="secondary" block height="48" class="rounded-lg" @click="clearPasswordForm">
+                <v-btn variant="tonal" color="secondary" block height="48" class="rounded-lg"
+                  @click="clearPasswordForm">
                   <v-icon start icon="mdi-refresh"></v-icon>清除內容
                 </v-btn>
               </v-col>
               <v-col cols="6">
-                <v-btn variant="text" color="grey-darken-1" block height="48" class="rounded-lg" @click="activeTab = 'profile'">
+                <v-btn variant="text" color="grey-darken-1" block height="48" class="rounded-lg"
+                  @click="activeTab = 'profile'">
                   取消返回
                 </v-btn>
               </v-col>
@@ -110,7 +123,7 @@ let selectedFile = null
 
 let originalData = {}
 const user = reactive({
-  userName: '', birth: '', gender: '', email: '', phoneNum: '', address: ''
+  userName: '', birth: '', gender: '', email: '', phoneNum: '', address: '', points: 0
 })
 const pwdData = reactive({ oldPwd: '', newPwd: '', confirmPwd: '' })
 
@@ -160,16 +173,16 @@ const saveProfile = async () => {
   const { valid } = await profileFormRef.value.validate()
   if (!valid) return
 
-  const result = await Swal.fire({ 
-    title: '確定儲存修改？', 
-    icon: 'question', 
-    showCancelButton: true, 
+  const result = await Swal.fire({
+    title: '確定儲存修改？',
+    icon: 'question',
+    showCancelButton: true,
     confirmButtonColor: '#2e5c43',
     cancelButtonColor: '#aaa',
     confirmButtonText: '確定儲存',
     cancelButtonText: '取消'
   })
-  
+
   if (result.isConfirmed) {
     try {
       const formData = new FormData()
@@ -186,7 +199,7 @@ const saveProfile = async () => {
 
       if (response.data.success) {
         Swal.fire({ icon: 'success', title: '修改成功', confirmButtonColor: '#2e5c43', timer: 1500 })
-        const newPath = response.data.newImg; 
+        const newPath = response.data.newImg;
         if (newPath) {
           userStore.img = newPath;
           localStorage.setItem('userImg', newPath);
@@ -207,10 +220,10 @@ const updatePassword = async () => {
   const { valid } = await pwdFormRef.value.validate()
   if (!valid) return
 
-  const result = await Swal.fire({ 
-    title: '確定修改密碼？', 
-    icon: 'warning', 
-    showCancelButton: true, 
+  const result = await Swal.fire({
+    title: '確定修改密碼？',
+    icon: 'warning',
+    showCancelButton: true,
     confirmButtonColor: '#2e5c43',
     cancelButtonColor: '#aaa',
     confirmButtonText: '確認修改',
@@ -251,22 +264,23 @@ onMounted(async () => {
     if (response.data.success) {
       const dbData = response.data.user;
       user.userName = dbData.userName;
-      user.birth = dbData.birth ? dbData.birth.split('T')[0] : ''; 
+      user.birth = dbData.birth ? dbData.birth.split('T')[0] : '';
       user.gender = dbData.gender;
       user.email = dbData.email;
       user.phoneNum = dbData.phoneNum;
       user.address = dbData.address;
+      user.points = dbData.points || 0;
 
       const dbImg = dbData.img || '';
-      avatarPreview.value = dbImg.startsWith('/uploads/') 
-                            ? `http://localhost:8080${dbImg}` 
-                            : dbImg;
+      avatarPreview.value = dbImg.startsWith('/uploads/')
+        ? `http://localhost:8080${dbImg}`
+        : dbImg;
 
       if (userStore.img !== dbImg) {
         userStore.img = dbImg;
         localStorage.setItem('userImg', dbImg);
       }
-      originalData = { ...user }; 
+      originalData = { ...user };
     }
   } catch (error) {
     Swal.fire('錯誤', '無法載入資料，請重新登入', 'error').then(() => router.push('/dev/user/login'))
@@ -275,15 +289,26 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.forest-card { border: 1px solid rgba(46, 92, 67, 0.05); }
-.gap-4 { gap: 16px; }
+.forest-card {
+  border: 1px solid rgba(46, 92, 67, 0.05);
+}
+
+.gap-4 {
+  gap: 16px;
+}
+
 .avatar-picker {
   transition: all 0.3s ease;
   border: 4px solid white;
 }
+
 .avatar-picker:hover {
   transform: scale(1.05);
   box-shadow: 0 8px 20px rgba(46, 92, 67, 0.2) !important;
 }
-.v-btn { text-transform: none !important; letter-spacing: 1px; }
+
+.v-btn {
+  text-transform: none !important;
+  letter-spacing: 1px;
+}
 </style>

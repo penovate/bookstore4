@@ -59,7 +59,7 @@ public class ReviewReportBean implements Serializable {
 	private String status;
 	
 	//	時間與處理結果
-	@Column(name = "created_at", insertable = false, updatable = false)
+	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createdAt;
 
 	@Column(name = "processed_at")

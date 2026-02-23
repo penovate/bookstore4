@@ -102,7 +102,7 @@
                   <div class="text-subtitle-2 text-grey-darken-1 mb-2">追求卓越的技術架構師</div>
                   <p class="text-caption text-grey-darken-2 leading-tight">
                     <strong>負責模組：</strong><br>
-                    書籍檢索系統、多條件篩選演算法、讀書會場次預約、Redis 緩存優化與資料庫正規化設計
+                    書籍列表展示、書籍詳細瀏覽、讀書會列表展示、讀書會詳細瀏覽、讀書會報名/取消、讀書會報名明細、讀書會參與者報到、書籍管理、進退貨管理、讀書會管理/積分發放、讀書會通知信自動寄發、全域異常處理、日誌 AOP
                   </p>
                   <div class="d-flex align-center mt-4">
                     <v-icon size="16" color="grey-darken-1" class="me-1">mdi-email-outline</v-icon>

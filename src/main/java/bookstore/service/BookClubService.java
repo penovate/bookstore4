@@ -69,10 +69,6 @@ public class BookClubService {
 	}
 
 	// 查詢所有讀書會分類
-	/**
-	 * 
-	 * @return
-	 */
 	public List<ClubCategoriesBean> getAllCategories() {
 		return categoriesRepository.findAll();
 	}
@@ -458,7 +454,7 @@ public class BookClubService {
 		// 根據常數定義 STATUS_REGISTERing = 1
 		club.setStatus(ClubConstants.STATUS_APPROVED); // 或 STATUS_REGISTERing
 		club.setRejectionReason(null); // 清空駁回原因
-
+		emailService.sendAccetToHost(club.getHost().getEmail(), club.getClubName(), club.getHost().getUserName());
 		log.info("管理員ID:{} 核准了讀書會ID:{}", adminId, clubId);
 		return bookClubsRepository.save(club);
 	}
@@ -473,7 +469,7 @@ public class BookClubService {
 
 		club.setStatus(ClubConstants.STATUS_REJECTED);
 		club.setRejectionReason(reason);
-
+		emailService.sendRejectToHost(club.getHost().getEmail(), club.getClubName(),club.getHost().getUserName(), reason);
 		log.info("管理員ID:{} 駁回了讀書會ID:{}，原因:{}", adminId, clubId, reason);
 		return bookClubsRepository.save(club);
 	}

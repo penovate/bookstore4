@@ -119,7 +119,7 @@ public class BookClubsController {
 		// 權限檢查可在此做，或依賴 Security Filter (假設 /api/admin/** 或內部邏輯控制)
 		// 這裡假設能進到後台 API 的都已經過初步驗證，Service 也可再由 Token Role 驗證
 		BookClubsBean club = bookClubService.approveClub(clubId, adminId);
-		emailService.sendAccetToHost(club.getHost().getEmail(), club.getClubName(), user.getUserName());
+//		emailService.sendAccetToHost(club.getHost().getEmail(), club.getClubName(), user.getUserName());
 		return ResponseEntity.ok(club);
 	}
 

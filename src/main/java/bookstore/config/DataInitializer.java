@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.boot.CommandLineRunner;
@@ -34,7 +33,6 @@ import bookstore.repository.ClubCategoriesRepository;
 import bookstore.repository.ClubDetailRepository;
 import bookstore.repository.ClubRegistrationsRepository;
 import bookstore.repository.CouponRepository;
-import bookstore.repository.GenreRepository;
 import bookstore.repository.OrderItemRepository;
 import bookstore.repository.OrderReturnRepository;
 import bookstore.repository.OrdersRepository;
@@ -71,7 +69,7 @@ public class DataInitializer {
 
 	private final Random random = new Random();
 
-	@Bean
+	 @Bean
 	public CommandLineRunner initData() {
 		return args -> {
 			log.info("=== 系統啟動：開始資料初始化流程 ===");
@@ -104,13 +102,12 @@ public class DataInitializer {
 
 			// 5. 載入現有書籍 (Persistence)
 			List<BooksBean> existingBooks = bookRepository.findAll();
-			
 
 			// 6. 產生關聯數據
-			createOrders(users, existingBooks);
-			createReviews(existingBooks, users, 5); // 每本書 5 則評價
-			createBookClubs(10, users, existingBooks, clubCats);
-//			List<CouponBean> couponBeans = createCoupons();
+//			 createOrders(users, existingBooks);
+			// createReviews(existingBooks, users, 5); // 每本書 5 則評價
+			// createBookClubs(10, users, existingBooks, clubCats);
+			// List<CouponBean> couponBeans = createCoupons();
 			log.info("=== 資料初始化完成：模擬真實數據已生成 ===");
 		};
 	}
@@ -143,16 +140,16 @@ public class DataInitializer {
 	@Transactional
 	public void createAdmin() {
 
-//		UserBean superAdmin = new UserBean();
-//		superAdmin.setEmail("pen@bookstore.com");
-//		superAdmin.setUserName("林木森");
-//		superAdmin.setUserPwd(passwordEncoder.encode("123456"));
-//		superAdmin.setUserType(0);
-//		superAdmin.setStatus(1);
-//		superAdmin.setPoints(9999);
-//		superAdmin.setCreatedAt(new Date());
-//		userRepository.save(superAdmin);
-//		log.info("已建立初始管理員 (僅供新增書籍用)");
+		// UserBean superAdmin = new UserBean();
+		// superAdmin.setEmail("pen@bookstore.com");
+		// superAdmin.setUserName("林木森");
+		// superAdmin.setUserPwd(passwordEncoder.encode("123456"));
+		// superAdmin.setUserType(0);
+		// superAdmin.setStatus(1);
+		// superAdmin.setPoints(9999);
+		// superAdmin.setCreatedAt(new Date());
+		// userRepository.save(superAdmin);
+		// log.info("已建立初始管理員 (僅供新增書籍用)");
 
 	}
 
@@ -161,45 +158,32 @@ public class DataInitializer {
 	public List<UserBean> createUsers() {
 		List<UserBean> users = new ArrayList<>();
 
+		// SuperAdmin
 		UserBean superAdmin = new UserBean();
-		superAdmin.setEmail("pen@bookstore.com");
+		superAdmin.setEmail("TreeorTree@bookstore.com");
 		superAdmin.setUserName("林木森");
 		superAdmin.setUserPwd(passwordEncoder.encode("12345"));
 		superAdmin.setUserType(0);
 		superAdmin.setGender("M");
-		superAdmin.setPhoneNum("0987452145");
+		superAdmin.setPhoneNum("0987654321");
 		superAdmin.setStatus(1);
-		superAdmin.setPoints(400);
+		superAdmin.setPoints(0);
 		superAdmin.setCreatedAt(new Date());
 		userRepository.save(superAdmin);
 		users.add(superAdmin);
 
 		// Admin
 		UserBean admin = new UserBean();
-		admin.setEmail("cl3vul42006@gmail.com");
-		admin.setUserName("宋泓孝");
-		admin.setUserPwd(passwordEncoder.encode("alex74586"));
+		admin.setEmail("Maple@bookstore.com");
+		admin.setUserName("林木楓");
+		admin.setUserPwd(passwordEncoder.encode("12345"));
 		admin.setUserType(1);
 		admin.setStatus(1);
-		admin.setPhoneNum("0962050445");
+		admin.setPhoneNum("0912345678");
 		admin.setAddress("桃園市中壢區中華路999號");
 		admin.setPoints(0);
 		admin.setCreatedAt(new Date());
 		users.add(userRepository.save(admin));
-		
-
-//		// Member
-//		UserBean member = new UserBean();
-//		member.setUserName("李梅");
-//		member.setEmail("leemei122694@gmail.com");
-//		member.setUserPwd(passwordEncoder.encode("alex74586"));
-//		member.setUserType(2);
-//		member.setStatus(1);
-//		member.setGender("M");
-//		member.setAddress("宜蘭縣羅東鎮中正北路999號");
-//		member.setPoints(400);
-//		member.setCreatedAt(new Date());
-//		users.add(userRepository.save(member));
 
 		// Members
 		String[] name = { "王曉明", "李鐵柱", "王翠花", "林志玲", "張大寶", "陳汁瀚", "周餅倫", "王小陸", "范承仁", "李建輝" };
@@ -537,198 +521,198 @@ public class DataInitializer {
 
 	@Transactional
 	public List<CouponBean> createCoupons() {
-	    List<CouponBean> list = new ArrayList<>();
+		List<CouponBean> list = new ArrayList<>();
 
-	    // --- Coupon 7: read10 ---
-	    CouponBean c7 = new CouponBean();
-	    c7.setCouponCode("read10");
-	    c7.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2025-10-15T15:03:48")));
-	    c7.setDiscountAmount(new BigDecimal("10.00"));
-	    c7.setMinSpend(new BigDecimal("299.00"));
-	    c7.setCouponName("森呼吸．入林禮");
-	    c7.setIsAvailable(0);
-	    c7.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:52:07")));
-	    list.add(couponRepository.save(c7)); // 儲存並加入 List
+		// --- Coupon 7: read10 ---
+		CouponBean c7 = new CouponBean();
+		c7.setCouponCode("read10");
+		c7.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2025-10-15T15:03:48")));
+		c7.setDiscountAmount(new BigDecimal("10.00"));
+		c7.setMinSpend(new BigDecimal("299.00"));
+		c7.setCouponName("森呼吸．入林禮");
+		c7.setIsAvailable(0);
+		c7.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:52:07")));
+		list.add(couponRepository.save(c7)); // 儲存並加入 List
 
-	    // --- Coupon 8: read20 ---
-	    CouponBean c8 = new CouponBean();
-	    c8.setCouponCode("read20");
-	    c8.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-11-28T15:28:31")));
-	    c8.setDiscountAmount(new BigDecimal("20.00"));
-	    c8.setMinSpend(new BigDecimal("399.00"));
-	    c8.setCouponName("森呼吸．林間漫步");
-	    c8.setIsAvailable(1);
-	    c8.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:52:14")));
-	    list.add(couponRepository.save(c8));
+		// --- Coupon 8: read20 ---
+		CouponBean c8 = new CouponBean();
+		c8.setCouponCode("read20");
+		c8.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-11-28T15:28:31")));
+		c8.setDiscountAmount(new BigDecimal("20.00"));
+		c8.setMinSpend(new BigDecimal("399.00"));
+		c8.setCouponName("森呼吸．林間漫步");
+		c8.setIsAvailable(1);
+		c8.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:52:14")));
+		list.add(couponRepository.save(c8));
 
-	    // --- Coupon 9: read100 ---
-	    CouponBean c9 = new CouponBean();
-	    c9.setCouponCode("read100");
-	    c9.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-12-12T15:29:02")));
-	    c9.setDiscountAmount(new BigDecimal("100.00"));
-	    c9.setMinSpend(new BigDecimal("899.00"));
-	    c9.setCouponName("森呼吸．讀享券");
-	    c9.setIsAvailable(1);
-	    c9.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-28T15:59:55")));
-	    list.add(couponRepository.save(c9));
+		// --- Coupon 9: read100 ---
+		CouponBean c9 = new CouponBean();
+		c9.setCouponCode("read100");
+		c9.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-12-12T15:29:02")));
+		c9.setDiscountAmount(new BigDecimal("100.00"));
+		c9.setMinSpend(new BigDecimal("899.00"));
+		c9.setCouponName("森呼吸．讀享券");
+		c9.setIsAvailable(1);
+		c9.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-28T15:59:55")));
+		list.add(couponRepository.save(c9));
 
-	    // --- Coupon 10: read30 ---
-	    CouponBean c10 = new CouponBean();
-	    c10.setCouponCode("read30");
-	    c10.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-12-21T15:35:51")));
-	    c10.setDiscountAmount(new BigDecimal("30.00"));
-	    c10.setMinSpend(new BigDecimal("599.00"));
-	    c10.setCouponName("森呼吸．慢讀時光");
-	    c10.setIsAvailable(1);
-	    c10.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-28T16:25:15")));
-	    list.add(couponRepository.save(c10));
+		// --- Coupon 10: read30 ---
+		CouponBean c10 = new CouponBean();
+		c10.setCouponCode("read30");
+		c10.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-12-21T15:35:51")));
+		c10.setDiscountAmount(new BigDecimal("30.00"));
+		c10.setMinSpend(new BigDecimal("599.00"));
+		c10.setCouponName("森呼吸．慢讀時光");
+		c10.setIsAvailable(1);
+		c10.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-28T16:25:15")));
+		list.add(couponRepository.save(c10));
 
-	    // --- Coupon 11: read150 ---
-	    CouponBean c11 = new CouponBean();
-	    c11.setCouponCode("read150");
-	    c11.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-01T13:37:42")));
-	    c11.setDiscountAmount(new BigDecimal("150.00"));
-	    c11.setMinSpend(new BigDecimal("1299.00"));
-	    c11.setCouponName("森呼吸．一起讀");
-	    c11.setIsAvailable(1);
-	    c11.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:37:42")));
-	    list.add(couponRepository.save(c11));
+		// --- Coupon 11: read150 ---
+		CouponBean c11 = new CouponBean();
+		c11.setCouponCode("read150");
+		c11.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-01T13:37:42")));
+		c11.setDiscountAmount(new BigDecimal("150.00"));
+		c11.setMinSpend(new BigDecimal("1299.00"));
+		c11.setCouponName("森呼吸．一起讀");
+		c11.setIsAvailable(1);
+		c11.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:37:42")));
+		list.add(couponRepository.save(c11));
 
-	    // --- Coupon 12: read99 ---
-	    CouponBean c12 = new CouponBean();
-	    c12.setCouponCode("read99");
-	    c12.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-22T11:32:53")));
-	    c12.setDiscountAmount(new BigDecimal("99.00"));
-	    c12.setMinSpend(new BigDecimal("499.00"));
-	    c12.setCouponName("森呼吸．植行力");
-	    c12.setIsAvailable(0);
-	    c12.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:33:40")));
-	    list.add(couponRepository.save(c12));
+		// --- Coupon 12: read99 ---
+		CouponBean c12 = new CouponBean();
+		c12.setCouponCode("read99");
+		c12.setCreatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-22T11:32:53")));
+		c12.setDiscountAmount(new BigDecimal("99.00"));
+		c12.setMinSpend(new BigDecimal("499.00"));
+		c12.setCouponName("森呼吸．植行力");
+		c12.setIsAvailable(0);
+		c12.setUpdatedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:33:40")));
+		list.add(couponRepository.save(c12));
 
-	    log.info("已新增 6 筆優惠券資料並回傳清單");
-	    return list; 
+		log.info("已新增 6 筆優惠券資料並回傳清單");
+		return list;
 	}
-	
+
 	@Transactional
 	public void createUserCoupons(List<UserBean> users, List<CouponBean> coupons) {
-	    // --- UserCoupon 1: Coupon 7 (read10), User 4 (張雅雯) ---
-	    UserCouponBean uc1 = new UserCouponBean();
-	    uc1.setCouponBean(coupons.get(0)); // Coupon ID 7 假設在 list index 0
-	    uc1.setUserBean(users.get(4));
-	    uc1.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2025-12-10T15:29:34")));
-	    uc1.setStatus(1);
-	    uc1.setUsedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-03T15:56:41")));
-	    userCouponRepository.save(uc1);
+		// --- UserCoupon 1: Coupon 7 (read10), User 4 (張雅雯) ---
+		UserCouponBean uc1 = new UserCouponBean();
+		uc1.setCouponBean(coupons.get(0)); // Coupon ID 7 假設在 list index 0
+		uc1.setUserBean(users.get(4));
+		uc1.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2025-12-10T15:29:34")));
+		uc1.setStatus(1);
+		uc1.setUsedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-03T15:56:41")));
+		userCouponRepository.save(uc1);
 
-	    // --- UserCoupon 2: Coupon 10 (read30), User 2 (王曉明) ---
-	    UserCouponBean uc2 = new UserCouponBean();
-	    uc2.setCouponBean(coupons.get(3)); // Coupon ID 10
-	    uc2.setUserBean(users.get(2));
-	    uc2.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-28T15:36:03")));
-	    uc2.setStatus(0);
-	    uc2.setUsedAt(null);
-	    userCouponRepository.save(uc2);
+		// --- UserCoupon 2: Coupon 10 (read30), User 2 (王曉明) ---
+		UserCouponBean uc2 = new UserCouponBean();
+		uc2.setCouponBean(coupons.get(3)); // Coupon ID 10
+		uc2.setUserBean(users.get(2));
+		uc2.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-28T15:36:03")));
+		uc2.setStatus(0);
+		uc2.setUsedAt(null);
+		userCouponRepository.save(uc2);
 
-	    // --- UserCoupon 3: Coupon 11 (read150), User 5 (李國豪) ---
-	    UserCouponBean uc3 = new UserCouponBean();
-	    uc3.setCouponBean(coupons.get(4)); // Coupon ID 11
-	    uc3.setUserBean(users.get(5));
-	    uc3.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:37:51")));
-	    uc3.setStatus(0);
-	    uc3.setUsedAt(null);
-	    userCouponRepository.save(uc3);
+		// --- UserCoupon 3: Coupon 11 (read150), User 5 (李國豪) ---
+		UserCouponBean uc3 = new UserCouponBean();
+		uc3.setCouponBean(coupons.get(4)); // Coupon ID 11
+		uc3.setUserBean(users.get(5));
+		uc3.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:37:51")));
+		uc3.setStatus(0);
+		uc3.setUsedAt(null);
+		userCouponRepository.save(uc3);
 
-	    // --- UserCoupon 4: Coupon 8 (read20), User 4 (張雅雯) ---
-	    UserCouponBean uc4 = new UserCouponBean();
-	    uc4.setCouponBean(coupons.get(1)); // Coupon ID 8
-	    uc4.setUserBean(users.get(4));
-	    uc4.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:45:09")));
-	    uc4.setStatus(0);
-	    uc4.setUsedAt(null);
-	    userCouponRepository.save(uc4);
+		// --- UserCoupon 4: Coupon 8 (read20), User 4 (張雅雯) ---
+		UserCouponBean uc4 = new UserCouponBean();
+		uc4.setCouponBean(coupons.get(1)); // Coupon ID 8
+		uc4.setUserBean(users.get(4));
+		uc4.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:45:09")));
+		uc4.setStatus(0);
+		uc4.setUsedAt(null);
+		userCouponRepository.save(uc4);
 
-	    // --- UserCoupon 5: Coupon 9 (read100), User 8 (假設對應林先生) ---
-	    UserCouponBean uc5 = new UserCouponBean();
-	    uc5.setCouponBean(coupons.get(2)); // Coupon ID 9
-	    uc5.setUserBean(users.get(8));
-	    uc5.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:48:50")));
-	    uc5.setStatus(1);
-	    uc5.setUsedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-15T09:29:00")));
-	    userCouponRepository.save(uc5);
+		// --- UserCoupon 5: Coupon 9 (read100), User 8 (假設對應林先生) ---
+		UserCouponBean uc5 = new UserCouponBean();
+		uc5.setCouponBean(coupons.get(2)); // Coupon ID 9
+		uc5.setUserBean(users.get(8));
+		uc5.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-29T13:48:50")));
+		uc5.setStatus(1);
+		uc5.setUsedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-15T09:29:00")));
+		userCouponRepository.save(uc5);
 
-	    // --- UserCoupon 6: Coupon 10 (read30), User 1 (宋泓孝/Admin) ---
-	    UserCouponBean uc6 = new UserCouponBean();
-	    uc6.setCouponBean(coupons.get(3));
-	    uc6.setUserBean(users.get(1));
-	    uc6.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:45:37")));
-	    uc6.setStatus(0);
-	    uc6.setUsedAt(null);
-	    userCouponRepository.save(uc6);
+		// --- UserCoupon 6: Coupon 10 (read30), User 1 (宋泓孝/Admin) ---
+		UserCouponBean uc6 = new UserCouponBean();
+		uc6.setCouponBean(coupons.get(3));
+		uc6.setUserBean(users.get(1));
+		uc6.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:45:37")));
+		uc6.setStatus(0);
+		uc6.setUsedAt(null);
+		userCouponRepository.save(uc6);
 
-	    // --- UserCoupon 7: Coupon 11 (read150), User 1 ---
-	    UserCouponBean uc7 = new UserCouponBean();
-	    uc7.setCouponBean(coupons.get(4));
-	    uc7.setUserBean(users.get(1));
-	    uc7.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:45:44")));
-	    uc7.setStatus(0);
-	    uc7.setUsedAt(null);
-	    userCouponRepository.save(uc7);
+		// --- UserCoupon 7: Coupon 11 (read150), User 1 ---
+		UserCouponBean uc7 = new UserCouponBean();
+		uc7.setCouponBean(coupons.get(4));
+		uc7.setUserBean(users.get(1));
+		uc7.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:45:44")));
+		uc7.setStatus(0);
+		uc7.setUsedAt(null);
+		userCouponRepository.save(uc7);
 
-	    // --- UserCoupon 8: Coupon 7 (read10), User 1 ---
-	    UserCouponBean uc8 = new UserCouponBean();
-	    uc8.setCouponBean(coupons.get(0));
-	    uc8.setUserBean(users.get(1));
-	    uc8.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:45:49")));
-	    uc8.setStatus(1);
-	    uc8.setUsedAt(null);
-	    userCouponRepository.save(uc8);
+		// --- UserCoupon 8: Coupon 7 (read10), User 1 ---
+		UserCouponBean uc8 = new UserCouponBean();
+		uc8.setCouponBean(coupons.get(0));
+		uc8.setUserBean(users.get(1));
+		uc8.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:45:49")));
+		uc8.setStatus(1);
+		uc8.setUsedAt(null);
+		userCouponRepository.save(uc8);
 
-	    // --- UserCoupon 9: Coupon 8 (read20), User 3 (林小姐) ---
-	    UserCouponBean uc9 = new UserCouponBean();
-	    uc9.setCouponBean(coupons.get(1));
-	    uc9.setUserBean(users.get(3));
-	    uc9.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:46:13")));
-	    uc9.setStatus(0);
-	    uc9.setUsedAt(null);
-	    userCouponRepository.save(uc9);
+		// --- UserCoupon 9: Coupon 8 (read20), User 3 (林小姐) ---
+		UserCouponBean uc9 = new UserCouponBean();
+		uc9.setCouponBean(coupons.get(1));
+		uc9.setUserBean(users.get(3));
+		uc9.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:46:13")));
+		uc9.setStatus(0);
+		uc9.setUsedAt(null);
+		userCouponRepository.save(uc9);
 
-	    // --- UserCoupon 10: Coupon 10 (read30), User 3 ---
-	    UserCouponBean uc10 = new UserCouponBean();
-	    uc10.setCouponBean(coupons.get(3));
-	    uc10.setUserBean(users.get(3));
-	    uc10.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:46:33")));
-	    uc10.setStatus(0);
-	    uc10.setUsedAt(null);
-	    userCouponRepository.save(uc10);
+		// --- UserCoupon 10: Coupon 10 (read30), User 3 ---
+		UserCouponBean uc10 = new UserCouponBean();
+		uc10.setCouponBean(coupons.get(3));
+		uc10.setUserBean(users.get(3));
+		uc10.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:46:33")));
+		uc10.setStatus(0);
+		uc10.setUsedAt(null);
+		userCouponRepository.save(uc10);
 
-	    // --- UserCoupon 11: Coupon 11 (read150), User 3 ---
-	    UserCouponBean uc11 = new UserCouponBean();
-	    uc11.setCouponBean(coupons.get(4));
-	    uc11.setUserBean(users.get(3));
-	    uc11.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:46:38")));
-	    uc11.setStatus(0);
-	    uc11.setUsedAt(null);
-	    userCouponRepository.save(uc11);
+		// --- UserCoupon 11: Coupon 11 (read150), User 3 ---
+		UserCouponBean uc11 = new UserCouponBean();
+		uc11.setCouponBean(coupons.get(4));
+		uc11.setUserBean(users.get(3));
+		uc11.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:46:38")));
+		uc11.setStatus(0);
+		uc11.setUsedAt(null);
+		userCouponRepository.save(uc11);
 
-	    // --- UserCoupon 12: Coupon 8 (read20), User 8 ---
-	    UserCouponBean uc12 = new UserCouponBean();
-	    uc12.setCouponBean(coupons.get(1));
-	    uc12.setUserBean(users.get(8));
-	    uc12.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:47:01")));
-	    uc12.setStatus(1);
-	    uc12.setUsedAt(null);
-	    userCouponRepository.save(uc12);
+		// --- UserCoupon 12: Coupon 8 (read20), User 8 ---
+		UserCouponBean uc12 = new UserCouponBean();
+		uc12.setCouponBean(coupons.get(1));
+		uc12.setUserBean(users.get(8));
+		uc12.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:47:01")));
+		uc12.setStatus(1);
+		uc12.setUsedAt(null);
+		userCouponRepository.save(uc12);
 
-	    // --- UserCoupon 13: Coupon 10 (read30), User 5 (李國豪) ---
-	    UserCouponBean uc13 = new UserCouponBean();
-	    uc13.setCouponBean(coupons.get(3));
-	    uc13.setUserBean(users.get(5));
-	    uc13.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:47:37")));
-	    uc13.setStatus(0);
-	    uc13.setUsedAt(null);
-	    userCouponRepository.save(uc13);
+		// --- UserCoupon 13: Coupon 10 (read30), User 5 (李國豪) ---
+		UserCouponBean uc13 = new UserCouponBean();
+		uc13.setCouponBean(coupons.get(3));
+		uc13.setUserBean(users.get(5));
+		uc13.setReceivedAt(java.sql.Timestamp.valueOf(LocalDateTime.parse("2026-01-31T11:47:37")));
+		uc13.setStatus(0);
+		uc13.setUsedAt(null);
+		userCouponRepository.save(uc13);
 
-	    log.info("已手動匯入 13 筆會員領取優惠券關聯資料");
+		log.info("已手動匯入 13 筆會員領取優惠券關聯資料");
 	}
 
 	// 評價初始資料

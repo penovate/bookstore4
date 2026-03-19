@@ -95,10 +95,18 @@ const loginForm = reactive({
 
 const quickLogin = (type) => {
   const accounts = {
+<<<<<<< HEAD
     SUPER_ADMIN: { email: 'TreeorTree@bookstore.com', pass: '12345' },
     ADMIN: { email: 'Maple@bookstore.com', pass: '12345' },
     USER: { email: 'leemei122694@gmail.com', pass: 'alex74586' },
     BANNED: { email: 'user1@yahoo.com', pass: '123456' },
+=======
+    SUPER_ADMIN: { email: 'pen@bookstore.com', pass: '12345' },
+    ADMIN: { email: 'cl3vul42006@gmail.com', pass: 'alex74586' },
+    USER: { email: 'vip.reader@test.com', pass: 'vip777' },
+    // BANNED: { email: 'super@bookstore.com', pass: '123' },
+    BANNED: { email: 'super@bookstore.com', pass: '123' },
+>>>>>>> master
   }
   loginForm.email = accounts[type].email
   loginForm.password = accounts[type].pass

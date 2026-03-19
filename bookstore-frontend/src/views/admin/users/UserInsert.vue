@@ -317,10 +317,10 @@ const quickFill = (mode) => {
     formData.address = '桃園市中壢區中大路300號'
     formData.userType = 1
   } else {
-    formData.email = 'okingopen@gmail.com'
+    formData.email = 'pen@bookstore.com'
     formData.userPwd = 'password123'
     formData.userName = '測試重複員'
-    formData.phoneNum = '0989322413'
+    formData.phoneNum = '0987452145'
     formData.gender = 'F'
     formData.birth = '1990-01-01'
     formData.address = '重複資料測試地址'

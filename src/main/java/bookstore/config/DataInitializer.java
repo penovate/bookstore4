@@ -29,6 +29,7 @@ import bookstore.repository.BookClubsRepository;
 import bookstore.repository.BookRepository;
 import bookstore.repository.BrowsingHistoryRepository;
 import bookstore.repository.CartRepository;
+import bookstore.repository.ChatMessageRepository;
 import bookstore.repository.ClubCategoriesRepository;
 import bookstore.repository.ClubDetailRepository;
 import bookstore.repository.ClubRegistrationsRepository;
@@ -36,6 +37,7 @@ import bookstore.repository.CouponRepository;
 import bookstore.repository.OrderItemRepository;
 import bookstore.repository.OrderReturnRepository;
 import bookstore.repository.OrdersRepository;
+import bookstore.repository.ReviewReportRepository;
 import bookstore.repository.ReviewRepository;
 import bookstore.repository.UserCouponRepository;
 import bookstore.repository.UserLogRepository;
@@ -66,6 +68,8 @@ public class DataInitializer {
 	private final WishlistRepository wishlistRepository;
 	private final OrderReturnRepository orderReturnRepository;
 	private final UserCouponRepository userCouponRepository;
+	private final ChatMessageRepository chatMessageRepository;
+	private final ReviewReportRepository reviewReportRepositor;
 
 	private final Random random = new Random();
 
@@ -104,10 +108,17 @@ public class DataInitializer {
 			List<BooksBean> existingBooks = bookRepository.findAll();
 
 			// 6. 產生關聯數據
+<<<<<<< HEAD
 //			 createOrders(users, existingBooks);
 			// createReviews(existingBooks, users, 5); // 每本書 5 則評價
 			// createBookClubs(10, users, existingBooks, clubCats);
 			// List<CouponBean> couponBeans = createCoupons();
+=======
+//			createOrders(users, existingBooks);
+			createReviews(existingBooks, users, 5); // 每本書 5 則評價
+			createBookClubs(10, users, existingBooks, clubCats);
+			List<CouponBean> couponBeans = createCoupons();
+>>>>>>> master
 			log.info("=== 資料初始化完成：模擬真實數據已生成 ===");
 		};
 	}
@@ -115,16 +126,19 @@ public class DataInitializer {
 	// 刪除現有資料
 	@Transactional
 	public void clearTransientData() {
+		reviewReportRepositor.deleteAllInBatch();		
+		reviewRepository.deleteAllInBatch();
+		chatMessageRepository.deleteAllInBatch();
 		orderReturnRepository.deleteAllInBatch();
 		userCouponRepository.deleteAllInBatch();
 		cartRepository.deleteAllInBatch();
 		wishlistRepository.deleteAllInBatch();
 		couponRepository.deleteAllInBatch();
 		orderItemRepository.deleteAllInBatch();
-		reviewRepository.deleteAllInBatch();
 		clubRegistrationsRepository.deleteAllInBatch();
 		clubDetailRepository.deleteAllInBatch();
 		browsingHistoryRepository.deleteAllInBatch();
+		
 
 		bookClubsRepository.deleteAllInBatch();
 		ordersRepository.deleteAllInBatch();
@@ -133,6 +147,8 @@ public class DataInitializer {
 
 		userLogRepository.deleteAllInBatch();
 		userRepository.deleteAllInBatch();
+		
+		userRepository.resetIdentity();
 
 		log.info("已清除：訂單、評價、讀書會、會員資料");
 	}
@@ -167,23 +183,77 @@ public class DataInitializer {
 		superAdmin.setGender("M");
 		superAdmin.setPhoneNum("0987654321");
 		superAdmin.setStatus(1);
+<<<<<<< HEAD
 		superAdmin.setPoints(0);
+=======
+		superAdmin.setPoints(9999);
+		superAdmin.setCreatedAt(new Date());
+		userRepository.save(superAdmin);
+		superAdmin.setPoints(400);
+>>>>>>> master
 		superAdmin.setCreatedAt(new Date());
 		userRepository.save(superAdmin);
 		users.add(superAdmin);
 
 		// Admin
 		UserBean admin = new UserBean();
+<<<<<<< HEAD
 		admin.setEmail("Maple@bookstore.com");
 		admin.setUserName("林木楓");
 		admin.setUserPwd(passwordEncoder.encode("12345"));
+=======
+		admin.setEmail("cl3vul42006@gmail.com");
+		admin.setUserName("艾力克斯");
+		admin.setUserPwd(passwordEncoder.encode("alex74586"));
+>>>>>>> master
 		admin.setUserType(1);
 		admin.setStatus(1);
 		admin.setPhoneNum("0912345678");
 		admin.setAddress("桃園市中壢區中華路999號");
-		admin.setPoints(0);
+		admin.setPoints(9999);
 		admin.setCreatedAt(new Date());
 		users.add(userRepository.save(admin));
+<<<<<<< HEAD
+=======
+
+		// Member
+		UserBean member = new UserBean();
+		member.setUserName("李梅");
+		member.setEmail("vip.reader@test.com");
+		member.setUserPwd(passwordEncoder.encode("vip777"));
+		member.setUserType(2);
+		member.setStatus(1);
+		member.setGender("M");
+		member.setAddress("宜蘭縣羅東鎮中正北路999號");
+		member.setPoints(500);
+		member.setCreatedAt(new Date());
+		users.add(userRepository.save(member));
+
+		UserBean member2 = new UserBean();
+		member2.setUserName("被停權者");
+		member2.setEmail("super@bookstore.com");
+		member2.setUserPwd(passwordEncoder.encode("123"));
+		member2.setUserType(0);
+		member2.setStatus(2);
+		member2.setGender("M");
+		member2.setAddress("宜蘭縣羅東鎮中正北路999號");
+		member2.setPoints(500);
+		member2.setCreatedAt(new Date());
+		users.add(userRepository.save(member2));
+
+//		// Member
+//		UserBean member = new UserBean();
+//		member.setUserName("李梅");
+//		member.setEmail("leemei122694@gmail.com");
+//		member.setUserPwd(passwordEncoder.encode("alex74586"));
+//		member.setUserType(2);
+//		member.setStatus(1);
+//		member.setGender("M");
+//		member.setAddress("宜蘭縣羅東鎮中正北路999號");
+//		member.setPoints(400);
+//		member.setCreatedAt(new Date());
+//		users.add(userRepository.save(member));
+>>>>>>> master
 
 		// Members
 		String[] name = { "王曉明", "李鐵柱", "王翠花", "林志玲", "張大寶", "陳汁瀚", "周餅倫", "王小陸", "范承仁", "李建輝" };
@@ -727,6 +797,7 @@ public class DataInitializer {
 				ReviewBean r = new ReviewBean();
 				UserBean u = users.get(random.nextInt(users.size()));
 				r.setUserId(u.getUserId());
+				r.setStatus(1);
 				r.setBookId(book.getBookId());
 				r.setRating(random.nextInt(3) + 3); // 3-5 星
 				r.setComment("這本書真的不錯！模擬評價 #" + i);
@@ -768,7 +839,7 @@ public class DataInitializer {
 		UserBean opt = userRepository.findByEmail("cl3vul42006@gmail.com");
 		reg.setBookClub(club1);
 		reg.setCheckIn(true);
-		reg.setRegisteredAt(LocalDateTime.now().plusDays(-3).plusHours(-1));
+		reg.setRegisteredAt(LocalDateTime.now());
 		reg.setStatus(1);
 		reg.setUser(opt);
 		clubRegistrationsRepository.save(reg);

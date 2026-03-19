@@ -83,15 +83,13 @@ public class OrderService {
 				throw new BusinessException(400, "書籍 " + book.getBookName() + " 已下架，請移除後再結帳");
 			}
 
-			// 檢查庫存
-			if (book.getStock() < cart.getQuantity()) {
+			// 扣除庫存 (使用資料庫原子操作，防超賣)
+			int updatedRows = bookRepository.decreaseStock(book.getBookId(), cart.getQuantity());
+			if (updatedRows == 0) {
 				throw new BusinessException(400,
-						"書籍 " + book.getBookName() + " 庫存不足，僅剩 " + book.getStock() + " 本");
+						"書籍 " + book.getBookName() + " 庫存不足，已被搶先購買");
 			}
-
-			// 扣除庫存
-			book.setStock(book.getStock() - cart.getQuantity());
-			bookRepository.save(book);
+			book.setStock(book.getStock() - cart.getQuantity()); // 同步更新 Java 物件狀態
 
 			// 計算書籍小計
 			BigDecimal subtotal = book.getPrice().multiply(new BigDecimal(cart.getQuantity()));
@@ -275,10 +273,13 @@ public class OrderService {
 			item.setOrders(order);
 			orderItemRepository.save(item);
 
-			// 扣除庫存 (新增邏輯)
+			// 扣除庫存 (使用資料庫原子操作，防超賣)
 			BooksBean book = item.getBooksBean();
-			book.setStock(book.getStock() - item.getQuantity());
-			bookRepository.save(book);
+			int updatedRows = bookRepository.decreaseStock(book.getBookId(), item.getQuantity());
+			if (updatedRows == 0) {
+				throw new BusinessException(400, "書籍 " + book.getBookName() + " 庫存不足，已被搶先購買");
+			}
+			book.setStock(book.getStock() - item.getQuantity()); // 同步更新 Java 物件狀態
 		}
 
 		// 8. 處理優惠券 (如果有)

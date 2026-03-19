@@ -20,4 +20,8 @@ public interface BookRepository extends JpaRepository<BooksBean, Integer> {
 	@org.springframework.data.jpa.repository.Query("SELECT b FROM BooksBean b WHERE b.bookId = :id")
 	Optional<BooksBean> findByIdWithLock(@org.springframework.data.repository.query.Param("id") Integer id);
 
+	@org.springframework.data.jpa.repository.Modifying
+	@org.springframework.data.jpa.repository.Query("UPDATE BooksBean b SET b.stock = b.stock - :quantity WHERE b.bookId = :bookId AND b.stock >= :quantity")
+	int decreaseStock(@org.springframework.data.repository.query.Param("bookId") Integer bookId, @org.springframework.data.repository.query.Param("quantity") Integer quantity);
+
 }
